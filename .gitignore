@@ -1,0 +1,9 @@
+
+.DS_Store
+node_modules
+test/CoTNetwork/applicationRepository
+test/CoTNetwork/data
+test/CoTNetwork/fileStorage
+test/CoTNetwork/inputTmp
+test/CoTNetwork/resultTmp
+test/CoTNetwork/config.json

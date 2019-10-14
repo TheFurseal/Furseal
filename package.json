@@ -1,0 +1,38 @@
+{
+  "name": "furseal",
+  "version": "1.0.0",
+  "description": "computing power system",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "babel": "^6.23.0",
+    "babel-loader": "^8.0.6",
+    "babel-preset-es2015": "^6.24.1",
+    "diskusage-ng": "^0.2.4",
+    "lz4js": "^0.2.0",
+    "webpack": "^4.40.2",
+    "webpack-dev-server": "^3.8.1",
+    "webpack-cli": "^3.3.9"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheFurseal/Furseal.git"
+  },
+  "keywords": [
+    "computing",
+    "power",
+    "p2p"
+  ],
+  "author": "JohnSuu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TheFurseal/Furseal/issues"
+  },
+  "homepage": "https://github.com/TheFurseal/Furseal#readme"
+}
