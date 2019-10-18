@@ -72,7 +72,7 @@ class ValidatorCli{
 
             debug('validate record',wInfo)
 
-            dbB.update(wInfo.unprotected.blockName,JSON.stringify(wInfo),(err) => {
+            dbB.update(wInfo.unprotected.blockName,wInfo,(err) => {
                 if(err){
                     console.error(err)
                 }else{
