@@ -248,8 +248,30 @@ class StoreCli{
                 res = JSON.parse(res)
             }
 
-            callback(res) 
-
+            //download dapp
+            p2pNode.get(res.apps.dapp[0].url,(err,files) => {
+                if(err){
+                    callback(new Error('donwnload dapp filed'),res) 
+                }else{
+                    var targetPath = appRepoTmp+'/'+res.apps.dapp[0].name
+                    res.apps.dapp[0].path = targetPath
+                    var inBuffer = Tools.decompressionBuffer(file.content)
+                    fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
+                        // throws an error, you could also catch it here
+                        if(err){
+                            console.error(err)
+                        }else{
+                            debug('Download '+file.path+' to '+targetPath)
+                            db.put(tmpRecive.unprotected.appSet,value,(err) => {
+                                if(err){
+                                    console.error(err)
+                                }
+                                callback(null,res)
+                            })
+                        }
+                    })
+                }
+            })
         })
 
     }
@@ -265,6 +287,7 @@ class StoreCli{
         optStroe.path = '/getAppSet'
         postData.target = Tools.getPlatformInfo()+'-'+Tools.getArchInfo()
         postData.setName = setName
+        var steps = 0
 
         httpClinet.access(JSON.stringify(postData),optStroe,function(res){
             
@@ -279,44 +302,43 @@ class StoreCli{
                         console.error(err)
                     }
                 })
-
-
-
-                var targetPath = appRepoTmp+'/'+res.apps.assimilator.name
+                
                 debug('start to get '+res.apps.assimilator.url)
                 p2pNode.get(res.apps.assimilator.url,(err,files) => {
                     if(err){
                         console.error(err,files)
                     }else{
                         files.forEach((file) => {
+                            var targetPath = appRepoTmp+'/'+res.apps.assimilator.name
                             var inBuffer = Tools.decompressionBuffer(file.content)
-                            
-                            fs.writeFile(targetPath, inBuffer, (err) => {
+                            fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
                                 // throws an error, you could also catch it here
                                 if(err){
                                     console.error(err)
                                 }else{
                                     debug('Download '+file.path+' to '+targetPath)
+                                    steps++
                                 }
                             })
-                            
                         })
                     }
                 })
 
-                targetPath = appRepoTmp+'/'+res.apps.validator.name
+                
                 p2pNode.get(res.apps.validator.url,(err,files) => {
                     if(err){
                         console.error(err)
                     }else{
                         files.forEach((file) => {
+                            var targetPath = appRepoTmp+'/'+res.apps.validator.name
                             var inBuffer = Tools.decompressionBuffer(file.content)
-                            fs.writeFile(targetPath, inBuffer, (err) => {
+                            fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
                                 // throws an error, you could also catch it here
                                 if(err){
                                     console.error(err)
                                 }else{
                                     debug('Download '+file.path+' to '+targetPath)
+                                    steps++
                                 }
                             })
                             
@@ -324,20 +346,22 @@ class StoreCli{
                     }
                 })
 
-                targetPath = appRepoTmp+'/'+res.apps.dividor.name
+                
                 p2pNode.get(res.apps.dividor.url,(err,files) => {
                     if(err){
                         console.error(err)
                     }else{
                         files.forEach((file) => {
+                            var targetPath = appRepoTmp+'/'+res.apps.dividor.name
                             var inBuffer = Tools.decompressionBuffer(file.content)
 
-                            fs.writeFile(targetPath, inBuffer, (err) => {
+                            fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
                                 // throws an error, you could also catch it here
                                 if(err){
                                     console.error(err)
                                 }else{
                                     debug('Download '+file.path+' to '+targetPath)
+                                    steps++
                                 }
                             })
                             
@@ -362,14 +386,15 @@ class StoreCli{
                 }
 
                 if(url != ''){
-                    targetPath = appRepoTmp+'/'+name
+                    
                     p2pNode.get(url,(err,files) => {
                         if(err){
                             console.error(err)
                         }else{
                             files.forEach((file) => {
+                                var targetPath = appRepoTmp+'/'+name
                                 var inBuffer = Tools.decompressionBuffer(file.content)
-                                fs.writeFile(targetPath, inBuffer, (err) => {
+                                fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
                                     // throws an error, you could also catch it here
                                     if(err){
                                         console.error(err)
@@ -385,12 +410,18 @@ class StoreCli{
                     console.error('can not find dapp for '+platform+'-'+arch+' from app set '+res.setName)
                 }
 
+                var handle = setInterval(() => {
+                    if(steps >= 3){
+                        clearInterval(handle)
+                        callback(res)
+                    }
+                    debug('Waiting getAppset download process, current finished '+steps)
+                }, 3000);
+                
 
+            }else{
+                callback() 
             }
-
-
-            callback(res) 
-
         })
     }
 }

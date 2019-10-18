@@ -15,11 +15,12 @@ class AppManager{
             blockDB:blockDB,
             workDB:workDB,
             p2pNode:p2pNode,
-            appRepoPath:appRepoPath
+            appRepoPath:appRepoPath,
+            configure:conf
         }
     ){
         this.setsRegister = {}
-
+        this.conf = conf
         this.appDB = appDB
         this.blockDB = blockDB,
         this.workDB = workDB,
@@ -48,7 +49,8 @@ class AppManager{
             blockDB:this.blockDB,
             workDB:this.workDB,
             appDB:this.appDB,
-            p2pNode:this.p2pNode
+            p2pNode:this.p2pNode,
+            configure:this.conf
         })
         
         this.setsRegister[setName].dividor = dividorCli
@@ -167,7 +169,9 @@ class AppManager{
     }
 
     getAppSet(setName,callback){
+        debug('Get app set')
         this.setsRegister.storeCli.getAppSet(setName,(value) => {
+            //donwload
             debug(value)
             callback(value)
         })

@@ -23,7 +23,7 @@ const bootstrapers = [
 
 
 
-module.exports.createP2PNode = (home) => {
+module.exports.createP2PNode = async (home) => {
   // const webrtcStar = new WebrtcStar({ wrtc: wrtc })
   const webrtcStar = new WebrtcStar({ wrtc: testrtc })
   const wss = new WSS()
@@ -32,7 +32,7 @@ module.exports.createP2PNode = (home) => {
     }else{
       home = './fileStorage'
     }
-    return IPFS.createNode({
+    return await IPFS.create({
         repo: home,
         config: {
             Addresses: {

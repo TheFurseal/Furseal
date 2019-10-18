@@ -12,6 +12,7 @@ const Tools = require('../common/tools.js')
 var blockDB;
 var workDB;
 var workInRegister = {}
+var configure
 
 const httpClinet = new client()
 var urlBase = 'peer1.cotnetwork.com';
@@ -29,10 +30,12 @@ class DividorCli{
             blockDB:dbB,
             workDB:dbW,
             appDB:appDB,
-            p2pNode:node
+            p2pNode:node,
+            configure:conf
         }
     ){
         debug('create dividor cli')
+        configure = conf
         this.ipcManager = new IPCManager()
         if(dbB == null){
            var err = new Error('No block database');
@@ -195,7 +198,6 @@ class DividorCli{
 
 
         function registerBlock(workInfo,isFirst){
-
             if(isFirst == null){
                 isFirst = false
             }
@@ -227,19 +229,19 @@ class DividorCli{
                         total*= parseInt(sp[i])
                     }
 
-                    resObj.resolveKey = blockDB.conf.encrypto(resObj.resolveKey)
+                    resObj.resolveKey = configure.encrypto(resObj.resolveKey)
 
                     if(isFirst){
                         var pm = new ProgressManager(parseInt(sp[0]),total);
                         resObj.unprotected.progress = pm.mProgress;
-                        workDB.put(resObj.workName,JSON.stringify(resObj),function(err){
+                        workDB.put(resObj.workName,resObj,function(err){
                             if(err){
                                 console.error('ERROR: ',err);
                             }
                         })
                     }
 
-                    blockDB.put(resObj.unprotected.blockName,JSON.stringify(resObj),function(err){
+                    blockDB.put(resObj.unprotected.blockName,resObj,function(err){
                         if(err){
                             console.error('ERROR: ',err);
                         }

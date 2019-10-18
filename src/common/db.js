@@ -9,7 +9,7 @@ class DBManager{
             fs.mkdirSync(repo,{ recursive: true });
         }
         //debug('create db '+repo);
-        this.db = level(repo,(err) => {
+        this.db = level(repo,{valueEncoding:'json'},(err) => {
             if(err){
                 console.error(err);
                 process.exit();
@@ -128,8 +128,18 @@ class DBManager{
 
     getAll(callback){
         var tmp =[];
-        var current = 1;
         this.db.createReadStream().on('data',function(data){
+                tmp.push(data);
+        }).on('error',function(){
+            callback(tmp);
+        }).on('end',function(){
+            callback(tmp);
+        })
+    }
+
+    getAllValue(callback){
+        var tmp =[];
+        this.db.createValueStream().on('data',function(data){
                 tmp.push(data);
         }).on('error',function(){
             callback(tmp);

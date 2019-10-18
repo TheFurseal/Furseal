@@ -93,6 +93,51 @@ class DecideEngine{
             }
         })
     }
+
+    // (err)
+    enviromentValidation(info,callback){
+        if(info == null){
+            callback(new Error('empty block info'))
+            return
+        }
+        var detector = this.envDetector
+        var cliTemp = this.cli
+        var setName = info.unprotected.appSet 
+        this.db.get(setName,(err,value) => {
+            if(err){//don't have
+                cliTemp.getDapp(setName,(err,info) => {
+                    if(err){  
+                        callback(err)
+                    }else{
+                        callback(null)
+                    }
+                })
+            }else{// have
+                var arc = Tools.getArchInfo()
+                var platform = Tools.getPlatformInfo()
+                for(var i = 0;i<value.apps.dapp.length;i++){
+                    var sp = value.apps.dapp[i].target.split('-')
+                    if(Tools.matchOS(sp[0],platform) && Tools.matchArch(sp[1],arc)){
+                        var bascInfo = convertRequirement(value)
+                        detector.match3rdPartyRequest(bascInfo).then(ret => {
+                            if(ret){
+                                var valueTmp = value.apps.dapp[i]
+                                value.apps.dapp = []
+                                value.apps.dapp.push(valueTmp)
+                                //enviroment check passed, preper input files
+                                
+                                callback(null)
+                            }else{
+                                callback(new Error('3rd Party requrement check failed'))
+                            }
+                        })
+                        return
+                    }
+                }
+                callback(new Error('no dapp for current platform'))
+            }
+        })
+    }
 }
 
 

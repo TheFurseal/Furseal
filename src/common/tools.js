@@ -16,6 +16,60 @@ const base58 = require('bs58')
 
 
 module.exports = {
+    privateEncrypt: (prKey,data) => {
+        if(typeof(data) != 'string'){
+            data = JSON.stringify(data)
+        }
+        var enBuf = null
+        for(var i = 0; i< data.length; i+=500){
+            var len = 500
+            if(i+len > data.length){
+                len = data.length - i
+            }
+            var subStr = data.substr(i,len)
+            var tmp = cryptoOrigin.privateEncrypt(
+                {
+                    key:prKey,
+                    padding: cryptoOrigin.constants.RSA_PKCS1_PADDING
+                },
+                Buffer.from(subStr),
+            )
+            if(enBuf == null){
+                enBuf = tmp
+            }else{
+                enBuf = Buffer.concat([enBuf,tmp])
+            }
+        }
+        return enBuf
+    },
+    publicDecrypt: (puKey,data) => {
+        if(typeof(data) == 'string'){
+            data = Buffer.from(data)
+        }
+        var protectedTmp = null
+        for(var i=0;i<data.length;i+=512){
+            var len = 512
+            if(i+len > data.length){
+                len = data.length - i
+            }
+            var subBuffer = Buffer.alloc(len)
+            data.copy(subBuffer,0,i,i+len)
+            var tmp = cryptoOrigin.publicDecrypt(
+                {
+                    key:puKey,
+                    passphrase:'top secret',
+                    padding: cryptoOrigin.constants.RSA_PKCS1_PADDING
+                },
+                subBuffer
+            )
+            if(protectedTmp == null){
+                protectedTmp = tmp
+            }else{
+                protectedTmp = Buffer.concat([protectedTmp,tmp])
+            }
+        }
+        return protectedTmp
+    },
     base58: base58,
     fixPath: (path) => {
         return path.replace(/\\/g,'/')
