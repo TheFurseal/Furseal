@@ -210,7 +210,7 @@ class StoreCli{
                         
                         postData.key = res.key
                         postData.status = 'inactive'
-                        db.put(postData.setName,postData,(err) => {
+                        db.put(postData.setName,JSON.stringify(postData),(err) => {
                             if(err){
                                 console.error(err)
                             }
@@ -262,7 +262,7 @@ class StoreCli{
                             console.error(err)
                         }else{
                             debug('Download '+file.path+' to '+targetPath)
-                            db.put(tmpRecive.unprotected.appSet,res,(err) => {
+                            db.put(tmpRecive.unprotected.appSet,value,(err) => {
                                 if(err){
                                     console.error(err)
                                 }
@@ -297,7 +297,7 @@ class StoreCli{
             debug(res)
             if(res.error == null){
 
-                db.put(res.setName,res,(err) => {
+                db.put(res.setName,JSON.stringify(res),(err) => {
                     if(err){
                         console.error(err)
                     }

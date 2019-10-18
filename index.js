@@ -158,6 +158,7 @@ class Furseal{
             dbW.getAll(function(data){
                 var dataWrap = {};
                 dataWrap.workList = data;
+                
                 dataWrap.nodeNumber = '50';
                 dataWrap.taskNumber = '50000';
                 dataWrap.avgTime = '180';
@@ -172,7 +173,7 @@ class Furseal{
             if(typeof(obj) == 'string'){
                 obj = JSON.parse(obj)
             }
-            obj.repoPath = appRepository
+            obj.repoPath = appPathReg
             appManager.setsRegister.storeCli.upload(obj)
         })
 
@@ -190,7 +191,13 @@ class Furseal{
                 var infos = []
                 for(var i=0;i<data2.length;i++){
                 
-                    var tmp = data2[i]
+                    var tmp;
+                    if(typeof(data2[i].value) == 'string'){
+                        tmp = JSON.parse(data2[i].value)   
+                    }else{
+                        tmp = data2[i].value
+                    }
+                
                     if(tmp.workName == data){
 
                         var blockStatus = {}
@@ -240,16 +247,26 @@ class Furseal{
                             if(err){
                                 console.error('ERROR: ',err);
                             }
-                            var pm = new ProgressManager(parseInt(indexs[0]),total,value2.unprotected.progress);
+                            var valueObj;
+                            if(typeof(value2) == 'string'){
+                                valueObj = JSON.parse(value2);
+                            }else{
+                                valueObj = value2;
+                            }
+                        
+                            var pm = new ProgressManager(parseInt(indexs[0]),total,valueObj.unprotected.progress);
+                        
                             pm.updateProgressWithIndex(parseInt(index[1]),parseInt(index[0]),false);
-                            value2.unprotected.info.progress = pm.getProgress();
-                            value2.unprotected.progress = pm.mProgress;
-                            dbW.put(value2.workName,value2,(err) => {
+                        
+                            valueObj.unprotected.info.progress = pm.getProgress();
+                            valueObj.unprotected.progress = pm.mProgress;
+                            dbW.put(valueObj.workName,valueObj,(err) => {
                                 if(err){
                                     console.error('ERROR: ',err);
                                 }
                             })
                         })
+
                         value.unprotected.status = 'init'
                         var date = new Date()
                         value.unprotected.info.startTime = date.valueOf()
@@ -258,11 +275,15 @@ class Furseal{
                                 console.error(err)
                             }
                         })
+
                     }else{
                         debug('Can not resend block '+tmp.unprotected.blockName+' with '+tmp.unprotected.status)
                     }
+
                 }
             })
+
+        
         })
 
         ipcManager.addServerListenner('getBlockInfo',(data,socket) => {
@@ -288,6 +309,7 @@ class Furseal{
                 for(var i=0;i<data2.length;i++){
                     var tmp = data2[i];
                     if(tmp.workName == data){
+                    
                         dbB.del(tmp.unprotected.blockName,(err) => {
                             if(err){
                                 console.error(err);
@@ -307,6 +329,9 @@ class Furseal{
                     console.error(err)
                     return
                 }else{
+                    if(typeof(value) == 'string'){
+                        value = JSON.parse(value)
+                    }
                     //reset db
                     value.status = data.status
                     dbA.put(value.setName,value,(err) => {
@@ -326,13 +351,10 @@ class Furseal{
         })
 
         ipcManager.addServerListenner('updateActiveDividor',(data,socket) => {
-            debug('excute updateActiveDividor')
             dbA.getAllValue((value) => {
                 var retTmp = []
-                for(var i=0;i<value.length;i++){
-                    var element = value[i]
+                value.forEach(element => {
                     var ret = {}
-                    console.log(element)
                     if(element == null || element.apps == null || element.apps.dividor == null){
                         return
                     }
@@ -340,27 +362,41 @@ class Furseal{
                     ret.dividorName = element.apps.dividor.name
                     ret.status = element.status
                     retTmp.push(ret)
-                }
+
+                })
                 ipcManager.serverEmit('updateActiveDividor',retTmp)
+            
             })
         })
 
         ipcManager.addServerListenner('getAppSet',(data,socket) => {
-            appManager.getAppSet(data,(value) => {     
-                dbA.getAllValue((value2) => {
+            appManager.getAppSet(data,(value) => {
+                        
+                dbA.getAll((value2) => {
+                    
                     var retTmp = []
                     value2.forEach(element => {
+                        var obj
+                        if(typeof(element) == 'string'){
+                            obj = JSON.parse(element)
+                        }else{
+                            obj = element
+                        }
+                        
                         var ret = {}
-                        if(element.apps.dividor == null){
+                        var vObj = JSON.parse(obj.value)
+                    
+                        if(vObj.apps.dividor == null){
                             return
                         }
-                        ret.setName = element.setName
-                        ret.dividorName = element.apps.dividor.name
+                        ret.setName = vObj.setName
+                        ret.dividorName = vObj.apps.dividor.name
                         ret.status = 'active'
                         retTmp.push(ret)
                     })
                     ipcManager.serverEmit('updateActiveDividor',retTmp)
                 })
+
             })
         })
 
