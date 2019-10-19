@@ -26,31 +26,22 @@ class HttpClient{
               'Content-Length': data.length
             }
         }
-        debug('start http access')
         const req = http.request(options,function(res){
             var retData = '';
             res.on('data',function(d){
                retData+=d;
-               debug('data come !')
             });
             res.on('error',function(error){
                 if(callback != null)callback(null)
                 console.error(error);
             });
             res.on('end',function(){
-              
                 if(callback != null) callback(retData)
-
-                debug('access end')
             })
             res.on('close',function(){
-              
-                debug('access closed')
             })
 
         });
-
-        
         req.write(data);
         req.end();
 

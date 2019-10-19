@@ -255,13 +255,13 @@ class StoreCli{
                 }else{
                     var targetPath = appRepoTmp+'/'+res.apps.dapp[0].name
                     res.apps.dapp[0].path = targetPath
-                    var inBuffer = Tools.decompressionBuffer(file.content)
+                    var inBuffer = Tools.decompressionBuffer(files[0].content)
                     fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
                         // throws an error, you could also catch it here
                         if(err){
                             console.error(err)
                         }else{
-                            debug('Download '+file.path+' to '+targetPath)
+                            debug('Download '+files[0].path+' to '+targetPath)
                             db.put(tmpRecive.unprotected.appSet,value,(err) => {
                                 if(err){
                                     console.error(err)

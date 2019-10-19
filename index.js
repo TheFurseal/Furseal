@@ -712,7 +712,7 @@ class Furseal{
                                     p.push(JSON.stringify(tmp));    
                                     // start data record
                                     tmp.unprotected.status = 'processing';
-                                    tmp.unprotected.slave = element.id.toB58String()
+                                    tmp.unprotected.slave = peerID.id.toB58String()
                                     var date = new Date()
                                     tmp.unprotected.info.startTime = date.valueOf()
                                     dbB.update(tmp.unprotected.blockName,tmp,(err) => {
@@ -732,6 +732,7 @@ class Furseal{
                                 }else{
                                     p2pNode.libp2p.hangUp(peerID,(err) => {
                                         debug('close connection to '+peerID.id.toB58String())
+                                        debug(data)
                                     })
                                 }
                                 
@@ -824,7 +825,7 @@ class Furseal{
                         data = JSON.parse(data)
                     }
                     eventManager.emit('reportIn',data)
-                    removeElement(pBlocked,data.unprotected.owner)
+                    removeElement(pBlocked,data.unprotected.slave)
                 },function(err){
                     if(err)console.error(err)
                 })

@@ -15,9 +15,6 @@ const stage = {
     'login':0x2
 }
 
-var isLogin = false
-var moduleIsReady = false
-
 class DeviceState{
     constructor(){
         this.mainState = 'init'
