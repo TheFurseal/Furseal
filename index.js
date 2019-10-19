@@ -863,17 +863,19 @@ class Furseal{
             devStat.update('standby')
         }
         setInterval(() => {
-            var peers = p2pNode._peerInfoBook.getAllArray()
-            peers.forEach((element) => {
-                var id = element.id.toB58String()
-                if(pBlocked.indexOf(id) >= 0){
-                    // already have job
-                }else{
-                    pBlocked.push(id)
-                    debug('demand to '+id)
-                    eventManager.emit('demand',element)
-                }
-            })
+            if(bIndexes.length){
+                var peers = p2pNode._peerInfoBook.getAllArray()
+                peers.forEach((element) => {
+                    var id = element.id.toB58String()
+                    if(pBlocked.indexOf(id) >= 0){
+                        // already have job
+                    }else{
+                        pBlocked.push(id)
+                        debug('demand to '+id)
+                        eventManager.emit('demand',element)
+                    }
+                })
+            }
         }, 500);
     }
 
