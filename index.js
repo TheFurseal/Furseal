@@ -48,6 +48,9 @@ var wIndexes = []
 //block indexs
 var bIndexes = []
 
+//blocked peers
+var pBlocked = ['QmUoL3udUypkWjGzap46sw3AqxnBN6496xHS3YZ8NbnsLN']
+
 //extranal configure
 var configure
 
@@ -59,7 +62,7 @@ var appRepository
 //server infomations
 var urlBase = 'peer1.cotnetwork.com'
 var optAuth = {}
-optAuth.port = 7333;
+optAuth.port = 7333
 optAuth.hostname = urlBase
 optAuth.path = '/dealRequest'
 optAuth.method = 'POST'
@@ -67,6 +70,21 @@ optAuth.method = 'POST'
 const httpClinet = new client()
 var ipcManager = new IPCManager()
 
+function removeElement(array, elem) {
+    if(array == null){
+        console.error('Arrary is empty')
+        return
+    }
+    if(elem == null){
+        console.error('Element is empty')
+        return
+    }
+    var index = array.indexOf(elem);
+    while(index >= 0){
+        array.splice(index, 1)
+        index = array.indexOf(elem)
+    }
+}
 
 class Furseal{
     constructor(homePath){
@@ -664,14 +682,13 @@ class Furseal{
                     }
                 })
             })
-            
-
         })
 
         //      block events
         eventManager.registEvent('blockIn',(data) => {
             data.unprotected.status = 'init'
             dbB.put(data.unprotected.blockName,data)
+            bIndexes.push(data.unprotected.blockName)
         })
 
         //controll events
@@ -681,7 +698,7 @@ class Furseal{
                 bIndexes.splice(0,1)
                 p2pNode.libp2p.dialProtocol(peerID,'/cot/workrequest/1.0.0',(err,conn) => {
                     if(err){
-                        console.error(err)
+                        console.warn(err)
                     }else{
                         pull(
                             conn,
@@ -807,6 +824,7 @@ class Furseal{
                         data = JSON.parse(data)
                     }
                     eventManager.emit('reportIn',data)
+                    removeElement(pBlocked,data.unprotected.owner)
                 },function(err){
                     if(err)console.error(err)
                 })
@@ -832,7 +850,6 @@ class Furseal{
                         // TODO: stop runing work
                     }
                 },function(err){
-
                     if(err)console.error(err)
                 })
             )
@@ -840,7 +857,24 @@ class Furseal{
     }
 
     process(){
-        devStat.update('standby')
+        if(bIndexes.length){
+
+        }else{
+            devStat.update('standby')
+        }
+        setInterval(() => {
+            var peers = p2pNode._peerInfoBook.getAllArray()
+            peers.forEach((element) => {
+                var id = element.id.toB58String()
+                if(pBlocked.indexOf(id) >= 0){
+                    // already have job
+                }else{
+                    pBlocked.push(id)
+                    debug('demand to '+id)
+                    eventManager.emit('demand',element)
+                }
+            })
+        }, 500);
     }
 
     register(data){
@@ -850,7 +884,6 @@ class Furseal{
         optAuth.path = '/userRegister'
         optAuth.method = 'POST';
         httpClinet.access(JSON.stringify(data),optAuth,function(res){ 
-       
             res = JSON.parse(res);
             ipcManager.serverEmit('register',res)
         });
