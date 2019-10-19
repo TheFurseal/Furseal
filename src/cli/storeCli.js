@@ -262,7 +262,7 @@ class StoreCli{
                             console.error(err)
                         }else{
                             debug('Download '+files[0].path+' to '+targetPath)
-                            db.put(tmpRecive.unprotected.appSet,value,(err) => {
+                            db.put(setName,res,(err) => {
                                 if(err){
                                     console.error(err)
                                 }
