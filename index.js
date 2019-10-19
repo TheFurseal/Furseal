@@ -618,12 +618,13 @@ class Furseal{
         eventManager.registEvent('startCompute',(data) => {
             devStat.update('busy')
             debug('Confirm block '+data.unprotected.blockName)
-            var bstr =  base58.decode(conf.config.goldenKey)
-            var protectBuffer = inBuffer.protected
+            var bstr =  base58.decode(configure.config.goldenKey)
+            var protectBuffer = data.protected
             protectBuffer = base58.decode(protectBuffer)
             var protectedTmp = Tools.publicDecrypt(bstr,protectBuffer)
             protectedTmp = protectedTmp.toString()
             data.protected = JSON.parse(protectedTmp)
+            console.log(data)
             optAuth.path = '/confirmWork'
             optAuth.method = 'POST'
             var protectKey
@@ -635,16 +636,16 @@ class Furseal{
                 }
                 protectKey = res.key
                 //download input files
-                var targetPath = inputFileTmp+'/'+data.unprotected.blockName+'_'+data.unprotected.protected.inputFiles[0].fileName
-                debug('start to download '+ata.unprotected.protected.inputFiles[0].fileName+' to '+targetPath)
-                p2pNode.get(data.unprotected.protected.inputFiles[0].key,(err,files) => {
+                var targetPath = inputFileTmp+'/'+data.unprotected.blockName+'_'+data.protected.inputFiles[0].fileName
+                debug('start to download '+data.protected.inputFiles[0].fileName+' to '+targetPath)
+                p2pNode.get(data.protected.inputFiles[0].key,(err,files) => {
                     if(err){
 
                     }else{
                         var outBuffer = Tools.decompressionBuffer(files[0].content)
                         fs.writeFileSync(targetPath,outBuffer)
-                        gcManager.register(targetPath,inputBuffer.workName+'_close')
-                        protectInfo.inputFiles[index].path = targetPath
+                        gcManager.register(targetPath,data.workName+'_close')
+                        data.protected.inputFiles[0].path = targetPath
                         debug('download finish')
                         appManager.launchDapp(data.unprotected.appSet,null,data,(ret) => {
                             //compressing buffer

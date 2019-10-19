@@ -10,6 +10,7 @@ const debug = require('debug')('common:tools')
 // const lz4 = require('lz4')
 const lz4 = require('lz4js')
 const base58 = require('bs58')
+const crypto = require('crypto')
 
 
 
@@ -27,10 +28,10 @@ module.exports = {
                 len = data.length - i
             }
             var subStr = data.substr(i,len)
-            var tmp = cryptoOrigin.privateEncrypt(
+            var tmp = crypto.privateEncrypt(
                 {
                     key:prKey,
-                    padding: cryptoOrigin.constants.RSA_PKCS1_PADDING
+                    padding: crypto.constants.RSA_PKCS1_PADDING
                 },
                 Buffer.from(subStr),
             )
@@ -54,11 +55,11 @@ module.exports = {
             }
             var subBuffer = Buffer.alloc(len)
             data.copy(subBuffer,0,i,i+len)
-            var tmp = cryptoOrigin.publicDecrypt(
+            var tmp = crypto.publicDecrypt(
                 {
                     key:puKey,
                     passphrase:'top secret',
-                    padding: cryptoOrigin.constants.RSA_PKCS1_PADDING
+                    padding: crypto.constants.RSA_PKCS1_PADDING
                 },
                 subBuffer
             )
