@@ -369,10 +369,13 @@ class Furseal{
         })
 
         ipcManager.addServerListenner('updateActiveDividor',(data,socket) => {
+            debug('Do update active dividors')
             dbA.getAllValue((value) => {
                 var retTmp = []
-                value.forEach(element => {
+                for(var i=0;i<value.length;i++){
+                    debug(value[i])
                     var ret = {}
+                    var element = value[i]
                     if(element == null || element.apps == null || element.apps.dividor == null){
                         return
                     }
@@ -380,8 +383,8 @@ class Furseal{
                     ret.dividorName = element.apps.dividor.name
                     ret.status = element.status
                     retTmp.push(ret)
-
-                })
+                }
+                debug(retTmp)
                 ipcManager.serverEmit('updateActiveDividor',retTmp)
             
             })
@@ -869,8 +872,8 @@ class Furseal{
                 var peers = p2pNode._peerInfoBook.getAllArray()
                 peers.forEach((element) => {
                     var id = element.id.toB58String()
-                    if(pBlocked.indexOf(id) >= 0){
-                        // already have job
+                    if(pBlocked.indexOf(id) >= 0 || id == p2pNode._peerInfo.id.toB58String()){
+                        // already have job or it's node self
                     }else{
                         pBlocked.push(id)
                         debug('demand to '+id)

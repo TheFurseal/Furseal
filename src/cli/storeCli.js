@@ -210,7 +210,7 @@ class StoreCli{
                         
                         postData.key = res.key
                         postData.status = 'inactive'
-                        db.put(postData.setName,JSON.stringify(postData),(err) => {
+                        db.put(postData.setName,postData,(err) => {
                             if(err){
                                 console.error(err)
                             }

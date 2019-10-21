@@ -48,7 +48,7 @@ class IPCManager{
                 IPC.server.on(
                     'socket.disconnected',
                     function(socket,destroyedSocketID){
-                        debug('client disconnected')
+                        debug('Client disconnected')
                         parent.clientConnected = false
 
                     }
@@ -88,22 +88,23 @@ class IPCManager{
                     'connect',
                     function(){
                         parent.serverConnected = true
-                        
+                        debug('Connect to '+serverID)
 
                     }
                 )
                 IPC.of[serverID].on(
                     'disconnect',
                     function(){
+                        if(parent.serverConnected){
+                            debug('Disconnected from server '+serverID)
+                        }
                         parent.serverConnected = false
-                        console.log('disconnected from server '+serverID)
-
                     }
                 )
                 IPC.of[serverID].on(
                     'error',
                     function(err){
-                        console.log(err)
+                       // console.log(err)
                     }
                 )
                 
