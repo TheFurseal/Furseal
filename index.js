@@ -533,6 +533,7 @@ class Furseal{
                     pull(p,conn)
                     p.push(data)
                     devStat.update('standby')
+                    p.end()
                 }
             })
         })
@@ -652,6 +653,7 @@ class Furseal{
                         debug('download finish')
                         appManager.launchDapp(data.unprotected.appSet,null,data,(ret) => {
                             //compressing buffer
+                            appManager.killDapp(data.unprotected.appSet)
                             var retBk = ret
                             var resultBuffer = fs.readFileSync(Tools.fixPath(retBk.protected.outputFiles[0].path))
                             resultBuffer = Tools.compressionBuffer(resultBuffer)
@@ -715,7 +717,8 @@ class Furseal{
                                 if(data == 'idel'){
                                     var p = Pushable();
                                     pull(p,conn);
-                                    p.push(JSON.stringify(tmp));    
+                                    p.push(JSON.stringify(tmp))
+                                    p.end() 
                                     // start data record
                                     tmp.unprotected.status = 'processing';
                                     tmp.unprotected.slave = peerID.id.toB58String()

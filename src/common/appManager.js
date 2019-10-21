@@ -240,7 +240,7 @@ class AppManager{
 
         if(!isNaN(pid)){
             Tools.killProcess(pid)
-            debug('Kill dividor process '+pid)
+            debug('Kill dapp process '+pid)
             this.setsRegister[setName].dapp = null
         }else{
             debug('Not a pid number: '+pid)
