@@ -523,15 +523,15 @@ class Furseal{
 
         eventManager.registEvent('finishCompute',(data) => {
             devStat.update('reporting')
-            var peerID = PeerID.createFromB58String(data.unprotected.owner)
-            p2pNode.libp2p.dialProtocol(peerID,'/cot/workreport/1.0.0',(err,conn) => {
+            debug('Report result to owner '+data.unprotected.owner)
+            var pID = PeerID.createFromB58String(data.unprotected.owner)
+            p2pNode.libp2p.dialProtocol(pID,'/cot/workreport/1.0.0',(err,conn) => {
                 if(err){
                     console.error(err)
                 }else{
                     var p = Pushable()
                     pull(p,conn)
                     p.push(data)
-                    debug('Report result to owner')
                     devStat.update('standby')
                 }
             })
@@ -652,36 +652,38 @@ class Furseal{
                         debug('download finish')
                         appManager.launchDapp(data.unprotected.appSet,null,data,(ret) => {
                             //compressing buffer
-                            var resultBuffer = fs.readFileSync(Tools.fixPath(ret.protected.outputFiles[0].path))
+                            var retBk = ret
+                            var resultBuffer = fs.readFileSync(Tools.fixPath(retBk.protected.outputFiles[0].path))
                             resultBuffer = Tools.compressionBuffer(resultBuffer)
                             //upload result file
                             p2pNode.add(resultBuffer,{ recursive: false , ignore: ['.DS_Store']},(err,res) => {
                                 if(err){
                                     console.error(err)
+                                    return
                                 }
                                 res = res[0]
-                                fs.unlink(element.path,(err) => {
+                                fs.unlink(retBk.protected.outputFiles[0].path,(err) => {
                                     if(err){
                                         console.error(err)
                                     }
                                 })
-                                ret.protected.outputFiles[0].path = ''
-                                ret.protected.outputFiles[0].hash = res.hash
+                                retBk.protected.outputFiles[0].path = ''
+                                retBk.protected.outputFiles[0].hash = res.hash
+                                //encrypto block protected infomation
+                                var keyBack = base58.decode(protectKey);
+                                keyBack = keyBack.toString()
+                                var protecStr = JSON.stringify(retBk.protected)
+                                var gcArray = []
+                                for(var p=0;p<retBk.protected.outputFiles.length;p++){
+                                    gcArray.push(retBk.protected.outputFiles[p].path)
+                                }
+                                gcManager.register(gcArray,retBk.workName+'_close')
+                                var enBuf = Tools.privateEncrypt(keyBack,protecStr)
+                                enBuf = base58.encode(enBuf)
+                                enBuf = enBuf.toString()
+                                retBk.protected = enBuf
+                                eventManager.emit('finishCompute',retBk)
                             })
-                            //encrypto block protected infomation
-                            var keyBack = base58.decode(protectKey);
-                            keyBack = keyBack.toString()
-                            var protecStr = JSON.stringify(ret.protected)
-                            var gcArray = []
-                            for(var p=0;p<ret.protected.outputFiles.length;p++){
-                                gcArray.push(ret.protected.outputFiles[p].path)
-                            }
-                            gcManager.register(gcArray,ret.workName+'_close')
-                            var enBuf = Tools.privateEncrypt(keyBack,protecStr)
-                            enBuf = base58.encode(enBuf)
-                            enBuf = enBuf.toString()
-                            ret.protected = enBuf
-                            eventManager.emit('finishCompute',ret)
                         })
                     }
                 })

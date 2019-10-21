@@ -19,10 +19,6 @@ const bootstrapers = [
     "/ip4/101.206.123.159/tcp/4001/ipfs/QmUs7k1kLkB3zSiWUQGEXDZD8RyRHu9JDeYJhQmBxfnyD1"
   ]
 
-
-
-
-
 module.exports.createP2PNode = async (home) => {
   // const webrtcStar = new WebrtcStar({ wrtc: wrtc })
   const webrtcStar = new WebrtcStar({ wrtc: testrtc })
@@ -102,9 +98,6 @@ module.exports.createP2PNode = async (home) => {
                   enabled: true,
                    active: true 
                 } 
-              },
-              EXPERIMENTAL: {
-                pubsub: false
               }
             },
             connectionManager: {

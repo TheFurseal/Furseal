@@ -43,6 +43,7 @@ class DeviceState{
             return
         }
         this.mainState = stat
+        debug('Device update to '+stat)
     }
 
     stageUp(stageName){

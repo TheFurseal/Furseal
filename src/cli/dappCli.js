@@ -25,7 +25,7 @@ class DAppCli{
 
         this.ipcManager.createClient({})
         this.ipcManager.addClientListenner('result',(data) => {
-            debug('revice result',data)
+            //debug('revice result',data)
             var tmpObj 
             if(typeof(data) == 'string'){
                 tmpObj = JSON.parse(data)
