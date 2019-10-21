@@ -179,10 +179,10 @@ class DividorCli{
                             clearInterval(handler)
                             if(workInRegister[workInfo.workName].current == 0){
                                 debug('register work')
-                                workInfo.unprotected.ownner = owner
+                                workInfo.unprotected.owner = owner
                                 registerBlock(workInfo,true)
                             }else{
-                                workInfo.unprotected.ownner = owner
+                                workInfo.unprotected.owner = owner
                                 debug('register block')
                                 registerBlock(workInfo)
                             }
@@ -215,7 +215,7 @@ class DividorCli{
                     return;
                 }else{
                     
-                    if(resObj.unprotected.ownner == null){
+                    if(resObj.unprotected.owner == null){
                         debug('UN_REGISTED_ACCOUNT!');
                         return;
                     }
