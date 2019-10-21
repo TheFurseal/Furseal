@@ -191,7 +191,7 @@ class Furseal{
             if(typeof(obj) == 'string'){
                 obj = JSON.parse(obj)
             }
-            obj.repoPath = appPathReg
+            obj.repoPath = appRepository
             appManager.setsRegister.storeCli.upload(obj)
         })
 
@@ -260,7 +260,7 @@ class Furseal{
                         console.error('bad block index');
                     }
                     
-                    if(value.unprotected.status == 'working'){
+                    if(value.unprotected.status == 'processing'){
                         dbW.get(value.workName,(err,value2) => {
                             if(err){
                                 console.error('ERROR: ',err);
@@ -295,7 +295,7 @@ class Furseal{
                         })
 
                     }else{
-                        debug('Can not resend block '+tmp.unprotected.blockName+' with '+tmp.unprotected.status)
+                        debug('Can not resend block '+value.unprotected.blockName+' with '+value.unprotected.status)
                     }
 
                 }
@@ -724,7 +724,7 @@ class Furseal{
                                             var blockStatus = {}
                                             blockStatus.workName = tmp.workName
                                             blockStatus.index = tmp.unprotected.block.index
-                                            blockStatus.status = 'working'
+                                            blockStatus.status = 'processing'
                                             var infos = []
                                             infos.push(blockStatus)
                                             ipcManager.serverEmit('updateBlockStatus',infos)
