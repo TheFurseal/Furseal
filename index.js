@@ -739,10 +739,10 @@ class Furseal{
                                         }
                                     });
                                 }else{
-                                    p2pNode.libp2p.hangUp(peerID,(err) => {
-                                        debug('close connection to '+peerID.id.toB58String())
-                                        debug(data)
-                                    })
+                                    // p2pNode.libp2p.hangUp(peerID,(err) => {
+                                    //     debug('close connection to '+peerID.id.toB58String())
+                                    //     debug(data)
+                                    // })
                                 }
                                 
                             },function (err){
@@ -761,6 +761,7 @@ class Furseal{
                 p.push('idel')
             }else{
                 p.push('busy')
+                p.end()
             }
             pull(
                 conn,
