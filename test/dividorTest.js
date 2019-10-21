@@ -40,7 +40,7 @@ function constrcutTemplate(){
     startTime = startTime.valueOf();
     input.unprotected.info.startTime = startTime;
     input.unprotected.info.progress = 0;
-    input.unprotected.ownner = 'QmWQiBanwUSrFCmoeD9DgR6xcqNUYZ4ozZiUvKwFArCVj6'
+    input.unprotected.owner = 'QmWQiBanwUSrFCmoeD9DgR6xcqNUYZ4ozZiUvKwFArCVj6'
     ipcManager.serverEmit('request',JSON.stringify(input))
 }
 

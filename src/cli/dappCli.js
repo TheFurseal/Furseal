@@ -33,7 +33,7 @@ class DAppCli{
                 tmpObj = data
             }
             if(pa.callback[tmpObj.unprotected.blockName] != null){
-                pa.callback[tmpObj.unprotected.blockName](data)
+                pa.callback[tmpObj.unprotected.blockName](tmpObj)
             }
         })
 

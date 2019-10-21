@@ -673,12 +673,12 @@ class Furseal{
                             for(var p=0;p<ret.protected.outputFiles.length;p++){
                                 gcArray.push(ret.protected.outputFiles[p].path)
                             }
-                            gcManager.register(gcArray,workBufr.workName+'_close')
+                            gcManager.register(gcArray,ret.workName+'_close')
                             var enBuf = Tools.privateEncrypt(keyBack,protecStr)
                             enBuf = base58.encode(enBuf)
                             enBuf = enBuf.toString()
-                            data.protected = enBuf
-                            eventManager.emit('finishCompute',data)
+                            ret.protected = enBuf
+                            eventManager.emit('finishCompute',ret)
                         })
                     }
                 })
