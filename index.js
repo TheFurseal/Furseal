@@ -478,6 +478,7 @@ class Furseal{
             }
             dbB.getAllValue((data2) => {
                 data2.forEach(element => {
+                    debug(element)
                     if(element.unprotected.status == 'init'){
                         bIndexes.push(element)
                         element.unprotected.status = 'processing'
@@ -620,19 +621,19 @@ class Furseal{
                                 }
                             })
                             gcManager.register(targetPath,data.workName+'_close')
-                            appManager.launchValidator(data.unprotected.appSet,data,(data) => {
-                                if(data.protected.inputFiles[0].path != ''){
-                                    debug('block '+data.unprotected.blockName+' is valid')
-                                    dbB.update(data.unprotected.blockName,JSON.stringify(data),(err) => {
+                            appManager.launchValidator(data.unprotected.appSet,data,(ret) => {
+                                if(ret.protected.inputFiles[0].path != ''){
+                                    debug('block '+ret.unprotected.blockName+' is valid')
+                                    dbB.update(ret.unprotected.blockName,ret,(err) => {
                                         if(err){
                                             console.error(err)
                                         }else{
-                                            debug(data.unprotected.blockName+'  upate to '+data.unprotected.status+'!!!!!!!!!')
+                                            debug(ret.unprotected.blockName+'  upate to '+ret.unprotected.status+'!!!!!!!!!')
                                         }
                                     })
                                 }else{
                                     debug('result invalid, start to resend')
-                                    dbB.get(data.unprotected.blockName,(err,value) => {
+                                    dbB.get(ret.unprotected.blockName,(err,value) => {
                                         if(err){
                                             console.error(err)
                                         }else{
