@@ -13,7 +13,7 @@ class EventsManager{
     }
 
     emit(event,data){
-        debug('Event '+event+' emited')
+        //debug('Event '+event+' emited')
         this.emitter.emit(event,data)
     }
 }

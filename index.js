@@ -18,12 +18,14 @@ const Tools = require('./src/common/tools.js')
 const process = require('process')
 const EventsManager = require('./src/common/eventsManager.js')
 const DeviceState = require('./src/common/deviceState.js')
+const NodeManager = require('./src/common/nodeManager.js')
 
 // data base handlers
 var dbW     //work
 var dbB     //block
 var dbA     //application sets
 var dbG     //gc
+var dbR     //result data base
 
 //device state
 var devStat
@@ -49,10 +51,13 @@ var wIndexes = []
 var bIndexes = []
 
 //blocked peers
-var pBlocked = ['QmUoL3udUypkWjGzap46sw3AqxnBN6496xHS3YZ8NbnsLN']
+var pFaildCount = {}
 
 //extranal configure
 var configure
+
+//node manager
+var nodeManager
 
 var inputFileTmp
 var outputFileTmp
@@ -133,12 +138,12 @@ class Furseal{
         dbB = new DBManager(homePath+'/data/block')
         dbA = new DBManager(homePath+'/data/appData')
         dbG = new DBManager(homePath+'/data/gc')
+        dbR = new DBManager(homePath+'/data/result')
         configure = new Configure(homePath)
         devStat = new DeviceState()
         eventManager = new EventsManager()
         Tools.setEnv('COT_DATA_PATH',homePath)
-
-
+        nodeManager = new NodeManager()
         // tool function 
         function globalGC(workName){
             gcManager.clearByEvent(workName+'_close')
@@ -488,6 +493,8 @@ class Furseal{
                     dbW.put(element.workName,element)
                 }else if(element.unprotected.status == 'processing'){
                     addElement(wIndexes,element.workName)
+                }else if(element.unprotected.status == 'assiming'){
+                    // TODO
                 }else{
                     debug(element)
                 }
@@ -496,10 +503,13 @@ class Furseal{
                 data2.forEach(element => {
                     if(element.unprotected.status == 'init'){
                         addElement(bIndexes,element.unprotected.blockName)
-                    }else if(element.unprotected.status == 'preDone'){
-                        eventManager.emit('validateRequest',element)
                     }else if(element.unprotected.status == 'validating'){
-                        eventManager.emit('validateRequest',element)
+                        element.unprotected.status = 'preDone'
+                        dbB.update(element.unprotected.blockName,element,(err) => {
+                            if(err){
+                                console.error(err)
+                            }
+                        })
                     }else{
 
                     }
@@ -554,21 +564,25 @@ class Furseal{
         })
 
         eventManager.registEvent('reportIn',(data) => {
-            
+            debug('report coming')
             dbB.get(data.unprotected.blockName,(err,value) => {
                 if(err){
-
+                    console.error(err)
                 }else{
                     var date = new Date()
                     data.unprotected.info.timeCost = date.valueOf() - value.unprotected.info.startTime
                     value.unprotected.info.timeCost = data.unprotected.info.timeCost
                     value.unprotected.status = 'preDone'
-                    dbB.put(data.unprotected.blockName,value,(err) => {
+                    dbB.put(value.unprotected.blockName,value,(err) => {
                         if(err){
                             console.error(err)
                         }
                     })
-                    eventManager.emit('startValidate',data)
+                    dbR.put(data.unprotected.blockName,data,(err) => {
+                        if(err){
+                            console.error(err)
+                        }
+                    })
                 }
             })
         })
@@ -588,12 +602,13 @@ class Furseal{
                 if(res.error){
                     console.error('resolveResult',res);
                 }else{
-                    var keyBack = base58.decode(res.key);
-                        keyBack = keyBack.toString();
+                    var keyBack = base58.decode(res.key)
+                    keyBack = keyBack.toString()
+                    debug('\n'+keyBack)
                     var dataBuffer = base58.decode(data.protected);
                     var protectedTmp =  Tools.publicDecrypt(keyBack,dataBuffer)
                     protectedTmp = protectedTmp.toString()
-                    debug('reported result:\n',postPair.blockName);
+                    debug('reported result:'+postPair.blockName);
                     //update work progress
                     data.protected = JSON.parse(protectedTmp)
                     var infos = []
@@ -618,7 +633,7 @@ class Furseal{
                             })
                         }
                     })
-                    data.unprotected.status = 'validating'
+                   
                     //download result files
                     p2pNode.get(data.protected.outputFiles[0].hash,(err,files) => {
                         if(err){
@@ -689,7 +704,6 @@ class Furseal{
                     debug('Confirm block failed')
                     return
                 }
-                protectKey = res.key
                 //download input files
                 var targetPath = inputFileTmp+'/'+data.unprotected.blockName+'_'+data.protected.inputFiles[0].fileName
                 debug('start to download '+data.protected.inputFiles[0].fileName+' to '+targetPath)
@@ -709,21 +723,21 @@ class Furseal{
                             var resultBuffer = fs.readFileSync(Tools.fixPath(retBk.protected.outputFiles[0].path))
                             resultBuffer = Tools.compressionBuffer(resultBuffer)
                             //upload result file
-                            p2pNode.add(resultBuffer,{ recursive: false , ignore: ['.DS_Store']},(err,res) => {
+                            p2pNode.add(resultBuffer,{ recursive: false , ignore: ['.DS_Store']},(err,res2) => {
                                 if(err){
                                     console.error(err)
                                     return
                                 }
-                                res = res[0]
+                                res2 = res2[0]
                                 fs.unlink(retBk.protected.outputFiles[0].path,(err) => {
                                     if(err){
                                         console.error(err)
                                     }
                                 })
                                 retBk.protected.outputFiles[0].path = ''
-                                retBk.protected.outputFiles[0].hash = res.hash
+                                retBk.protected.outputFiles[0].hash = res2.hash
                                 //encrypto block protected infomation
-                                var keyBack = base58.decode(protectKey);
+                                var keyBack = base58.decode(res.key);
                                 keyBack = keyBack.toString()
                                 var protecStr = JSON.stringify(retBk.protected)
                                 var gcArray = []
@@ -771,7 +785,8 @@ class Furseal{
                         p2pNode.libp2p.dialProtocol(peerID,'/cot/workrequest/1.0.0',(err,conn) => {
                             if(err){
                                 console.warn(err)
-                                console.log(peerID.id.toB58String())
+                                var id = peerID.id.toB58String()
+                                nodeManager.check(id)
                             }else{
                                 pull(
                                     conn,
@@ -803,12 +818,12 @@ class Furseal{
                                                     ipcManager.serverEmit('updateBlockStatus',infos)
                                                 }
                                             })
-                                            addElement(pBlocked,val.unprotected.slave)
+                                            nodeManager.hardBlock(val.unprotected.slave)
                                         }else{
-                                            p2pNode.libp2p.hangUp(peerID,(err) => {
-                                                debug('close connection to '+peerID.id.toB58String())
-                                                debug(data)
-                                            })
+                                            // p2pNode.libp2p.hangUp(peerID,(err) => {
+                                            //     debug('close connection to '+peerID.id.toB58String())
+                                            //     debug(data)
+                                            // })
                                             addElement(bIndexes,val.unprotected.blockName)
                                         }
                                         
@@ -905,7 +920,7 @@ class Furseal{
                         data = JSON.parse(data)
                     }
                     eventManager.emit('reportIn',data)
-                    removeElement(pBlocked,data.unprotected.slave)
+                    nodeManager.hardUnBlock(data.unprotected.slave)
                 },function(err){
                     if(err)console.error(err)
                 })
@@ -948,41 +963,54 @@ class Furseal{
                 var peers = p2pNode._peerInfoBook.getAllArray()
                 peers.forEach((element) => {
                     var id = element.id.toB58String()
-                    if(pBlocked.indexOf(id) >= 0 || id == p2pNode._peerInfo.id.toB58String()){
+                    if(nodeManager.isBlock(id) || id == p2pNode._peerInfo.id.toB58String()){
                         // already have job or it's node self
                     }else{
                         eventManager.emit('demand',element)
                     }
                 })
             }else{
-                dbW.getAllValue((val) => {
-                    val.forEach(elem => {
-                        if(elem.unprotected.status == 'init'){
-                            addElement(wIndexes,elem.workName)
-                            elem.unprotected.status = 'processing'
-                            dbW.put(elem.workName,elem,(err) => {
+            }
+            dbW.getAllValue((val) => {
+                val.forEach(elem => {
+                    if(elem.unprotected.status == 'init'){
+                        addElement(wIndexes,elem.workName)
+                        elem.unprotected.status = 'processing'
+                        dbW.put(elem.workName,elem,(err) => {
+                            if(err){
+                                console.error(err)
+                            }
+                        })
+                    }
+                })
+            })
+            dbB.getAllValue((val) => {
+                val.forEach(elem => {
+                    if(wIndexes.indexOf(elem.workName) >= 0 && elem.unprotected.status == 'init'){
+                        addElement(bIndexes,elem.unprotected.blockName)
+                        dbB.put(elem.unprotected.blockName,elem,(err) => {
+                            if(err){
+                                console.log(err)
+                            }
+                        })
+                    }else if(elem.unprotected.status == 'preDone'){
+                        debug('Found preDone block')
+                        if(wIndexes.indexOf(elem.workName) >= 0 ){
+                            dbR.get(elem.unprotected.blockName,(err,value) => {
                                 if(err){
                                     console.error(err)
+                                }else{
+                                    debug('Start validate')
+                                    debug(value)
+                                    eventManager.emit('startValidate',value)
                                 }
                             })
                         }
-                    })
+                    }else{
+
+                    }
                 })
-                dbB.getAllValue((val) => {
-                    val.forEach(elem => {
-                        if(wIndexes.indexOf(elem.workName) >= 0 && elem.unprotected.status == 'init'){
-                            addElement(bIndexes,elem.unprotected.blockName)
-                            dbB.put(elem.unprotected.blockName,elem,(err) => {
-                                if(err){
-                                    console.log(err)
-                                }
-                            })
-                        }else if(elem.unprotected.status == 'preDone'){
-                            eventManager.emit('startValidate',elem)
-                        }
-                    })
-                })
-            }
+            })
         }, 3000);
     }
 
