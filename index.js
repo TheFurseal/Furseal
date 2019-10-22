@@ -595,7 +595,6 @@ class Furseal{
             postPair.blockName = data.unprotected.blockName;
             postPair.workName = data.workName;
             postPair.resolveKey = configure.decrypto(data.resolveKey)
-            debug(data)
             httpClinet.access(JSON.stringify(postPair),optAuth,function(res){
                 if(typeof(res) == 'string'){
                     res = JSON.parse(res);
@@ -605,7 +604,6 @@ class Furseal{
                 }else{
                     var keyBack = base58.decode(res.key)
                     keyBack = keyBack.toString()
-                    debug('\n'+keyBack)
                     var dataBuffer = base58.decode(data.protected);
                     var protectedTmp =  Tools.publicDecrypt(keyBack,dataBuffer)
                     protectedTmp = protectedTmp.toString()
@@ -695,10 +693,8 @@ class Furseal{
             var protectedTmp = Tools.publicDecrypt(bstr,protectBuffer)
             protectedTmp = protectedTmp.toString()
             data.protected = JSON.parse(protectedTmp)
-            console.log(data)
             optAuth.path = '/confirmWork'
             optAuth.method = 'POST'
-            var protectKey
             httpClinet.access(data.unprotected.blockName,optAuth,function(res){
                 res = JSON.parse(res);
                 if(res == null || res.key == null){

@@ -1,8 +1,6 @@
-var tool = require('../src/common/tools.js')
-var fs = require('fs')
+var str = 'asdfghjklaqwerty'
 
-var path1 = '/Users/John\\hello\\123'
-var path2 = '/Users/John/ello/456'
+var buf = Buffer.from(str)
 
-console.log(tool.fixPath(path1))
-console.log(tool.fixPath(path2))
+console.log(str.length)
+console.log(buf.length)
