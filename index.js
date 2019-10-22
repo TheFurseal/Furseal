@@ -595,6 +595,7 @@ class Furseal{
             postPair.blockName = data.unprotected.blockName;
             postPair.workName = data.workName;
             postPair.resolveKey = configure.decrypto(data.resolveKey)
+            debug(data)
             httpClinet.access(JSON.stringify(postPair),optAuth,function(res){
                 if(typeof(res) == 'string'){
                     res = JSON.parse(res);

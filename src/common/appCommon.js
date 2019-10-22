@@ -72,6 +72,7 @@ class AppCommon{
                             if(pid > 0){
                                 resetFunc(true,pa)
                                 callback(pid)
+                                pa.pid = pid
                                 // if(callback != null){
                                 //     callback(pid)
                                 // }
@@ -84,6 +85,7 @@ class AppCommon{
                                     if(err){
                                         console.error(err)
                                     }else{
+                                        pa.pid = value
                                         resetFunc(true,pa)
                                         debug(infoObj.name,'  launched!!')
                                         if(callback != null){
@@ -108,6 +110,9 @@ class AppCommon{
 
     stop(){
         var handler = this.hadler
+        if(pid >0){
+            Tool.killProcess(this.pid)
+        }
         clearInterval(handler)
     }
 

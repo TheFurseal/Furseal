@@ -427,9 +427,9 @@ module.exports = {
             });
             
             // 注册子进程关闭事件
-            // cmd.on('exit', function (code, signal) {
-            //     callback('Child progress exit with code: ' + code+' & signal: '+signal)
-            // });
+            cmd.on('exit', function (code, signal) {
+                callback(null,-1)
+            });
         }else if(Process.platform == 'darwin'){
             
             var cmd
@@ -451,9 +451,9 @@ module.exports = {
             });
             
             // // 注册子进程关闭事件
-            // cmd.on('exit', function (code, signal) {
-            //     callback('Child progress exit with code: ' + code+' & signal: '+signal)
-            // });
+            cmd.on('exit', function (code, signal) {
+                callback(null,-1)
+            });
            
         }
 
