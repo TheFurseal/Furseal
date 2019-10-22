@@ -531,7 +531,7 @@ class Furseal{
                 }else{
                     var p = Pushable()
                     pull(p,conn)
-                    p.push(data)
+                    p.push(JSON.stringify(data))
                     devStat.update('standby')
                     p.end()
                 }
