@@ -17,7 +17,7 @@ const crypto = require('crypto')
 
 
 module.exports = {
-    privateEncrypt: (prKey,data) => {
+    publicEncrypt: (pubKey,data) => {
         if(typeof(data) != 'string'){
             data = JSON.stringify(data)
         }
@@ -28,9 +28,9 @@ module.exports = {
                 len = data.length - i
             }
             var subStr = data.substr(i,len)
-            var tmp = crypto.privateEncrypt(
+            var tmp = crypto.publicEncrypt(
                 {
-                    key:prKey,
+                    key:pubKey,
                     padding: crypto.constants.RSA_PKCS1_PADDING
                 },
                 Buffer.from(subStr),
@@ -43,7 +43,7 @@ module.exports = {
         }
         return enBuf
     },
-    publicDecrypt: (puKey,data) => {
+    publicDecrypt: (pubKey,data) => {
         if(typeof(data) == 'string'){
             data = Buffer.from(data)
         }
@@ -57,7 +57,35 @@ module.exports = {
             data.copy(subBuffer,0,i,i+len)
             var tmp = crypto.publicDecrypt(
                 {
-                    key:puKey,
+                    key:pubKey,
+                    passphrase:'top secret',
+                    padding: crypto.constants.RSA_PKCS1_PADDING
+                },
+                subBuffer
+            )
+            if(protectedTmp == null){
+                protectedTmp = tmp
+            }else{
+                protectedTmp = Buffer.concat([protectedTmp,tmp])
+            }
+        }
+        return protectedTmp
+    },
+    privateDecrypt: (privKey,data) => {
+        if(typeof(data) == 'string'){
+            data = Buffer.from(data)
+        }
+        var protectedTmp = null
+        for(var i=0;i<data.length;i+=512){
+            var len = 512
+            if(i+len > data.length){
+                len = data.length - i
+            }
+            var subBuffer = Buffer.alloc(len)
+            data.copy(subBuffer,0,i,i+len)
+            var tmp = crypto.privateDecrypt(
+                {
+                    key:privKey,
                     passphrase:'top secret',
                     padding: crypto.constants.RSA_PKCS1_PADDING
                 },

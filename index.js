@@ -605,7 +605,7 @@ class Furseal{
                     var keyBack = base58.decode(res.key)
                     keyBack = keyBack.toString()
                     var dataBuffer = base58.decode(data.protected);
-                    var protectedTmp =  Tools.publicDecrypt(keyBack,dataBuffer)
+                    var protectedTmp =  Tools.privateDecrypt(keyBack,dataBuffer)
                     protectedTmp = protectedTmp.toString()
                     debug('reported result:'+postPair.blockName);
                     //update work progress
@@ -742,7 +742,7 @@ class Furseal{
                                     gcArray.push(retBk.protected.outputFiles[p].path)
                                 }
                                 gcManager.register(gcArray,retBk.workName+'_close')
-                                var enBuf = Tools.privateEncrypt(keyBack,protecStr)
+                                var enBuf = Tools.publicEncrypt(keyBack,protecStr)
                                 enBuf = base58.encode(enBuf)
                                 enBuf = enBuf.toString()
                                 retBk.protected = enBuf
