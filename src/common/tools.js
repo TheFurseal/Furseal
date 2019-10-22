@@ -41,6 +41,7 @@ module.exports = {
                 enBuf = Buffer.concat([enBuf,tmp])
             }
         }
+        console.log('encrypto code length: '+enBuf.length)
         return enBuf
     },
     publicDecrypt: (puKey,data) => {
