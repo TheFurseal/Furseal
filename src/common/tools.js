@@ -428,7 +428,8 @@ module.exports = {
             
             // 注册子进程关闭事件
             cmd.on('exit', function (code, signal) {
-                callback(null,-1)
+                //callback(null,-1)
+                debug('child process exit')
             });
         }else if(Process.platform == 'darwin'){
             
@@ -452,7 +453,8 @@ module.exports = {
             
             // // 注册子进程关闭事件
             cmd.on('exit', function (code, signal) {
-                callback(null,-1)
+                //callback(null,-1)
+                debug('child process exit')
             });
            
         }

@@ -57,7 +57,7 @@ class NodeManager{
             return
         }
         if(this.pHardBlockList.indexOf(id) < 0){
-            debug('Block '+id+' hard')
+            //debug('Block '+id+' hard')
             this.pHardBlockList.push(id)
         }
     }
@@ -68,7 +68,7 @@ class NodeManager{
         }
         var index = this.pHardBlockList.indexOf(id)
         if(index >= 0){
-            debug('Unblock '+id+' hard')
+            //debug('Unblock '+id+' hard')
             this.pHardBlockList.splice(index,1)
         }
     }

@@ -779,15 +779,17 @@ class Furseal{
             if(bIndexes.length){
                 var tmp = bIndexes[0]
                 bIndexes.splice(0,1)
+                var pIDStr = peerID.id.toB58String()
                 dbB.get(tmp,(err,val) => {
                     if(err){
                         console.error(err)
                     }else{
+                        nodeManager.hardBlock(pIDStr)
                         p2pNode.libp2p.dialProtocol(peerID,'/cot/workrequest/1.0.0',(err,conn) => {
                             if(err){
                                 console.warn(err)
-                                var id = peerID.id.toB58String()
-                                nodeManager.check(id)
+                                nodeManager.hardUnBlock(pIDStr)
+                                nodeManager.check(pIDStr)
                             }else{
                                 pull(
                                     conn,
@@ -819,13 +821,14 @@ class Furseal{
                                                     ipcManager.serverEmit('updateBlockStatus',infos)
                                                 }
                                             })
-                                            nodeManager.hardBlock(val.unprotected.slave)
+                                            
                                         }else{
                                             // p2pNode.libp2p.hangUp(peerID,(err) => {
                                             //     debug('close connection to '+peerID.id.toB58String())
                                             //     debug(data)
                                             // })
                                             addElement(bIndexes,val.unprotected.blockName)
+                                            nodeManager.hardUnBlock(pIDStr)
                                         }
                                         
                                     },function (err){
