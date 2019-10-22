@@ -86,6 +86,20 @@ function removeElement(array, elem) {
     }
 }
 
+function addElement(array,elem){
+    if(array == null){
+        console.error('Arrary is empty')
+        return
+    }
+    if(elem == null){
+        console.error('Element is empty')
+        return
+    }
+    if(array.indexOf(elem) < 0){
+        array.push(elem)
+    }
+}
+
 class Furseal{
     constructor(homePath){
         this.homePath = homePath
@@ -359,7 +373,9 @@ class Furseal{
                     })
                     //kill process or launch process
                     if(data.status == 'active'){
-                        appManager.launchDividor(value.setName)
+                        appManager.launchDividor(value.setName,(res) => {
+                            eventManager.emit('blockIn',res)
+                        })
                     }else{
                         appManager.killDividor(value.setName)
                     }
@@ -467,21 +483,19 @@ class Furseal{
             for(var i=0; i<data.length; i++){
                 var element = data[i]
                 if(element.unprotected.status == 'init'){
-                    wIndexes.push(element.workName)
+                    addElement(wIndexes,element.workName)
                     element.unprotected.status = 'processing'
                     dbW.put(element.workName,element)
                 }else if(element.unprotected.status == 'processing'){
-                    wIndexes.push(element.workName)
+                    addElement(wIndexes,element.workName)
                 }else{
-
+                    debug(element)
                 }
             }
             dbB.getAllValue((data2) => {
                 data2.forEach(element => {
-                    debug(element)
                     if(element.unprotected.status == 'init'){
-                        bIndexes.push(element)
-                        element.unprotected.status = 'processing'
+                        addElement(bIndexes,element.unprotected.blockName)
                     }else if(element.unprotected.status == 'preDone'){
                         eventManager.emit('validateRequest',element)
                     }else if(element.unprotected.status == 'validating'){
@@ -646,8 +660,6 @@ class Furseal{
                                         }
                                     })
                                 }
-                                
-                                
                             })
                         }
                     })
@@ -733,7 +745,16 @@ class Furseal{
         eventManager.registEvent('blockIn',(data) => {
             data.unprotected.status = 'init'
             dbB.put(data.unprotected.blockName,data)
-            bIndexes.push(data.unprotected.blockName)
+            if(wIndexes.indexOf(data.workName) < 0){
+                addElement(wIndexes,data.workName)
+                debug('One work detected '+data.workName)
+                dbW.put(data.workName,data,(err) => {
+                    if(err){
+                        console.error(err)
+                    }
+                })
+            }
+            addElement(bIndexes,data.unprotected.blockName)
         })
 
         //controll events
@@ -741,53 +762,62 @@ class Furseal{
             if(bIndexes.length){
                 var tmp = bIndexes[0]
                 bIndexes.splice(0,1)
-                p2pNode.libp2p.dialProtocol(peerID,'/cot/workrequest/1.0.0',(err,conn) => {
+                dbB.get(tmp,(err,val) => {
                     if(err){
-                        console.warn(err)
+                        console.error(err)
                     }else{
-                        pull(
-                            conn,
-                            pull.map((data) => {
-                                return data.toString('utf8').replace('\n', '')
-                            }),
-                            pull.drain(function(data){
-                                if(data == 'idel'){
-                                    // start data record
-                                    tmp.unprotected.status = 'processing';
-                                    tmp.unprotected.slave = peerID.id.toB58String()
-                                    var date = new Date()
-                                    tmp.unprotected.info.startTime = date.valueOf()
-                                    var p = Pushable();
-                                    pull(p,conn);
-                                    p.push(JSON.stringify(tmp))
-                                    p.end() 
-                                    dbB.update(tmp.unprotected.blockName,tmp,(err) => {
-                                        if(err){
-                                            console.error(err);
+                        p2pNode.libp2p.dialProtocol(peerID,'/cot/workrequest/1.0.0',(err,conn) => {
+                            if(err){
+                                console.warn(err)
+                            }else{
+                                pull(
+                                    conn,
+                                    pull.map((data) => {
+                                        return data.toString('utf8').replace('\n', '')
+                                    }),
+                                    pull.drain(function(data){
+                                        if(data == 'idel'){
+                                            // start data record
+                                            val.unprotected.status = 'processing';
+                                            val.unprotected.slave = peerID.id.toB58String()
+                                            var date = new Date()
+                                            val.unprotected.info.startTime = date.valueOf()
+                                            var p = Pushable();
+                                            pull(p,conn);
+                                            p.push(JSON.stringify(val))
+                                            p.end() 
+                                            dbB.update(val.unprotected.blockName,val,(err) => {
+                                                if(err){
+                                                    console.error(err);
+                                                }else{
+                                                    //send a message to UI
+                                                    var blockStatus = {}
+                                                    blockStatus.workName = val.workName
+                                                    blockStatus.index = val.unprotected.block.index
+                                                    blockStatus.status = 'processing'
+                                                    var infos = []
+                                                    infos.push(blockStatus)
+                                                    ipcManager.serverEmit('updateBlockStatus',infos)
+                                                }
+                                            })
+                                            addElement(pBlocked,val.unprotected.slave)
                                         }else{
-                                            //send a message to UI
-                                            var blockStatus = {}
-                                            blockStatus.workName = tmp.workName
-                                            blockStatus.index = tmp.unprotected.block.index
-                                            blockStatus.status = 'processing'
-                                            var infos = []
-                                            infos.push(blockStatus)
-                                            ipcManager.serverEmit('updateBlockStatus',infos)
+                                            p2pNode.libp2p.hangUp(peerID,(err) => {
+                                                debug('close connection to '+peerID.id.toB58String())
+                                                debug(data)
+                                            })
+                                            addElement(bIndexes,val.unprotected.blockName)
                                         }
-                                    });
-                                }else{
-                                    p2pNode.libp2p.hangUp(peerID,(err) => {
-                                        debug('close connection to '+peerID.id.toB58String())
-                                        debug(data)
+                                        
+                                    },function (err){
+                                        if(err)console.error(err)
                                     })
-                                }
-                                
-                            },function (err){
-                                if(err)console.error(err)
-                            })
-                        ) 
+                                ) 
+                            }
+                        })
                     }
                 })
+               
             }
         })
 
@@ -912,19 +942,47 @@ class Furseal{
         }
         setInterval(() => {
             if(bIndexes.length){
+                debug('have block!!')
                 var peers = p2pNode._peerInfoBook.getAllArray()
                 peers.forEach((element) => {
                     var id = element.id.toB58String()
                     if(pBlocked.indexOf(id) >= 0 || id == p2pNode._peerInfo.id.toB58String()){
                         // already have job or it's node self
+                        debug('blacked node or self')
                     }else{
-                        pBlocked.push(id)
                         debug('demand to '+id)
                         eventManager.emit('demand',element)
                     }
                 })
+            }else{
+                debug('search block')
+                dbW.getAllValue((val) => {
+                    val.forEach(elem => {
+                        if(elem.unprotected.status == 'init'){
+                            addElement(wIndexes,elem.workName)
+                            elem.unprotected.status = 'processing'
+                            dbW.put(elem.workName,elem,(err) => {
+                                if(err){
+                                    console.error(err)
+                                }
+                            })
+                        }
+                    })
+                })
+                dbB.getAllValue((val) => {
+                    val.forEach(elem => {
+                        if(wIndexes.indexOf(elem.workName) >= 0 && elem.unprotected.status == 'init'){
+                            addElement(bIndexes,elem.unprotected.blockName)
+                            dbB.put(elem.unprotected.blockName,elem,(err) => {
+                                if(err){
+                                    console.log(err)
+                                }
+                            })
+                        }
+                    })
+                })
             }
-        }, 500);
+        }, 3000);
     }
 
     register(data){

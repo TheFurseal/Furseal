@@ -19,28 +19,22 @@ class DAppCli{
         this.appCommon.start((pid) => {
             debug('set pid '+pid)
             pa.pid = pid
-
         })
-
-         //IPC
+        //IPC
         this.ipcManager.createClient({})
         this.ipcManager.addClientListenner('result',(data) => {
             //debug('revice result',data)
-           
             if(typeof(data) == 'string'){
                 data = JSON.parse(data)
             }
             if(pa.callback[data.unprotected.blockName] != null){
                 pa.callback[data.unprotected.blockName](data)
             }else{
-                console.error('No callback found!!!!!!')
+                console.error('No callback for '+data.unprotected.blockName)
             }
         })
-
         this.ipcManager.connect(param.id)
-
         this.param = param
-
     }
 
     //other function
@@ -49,37 +43,27 @@ class DAppCli{
         this.ipcManager.clientDisconnect()
     }
 
-
     request(workInfo,callback){
-       
         if(typeof(workInfo) == 'string'){
             workInfo = JSON.parse(workInfo)
         }
-
         if(this.callback == null){
             this.callback = {}
         }
         this.callback[workInfo.unprotected.blockName] = callback
-
         if(!this.ipcManager.serverConnected){
             var handle = setInterval(() => {
                 if(this.ipcManager.serverConnected){
                     clearInterval(handle)
                     this.ipcManager.clientEmit('request',JSON.stringify(workInfo))
-                   
-                    debug('send request to dapp 1')
                 } 
                 
             }, 500)
             debug('waitting dapp .......')
         }else{
-            debug('send request to dapp 2 - 0')
             this.ipcManager.clientEmit('request',JSON.stringify(workInfo))
-            debug('send request to dapp 2 - 1')
         }       
-       
     }
-
 }
 
 module.exports = DAppCli

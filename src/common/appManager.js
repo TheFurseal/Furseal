@@ -29,7 +29,7 @@ class AppManager{
         this.appRepoPath = appRepoPath
     }
 
-    launchDividor(setName,arg){
+    launchDividor(setName,callback){
         debug('launch dividor')
 
         if(this.setsRegister[setName] == null){
@@ -43,7 +43,7 @@ class AppManager{
 
         var param = {}
         param.setName = setName
-        param.arg = arg
+        param.arg = null
         var dividorCli = new DividorCli({
             paramater:param,
             blockDB:this.blockDB,
@@ -52,7 +52,7 @@ class AppManager{
             p2pNode:this.p2pNode,
             configure:this.conf
         })
-        
+        dividorCli.callback = callback
         this.setsRegister[setName].dividor = dividorCli
         this.dividorCount++
        

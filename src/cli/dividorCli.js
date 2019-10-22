@@ -244,6 +244,8 @@ class DividorCli{
                     blockDB.put(resObj.unprotected.blockName,resObj,function(err){
                         if(err){
                             console.error('ERROR: ',err);
+                        }else{
+                            pa.callback(resObj)
                         }
                     })
                     debug('register work done');
