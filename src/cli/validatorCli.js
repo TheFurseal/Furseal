@@ -29,8 +29,8 @@ class ValidatorCli{
             return 
         }
 
+        this.callback = {}
         this.ipcManager = new IPCManager()
-
         var pa = this
         param.id = param.setName+'_validator'
         param.type = 'validator'
@@ -40,24 +40,16 @@ class ValidatorCli{
             pa.pid = pid
 
         })
-
-      
         //IPC
         this.ipcManager.createClient({})
         this.ipcManager.addClientListenner('result',(data) => {
-            debug('revice result 2',JSON.parse(data))
+            if(typeof(data) == 'string'){
+                data = JSON.parse(data)
+            }
             validate(data)
         })
         this.ipcManager.connect(param.id)
-
-
         function validate(res){
-            if(res == null){
-                return
-            }
-            if(typeof(res) == 'string'){
-                res = JSON.parse(res)
-            }
             var wInfo = res.workInfo
             if(typeof(wInfo) == 'string'){
                 wInfo = JSON.parse(wInfo)
@@ -66,22 +58,15 @@ class ValidatorCli{
                 wInfo.unprotected.status = 'validated'
             }else if(res.result == 'NO'){
                 wInfo.unprotected.status = 'init'
+                wInfo.unprotected.inputFiles[0].path = ''
             }else{
 
             }
-
             debug('validate record',wInfo)
-
-            dbB.update(wInfo.unprotected.blockName,JSON.stringify(wInfo),(err) => {
-                if(err){
-                    console.error(err)
-                }else{
-                    debug(wInfo.unprotected.blockName+'  validated!!!!!!!!!')
-                }
-            })
-
+            if(pa.callback[wInfo.unprotected.blockName] != null){
+                pa.callback[wInfo.unprotected.blockName](wInfo)
+            }
         }
-
         this.param = param
     }
 
@@ -90,7 +75,9 @@ class ValidatorCli{
         this.ipcManager.clientDisconnect()
     }
 
-    request(workInfo){
+    request(workInfo,callback){
+
+        this.callback[workInfo.unprotected.blockName] = callback
         
         if(!this.ipcManager.serverConnected){
             var handle = setInterval(() => {

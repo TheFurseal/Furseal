@@ -12,6 +12,7 @@ class DAppCli{
         debug('create dapp cli')
         this.ipcManager = new IPCManager()
         var pa = this
+        this.callback = {}
         param.id = param.setName+'_dapp'
         param.type = 'dapp'
         this.appCommon = new AppCommon(param,appDB)
@@ -22,18 +23,17 @@ class DAppCli{
         })
 
          //IPC
-
         this.ipcManager.createClient({})
         this.ipcManager.addClientListenner('result',(data) => {
             //debug('revice result',data)
-            var tmpObj 
+           
             if(typeof(data) == 'string'){
-                tmpObj = JSON.parse(data)
-            }else{
-                tmpObj = data
+                data = JSON.parse(data)
             }
-            if(pa.callback[tmpObj.unprotected.blockName] != null){
-                pa.callback[tmpObj.unprotected.blockName](tmpObj)
+            if(pa.callback[data.unprotected.blockName] != null){
+                pa.callback[data.unprotected.blockName](data)
+            }else{
+                console.error('No callback found!!!!!!')
             }
         })
 
@@ -51,22 +51,21 @@ class DAppCli{
 
 
     request(workInfo,callback){
-        var tmpObj 
+       
         if(typeof(workInfo) == 'string'){
-            tmpObj = JSON.parse(workInfo)
-        }else{
-            tmpObj = workInfo
+            workInfo = JSON.parse(workInfo)
         }
+
         if(this.callback == null){
             this.callback = {}
         }
-        this.callback[tmpObj.unprotected.blockName] = callback
+        this.callback[workInfo.unprotected.blockName] = callback
 
         if(!this.ipcManager.serverConnected){
             var handle = setInterval(() => {
                 if(this.ipcManager.serverConnected){
                     clearInterval(handle)
-                    this.ipcManager.clientEmit('request',JSON.stringify(tmpObj))
+                    this.ipcManager.clientEmit('request',JSON.stringify(workInfo))
                    
                     debug('send request to dapp 1')
                 } 
@@ -75,7 +74,7 @@ class DAppCli{
             debug('waitting dapp .......')
         }else{
             debug('send request to dapp 2 - 0')
-            this.ipcManager.clientEmit('request',JSON.stringify(tmpObj))
+            this.ipcManager.clientEmit('request',JSON.stringify(workInfo))
             debug('send request to dapp 2 - 1')
         }       
        

@@ -246,8 +246,6 @@ class DividorCli{
                             console.error('ERROR: ',err);
                         }
                     })
-
-                   
                     debug('register work done');
                     debug(JSON.stringify(resObj))
                 }

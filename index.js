@@ -539,19 +539,21 @@ class Furseal{
         })
 
         eventManager.registEvent('reportIn',(data) => {
-            data.unprotected.status = 'preDone'
-            dbB.get(tmp.unprotected.blockName,(err,value) => {
+            
+            dbB.get(data.unprotected.blockName,(err,value) => {
                 if(err){
 
                 }else{
                     var date = new Date()
                     data.unprotected.info.timeCost = date.valueOf() - value.unprotected.info.startTime
-                    dbB.put(data.unprotected.blockName,data,(err) => {
+                    value.unprotected.info.timeCost = data.unprotected.info.timeCost
+                    value.unprotected.status = 'preDone'
+                    dbB.put(data.unprotected.blockName,value,(err) => {
                         if(err){
                             console.error(err)
                         }
-                        eventManager.emit('startValidate',data)
                     })
+                    eventManager.emit('startValidate',data)
                 }
             })
         })
@@ -563,7 +565,7 @@ class Furseal{
             var postPair = {};
             postPair.blockName = data.unprotected.blockName;
             postPair.workName = data.workName;
-            postPair.resolveKey = configure.decrypto(value.resolveKey)
+            postPair.resolveKey = configure.decrypto(data.resolveKey)
             httpClinet.access(JSON.stringify(postPair),optAuth,function(res){
                 if(typeof(res) == 'string'){
                     res = JSON.parse(res);
@@ -573,10 +575,10 @@ class Furseal{
                 }else{
                     var keyBack = base58.decode(res.key);
                         keyBack = keyBack.toString();
-                    var dataBuffer = base58.decode(blockInfo.protected);
+                    var dataBuffer = base58.decode(data.protected);
                     var protectedTmp =  Tools.publicDecrypt(keyBack,dataBuffer)
                     protectedTmp = protectedTmp.toString()
-                    debug('Finnal result:\n',postPair.blockName);
+                    debug('reported result:\n',postPair.blockName);
                     //update work progress
                     data.protected = JSON.parse(protectedTmp)
                     var infos = []
@@ -589,12 +591,19 @@ class Furseal{
                     infos.push(infoTmp)
                     ipcManager.serverEmit('updateBlockStatus',infos)
                     //updage db
-                    data.unprotected.status = 'validating'
-                    dbB.put(data.unprotected.blockName,data,(err) => {
+                    dbB.get(data.unprotected.blockName,(err,val) => {
                         if(err){
                             console.error(err)
+                        }else{
+                            val.unprotected.status = 'validating'
+                            dbB.put(val.unprotected.blockName,val,(err) => {
+                                if(err){
+                                    console.error(err)
+                                }
+                            })
                         }
                     })
+                    data.unprotected.status = 'validating'
                     //download result files
                     p2pNode.get(data.protected.outputFiles[0].hash,(err,files) => {
                         if(err){
@@ -611,7 +620,34 @@ class Furseal{
                                 }
                             })
                             gcManager.register(targetPath,data.workName+'_close')
-                            appManager.launchValidator(data.unprotected.appSet,data)
+                            appManager.launchValidator(data.unprotected.appSet,data,(data) => {
+                                if(data.protected.inputFiles[0].path != ''){
+                                    debug('block '+data.unprotected.blockName+' is valid')
+                                    dbB.update(data.unprotected.blockName,JSON.stringify(data),(err) => {
+                                        if(err){
+                                            console.error(err)
+                                        }else{
+                                            debug(data.unprotected.blockName+'  upate to '+data.unprotected.status+'!!!!!!!!!')
+                                        }
+                                    })
+                                }else{
+                                    debug('result invalid, start to resend')
+                                    dbB.get(data.unprotected.blockName,(err,value) => {
+                                        if(err){
+                                            console.error(err)
+                                        }else{
+                                            value.unprotected.status = 'init'
+                                            dbB.put(value.unprotected.blockName,value,(err) => {
+                                                if(err){
+                                                    console.error(err)
+                                                }
+                                            })
+                                        }
+                                    })
+                                }
+                                
+                                
+                            })
                         }
                     })
                 }
@@ -715,15 +751,15 @@ class Furseal{
                             }),
                             pull.drain(function(data){
                                 if(data == 'idel'){
-                                    var p = Pushable();
-                                    pull(p,conn);
-                                    p.push(JSON.stringify(tmp))
-                                    p.end() 
                                     // start data record
                                     tmp.unprotected.status = 'processing';
                                     tmp.unprotected.slave = peerID.id.toB58String()
                                     var date = new Date()
                                     tmp.unprotected.info.startTime = date.valueOf()
+                                    var p = Pushable();
+                                    pull(p,conn);
+                                    p.push(JSON.stringify(tmp))
+                                    p.end() 
                                     dbB.update(tmp.unprotected.blockName,tmp,(err) => {
                                         if(err){
                                             console.error(err);
@@ -739,10 +775,10 @@ class Furseal{
                                         }
                                     });
                                 }else{
-                                    // p2pNode.libp2p.hangUp(peerID,(err) => {
-                                    //     debug('close connection to '+peerID.id.toB58String())
-                                    //     debug(data)
-                                    // })
+                                    p2pNode.libp2p.hangUp(peerID,(err) => {
+                                        debug('close connection to '+peerID.id.toB58String())
+                                        debug(data)
+                                    })
                                 }
                                 
                             },function (err){

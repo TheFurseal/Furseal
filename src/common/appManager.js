@@ -59,14 +59,14 @@ class AppManager{
         
     }
 
-    launchValidator(setName,workInfo,arg){
+    launchValidator(setName,workInfo,callback){
         debug('launch validator')
         if(this.setsRegister[setName] == null){
             this.setsRegister[setName] = {}
         }else{
             if(this.setsRegister[setName].validator != null){
                 debug('Validator request 1')
-                this.setsRegister[setName].validator.request(workInfo) 
+                this.setsRegister[setName].validator.request(workInfo,callback) 
                 return
             }else{
                 debug('Validator request 2')
@@ -75,7 +75,7 @@ class AppManager{
 
         var param = {}
         param.setName = setName
-        param.arg = arg
+        param.arg = null
         var validatorCli = new ValidatorCli({
             paramater:param,
             workInfo:workInfo,
@@ -86,7 +86,7 @@ class AppManager{
         this.setsRegister[setName].validator = validatorCli
         this.validtorCount++
         debug('Validator request 0')
-        this.setsRegister[setName].validator.request(workInfo)
+        this.setsRegister[setName].validator.request(workInfo,callback)
         
        
        
