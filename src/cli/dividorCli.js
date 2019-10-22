@@ -31,7 +31,8 @@ class DividorCli{
             workDB:dbW,
             appDB:appDB,
             p2pNode:node,
-            configure:conf
+            configure:conf,
+            callback:cb
         }
     ){
         debug('create dividor cli')
@@ -66,6 +67,7 @@ class DividorCli{
         }
 
         var pa = this
+        pa.callback = cb
         param.id = param.setName+'_dividor'
         param.type = 'dividor'
         this.appCommon = new AppCommon(param,appDB)

@@ -50,9 +50,9 @@ class AppManager{
             workDB:this.workDB,
             appDB:this.appDB,
             p2pNode:this.p2pNode,
-            configure:this.conf
+            configure:this.conf,
+            callback:callback
         })
-        dividorCli.callback = callback
         this.setsRegister[setName].dividor = dividorCli
         this.dividorCount++
        
@@ -66,7 +66,7 @@ class AppManager{
         }else{
             if(this.setsRegister[setName].validator != null){
                 debug('Validator request 1')
-                this.setsRegister[setName].validator.request(workInfo,callback) 
+                this.setsRegister[setName].validator.request(workInfo) 
                 return
             }else{
                 debug('Validator request 2')
@@ -80,13 +80,14 @@ class AppManager{
             paramater:param,
             workInfo:workInfo,
             dbBlock:this.blockDB,
-            dbApp:this.appDB
+            dbApp:this.appDB,
+            callback:callback
         })
        
         this.setsRegister[setName].validator = validatorCli
         this.validtorCount++
         debug('Validator request 0')
-        this.setsRegister[setName].validator.request(workInfo,callback)
+        this.setsRegister[setName].validator.request(workInfo)
         
        
        
@@ -131,7 +132,7 @@ class AppManager{
         }else{
             if(this.setsRegister[setName].dapp != null){
                 debug('Dapp request 1')
-                this.setsRegister[setName].dapp.request(workInfo,callback) 
+                this.setsRegister[setName].dapp.request(workInfo) 
                 return
             }else{
                
@@ -143,14 +144,14 @@ class AppManager{
         param.arg = arg
         var dappCli = new DappCli({
             paramater:param,
-            appDB:this.appDB
-            
+            appDB:this.appDB,
+            callback:callback
         })
        
         this.setsRegister[setName].dapp = dappCli
         this.dappCount++
         debug('Dapp request 0')
-        this.setsRegister[setName].dapp.request(workInfo,callback)  
+        this.setsRegister[setName].dapp.request(workInfo)  
        
     }
 

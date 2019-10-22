@@ -7,12 +7,13 @@ const debug = require('debug')('cli:dappCli')
 class DAppCli{
     constructor({
         paramater:param,
-        appDB:appDB
+        appDB:appDB,
+        callback:cb
     }){
         debug('create dapp cli')
         this.ipcManager = new IPCManager()
         var pa = this
-        this.callback = {}
+        this.callback = cb
         param.id = param.setName+'_dapp'
         param.type = 'dapp'
         this.appCommon = new AppCommon(param,appDB)
@@ -27,8 +28,8 @@ class DAppCli{
             if(typeof(data) == 'string'){
                 data = JSON.parse(data)
             }
-            if(pa.callback[data.unprotected.blockName] != null){
-                pa.callback[data.unprotected.blockName](data)
+            if(pa.callback != null){
+                pa.callback(data)
             }else{
                 console.error('No callback for '+data.unprotected.blockName)
             }
@@ -43,14 +44,10 @@ class DAppCli{
         this.ipcManager.clientDisconnect()
     }
 
-    request(workInfo,callback){
+    request(workInfo){
         if(typeof(workInfo) == 'string'){
             workInfo = JSON.parse(workInfo)
         }
-        if(this.callback == null){
-            this.callback = {}
-        }
-        this.callback[workInfo.unprotected.blockName] = callback
         if(!this.ipcManager.serverConnected){
             var handle = setInterval(() => {
                 if(this.ipcManager.serverConnected){

@@ -638,6 +638,8 @@ class Furseal{
                             appManager.launchValidator(data.unprotected.appSet,data,(ret) => {
                                 if(ret.protected.inputFiles[0].path != ''){
                                     debug('block '+ret.unprotected.blockName+' is valid')
+                                    debug('result is '+ret.protected.inputFiles[0].path)
+                                    ret.unprotected.status = 'validated'
                                     dbB.update(ret.unprotected.blockName,ret,(err) => {
                                         if(err){
                                             console.error(err)
@@ -769,6 +771,7 @@ class Furseal{
                         p2pNode.libp2p.dialProtocol(peerID,'/cot/workrequest/1.0.0',(err,conn) => {
                             if(err){
                                 console.warn(err)
+                                console.log(peerID.id.toB58String())
                             }else{
                                 pull(
                                     conn,
@@ -942,20 +945,16 @@ class Furseal{
         }
         setInterval(() => {
             if(bIndexes.length){
-                debug('have block!!')
                 var peers = p2pNode._peerInfoBook.getAllArray()
                 peers.forEach((element) => {
                     var id = element.id.toB58String()
                     if(pBlocked.indexOf(id) >= 0 || id == p2pNode._peerInfo.id.toB58String()){
                         // already have job or it's node self
-                        debug('blacked node or self')
                     }else{
-                        debug('demand to '+id)
                         eventManager.emit('demand',element)
                     }
                 })
             }else{
-                debug('search block')
                 dbW.getAllValue((val) => {
                     val.forEach(elem => {
                         if(elem.unprotected.status == 'init'){
@@ -978,6 +977,8 @@ class Furseal{
                                     console.log(err)
                                 }
                             })
+                        }else if(elem.unprotected.status == 'preDone'){
+                            eventManager.emit('startValidate',elem)
                         }
                     })
                 })

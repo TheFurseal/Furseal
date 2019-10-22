@@ -7,7 +7,8 @@ class ValidatorCli{
         paramater:param,
         workInfo:workInfo,
         dbBlock:dbB,
-        dbApp:dbA
+        dbApp:dbA,
+        callback:cb
     }){
         if(param == null){
             console.error('empty paramater')
@@ -29,7 +30,7 @@ class ValidatorCli{
             return 
         }
 
-        this.callback = {}
+        this.callback = cb
         this.ipcManager = new IPCManager()
         var pa = this
         param.id = param.setName+'_validator'
@@ -63,8 +64,8 @@ class ValidatorCli{
 
             }
             debug('validate record',wInfo)
-            if(pa.callback[wInfo.unprotected.blockName] != null){
-                pa.callback[wInfo.unprotected.blockName](wInfo)
+            if(pa.callback != null){
+                pa.callback(wInfo)
             }
         }
         this.param = param
@@ -75,10 +76,7 @@ class ValidatorCli{
         this.ipcManager.clientDisconnect()
     }
 
-    request(workInfo,callback){
-
-        this.callback[workInfo.unprotected.blockName] = callback
-        
+    request(workInfo){
         if(!this.ipcManager.serverConnected){
             var handle = setInterval(() => {
                 if(this.ipcManager.serverConnected){
