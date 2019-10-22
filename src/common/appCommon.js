@@ -110,7 +110,7 @@ class AppCommon{
 
     stop(){
         var handler = this.hadler
-        if(pid >0){
+        if(this.pid >0){
             Tool.killProcess(this.pid)
         }
         clearInterval(handler)
