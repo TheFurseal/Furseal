@@ -29,8 +29,8 @@ class NodeManager{
 
     isBlock(id){
         if(id == null){
-            debug('Empty ID')
-            return false
+            console.error('Empty ID')
+            return true
         }
         if(this.pBlockList[id] >= 5 || this.pHardBlockList.indexOf(id) >= 0){
             //debug(id + 'is blocked')
@@ -42,6 +42,7 @@ class NodeManager{
 
     block(id){
         if(id == null){
+            console.error('Empty ID')
             return
         }
         this.pBlockList[id] = 5
@@ -49,6 +50,7 @@ class NodeManager{
 
     unblock(id){
         if(id == null){
+            console.error('Empty ID')
             return
         }
         delete this.pBlockList[id]
@@ -56,6 +58,7 @@ class NodeManager{
 
     hardBlock(id){
         if(id == null){
+            console.error('Empty ID')
             return
         }
         if(this.pHardBlockList.indexOf(id) < 0){
@@ -66,6 +69,7 @@ class NodeManager{
 
     hardUnBlock(id){
         if(id == null){
+            console.error('Empty ID')
             return
         }
         var index = this.pHardBlockList.indexOf(id)

@@ -45,13 +45,10 @@ var gcManager
 var decideEngine
 
 //work indexs
-var wIndexes = []
+var wIndexes = {}
 
 //block indexs
-var bIndexes = []
-
-//blocked peers
-var pFaildCount = {}
+var bIndexes = {}
 
 //extranal configure
 var configure
@@ -75,8 +72,8 @@ optAuth.method = 'POST'
 const httpClinet = new client()
 var ipcManager = new IPCManager()
 
-function removeElement(array, elem) {
-    if(array == null){
+function removeElement(obj, elem) {
+    if(obj == null){
         console.error('Arrary is empty')
         return
     }
@@ -84,15 +81,13 @@ function removeElement(array, elem) {
         console.error('Element is empty')
         return
     }
-    var index = array.indexOf(elem);
-    while(index >= 0){
-        array.splice(index, 1)
-        index = array.indexOf(elem)
+    if(obj[elem] != null){
+        delete obj[elem]
     }
 }
 
-function addElement(array,elem){
-    if(array == null){
+function addElement(obj,elem){
+    if(obj == null){
         console.error('Arrary is empty')
         return
     }
@@ -100,9 +95,7 @@ function addElement(array,elem){
         console.error('Element is empty')
         return
     }
-    if(array.indexOf(elem) < 0){
-        array.push(elem)
-    }
+    obj[elem] = 1
 }
 
 class Furseal{
@@ -552,7 +545,7 @@ class Furseal{
             if(times == null){
                 times = 0
             }
-            devStat.update('reporting')
+            //devStat.update('reporting')
             debug('Report result to owner '+data.unprotected.owner)
             var pID = PeerID.createFromB58String(data.unprotected.owner)
             p2pNode.libp2p.dialProtocol(pID,'/cot/workreport/1.0.0',(err,conn) => {
@@ -566,8 +559,8 @@ class Furseal{
                     var p = Pushable()
                     pull(p,conn)
                     p.push(JSON.stringify(data))
-                    devStat.update('standby')
                     p.end()
+                    devStat.update('standby')
                 }
             })
         })
@@ -813,7 +806,7 @@ class Furseal{
         eventManager.registEvent('blockIn',(data) => {
             data.unprotected.status = 'init'
             dbB.put(data.unprotected.blockName,data)
-            if(wIndexes.indexOf(data.workName) < 0){
+            if(wIndexes[data.workName] == null){
                 addElement(wIndexes,data.workName)
                 debug('One work detected '+data.workName)
                 dbW.put(data.workName,data,(err) => {
@@ -827,16 +820,23 @@ class Furseal{
 
         //controll events
         eventManager.registEvent('demand',(peerID) => {
-            if(bIndexes.length){
-                var pIDStr = peerID.id.toB58String()
+            var pIDStr = peerID.id.toB58String()
+            if(Object.keys(bIndexes).length && !nodeManager.isBlock(pIDStr)){
                 nodeManager.hardBlock(pIDStr)
-                var tmp = bIndexes[0]
-                bIndexes.splice(0,1)
+                var tmp = Object.keys(bIndexes)[0]
+                if(tmp == null){
+                    return
+                }
+                removeElement(bIndexes,tmp)
                 dbB.get(tmp,(err,val) => {
                     if(err){
                         console.error(err)
                         nodeManager.hardUnBlock(pIDStr)
                     }else{
+                        if(val.unprotected.status != 'init'){
+                            return
+                        }
+
                         p2pNode.libp2p.dialProtocol(peerID,'/cot/workrequest/1.0.0',(err,conn) => {
                             if(err){
                                 console.warn(err)
@@ -902,6 +902,7 @@ class Furseal{
             }else{
                 p.push('busy')
                 p.end()
+                return
             }
             pull(
                 conn,
@@ -909,11 +910,11 @@ class Furseal{
                     return data.toString('utf8').replace('\n', '')
                 }),
                 pull.drain((data) => {
+                    devStat.update('busy')
                     var tmpRecive = JSON.parse(data)
                     debug('handle',tmpRecive.unprotected.blockName)
                     p.push('recived')
                     p.end()
-                    devStat.update('busy')
                     decideEngine.enviromentValidation(tmpRecive,(err,infoOut) => {
                         if(err){
                             console.error(err)
@@ -930,9 +931,10 @@ class Furseal{
                                         }else{
                                           
                                         }
+                                        devStat.update('standby')
                                     })
                                 }
-                                devStat.update('standby')
+                                
                             })
                         }else{
                             eventManager.emit('startCompute',infoOut)
@@ -1012,13 +1014,13 @@ class Furseal{
     }
 
     process(){
-        if(bIndexes.length){
+        if(Object.keys(bIndexes).length){
 
         }else{
             devStat.update('standby')
         }
         setInterval(() => {
-            if(bIndexes.length){
+            if(Object.keys(bIndexes).length){
                 var peers = p2pNode._peerInfoBook.getAllArray()
                 peers.forEach((element) => {
                     var id = element.id.toB58String()
@@ -1045,8 +1047,9 @@ class Furseal{
             })
             dbB.getAllValue((val) => {
                 val.forEach(elem => {
-                    if(wIndexes.indexOf(elem.workName) >= 0 && elem.unprotected.status == 'init'){
+                    if(wIndexes[elem.workName]  == 1 && elem.unprotected.status == 'init'){
                         addElement(bIndexes,elem.unprotected.blockName)
+                        debug('add block '+elem.unprotected.blockName)
                         dbB.put(elem.unprotected.blockName,elem,(err) => {
                             if(err){
                                 console.log(err)
@@ -1054,7 +1057,7 @@ class Furseal{
                         })
                     }else if(elem.unprotected.status == 'preDone'){
                         debug('Found preDone block')
-                        if(wIndexes.indexOf(elem.workName) >= 0 ){
+                        if(wIndexes[elem.workName]  == 1  ){
                             dbR.get(elem.unprotected.blockName,(err,value) => {
                                 if(err){
                                     console.error(err)

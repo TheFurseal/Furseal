@@ -7,3 +7,4 @@ test/CoTNetwork/fileStorage
 test/CoTNetwork/inputTmp
 test/CoTNetwork/resultTmp
 test/CoTNetwork/config.json
+package-lock.json
