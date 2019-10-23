@@ -11,6 +11,9 @@ const debug = require('debug')('common:tools')
 const lz4 = require('lz4js')
 const base58 = require('bs58')
 const crypto = require('crypto')
+const keyLeng = 1024
+const msgPDLength = 128
+const msgLength = 110
 
 
 
@@ -22,8 +25,8 @@ module.exports = {
             data = JSON.stringify(data)
         }
         var enBuf = null
-        for(var i = 0; i< data.length; i+=500){
-            var len = 500
+        for(var i = 0; i< data.length; i+=msgLength){
+            var len = msgLength
             if(i+len > data.length){
                 len = data.length - i
             }
@@ -48,12 +51,12 @@ module.exports = {
             data = Buffer.from(data)
         }
         var protectedTmp = null
-        for(var i=0;i<data.length;i+=512){
-            var len = 512
+        for(var i=0;i<data.length;i+=msgPDLength){
+            var len = msgPDLength
             if(i+len > data.length){
                 len = data.length - i
             }
-            var subBuffer = Buffer.alloc(len)
+            var subBuffer
             data.copy(subBuffer,0,i,i+len)
             var tmp = crypto.publicDecrypt(
                 {
@@ -76,11 +79,8 @@ module.exports = {
             data = Buffer.from(data)
         }
         var protectedTmp = null
-        for(var i=0;i<data.length;i+=512){
-            var len = 512
-            if(i+len > data.length){
-                len = data.length - i
-            }
+        for(var i=0;i<data.length;i+=msgPDLength){
+            var len = msgPDLength
             var subBuffer = Buffer.alloc(len)
             data.copy(subBuffer,0,i,i+len)
             var tmp = crypto.privateDecrypt(

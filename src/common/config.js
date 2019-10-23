@@ -4,6 +4,10 @@ const debug = require('debug')('common:config')
 const crypto = require('crypto')
 const base58 = require('bs58')
 
+const keyLeng = 4096
+const msgPDLength = 512
+const msgLength = 500
+
 class Config{
      constructor(appPath){
         this.config = {};
@@ -60,8 +64,8 @@ class Config{
     encrypto(protecStr){
         var enStr = null
         var key = base58.decode(this.config.keys.privateKey)
-        for(var i = 0; i< protecStr.length; i+=500){
-            var len = 500
+        for(var i = 0; i< protecStr.length; i+=msgLength){
+            var len = msgLength
             if(i+len > protecStr.length){
                 len = protecStr.length - i
             }
@@ -90,11 +94,8 @@ class Config{
         debug('dataBuffer.length '+dataBuffer.length)
         var key = base58.decode(this.config.keys.publicKey)
         var protectedTmp =  null
-        for(var i=0;i<dataBuffer.length;i+=512){
-            var len = 512
-            if(i+len > dataBuffer.length){
-                len = dataBuffer.length - i
-            }
+        for(var i=0;i<dataBuffer.length;i+=msgPDLength){
+            var len = msgPDLength
             var subBuffer = Buffer.alloc(len)
             dataBuffer.copy(subBuffer,0,i,i+len)
             debug('process encrypto str len '+subBuffer.length)
