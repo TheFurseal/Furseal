@@ -547,7 +547,8 @@ class Furseal{
             })
         })
 
-        eventManager.registEvent('finishCompute',(data,times) => {
+        eventManager.registEvent('finishCompute',(dataIn,times) => {
+            var data = JSON.parse(JSON.stringify(dataIn))
             if(times == null){
                 times = 0
             }
