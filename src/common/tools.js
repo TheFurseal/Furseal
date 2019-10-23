@@ -56,7 +56,7 @@ module.exports = {
             if(i+len > data.length){
                 len = data.length - i
             }
-            var subBuffer
+            var subBuffer = Buffer.alloc(len)
             data.copy(subBuffer,0,i,i+len)
             var tmp = crypto.publicDecrypt(
                 {
