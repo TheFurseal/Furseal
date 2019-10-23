@@ -517,7 +517,8 @@ class Furseal{
             })
         })
 
-        eventManager.registEvent('startAssimilate',(data) => {
+        eventManager.registEvent('startAssimilate',(val) => {
+            var data = JSON.parse(JSON.stringify(val))
             dbW.get(data.workName,(err,value) => {
                 if(err){
                     console.error(err)
@@ -546,13 +547,20 @@ class Furseal{
             })
         })
 
-        eventManager.registEvent('finishCompute',(data) => {
+        eventManager.registEvent('finishCompute',(data,times) => {
+            if(times == null){
+                times = 0
+            }
             devStat.update('reporting')
             debug('Report result to owner '+data.unprotected.owner)
             var pID = PeerID.createFromB58String(data.unprotected.owner)
             p2pNode.libp2p.dialProtocol(pID,'/cot/workreport/1.0.0',(err,conn) => {
                 if(err){
                     console.error(err)
+                    //retry
+                    if(times<5){
+                        eventManager.emit('finishCompute',(data,times++))
+                    }
                 }else{
                     var p = Pushable()
                     pull(p,conn)
@@ -573,6 +581,16 @@ class Furseal{
                     data.unprotected.info.timeCost = date.valueOf() - value.unprotected.info.startTime
                     value.unprotected.info.timeCost = data.unprotected.info.timeCost
                     value.unprotected.status = 'preDone'
+                    // update block status
+                    var infos = []
+                    var infoTmp = {}
+                    infoTmp.workName = data.workName
+                    infoTmp.index = data.unprotected.block.index
+                    infoTmp.startTime = data.unprotected.info.startTime
+                    infoTmp.timeCost = data.unprotected.info.timeCost
+                    infoTmp.status = 'preDone'
+                    infos.push(infoTmp)
+                    ipcManager.serverEmit('updateBlockStatus',infos)
                     dbB.put(data.unprotected.blockName,value,(err) => {
                         if(err){
                             console.error(err)
@@ -601,8 +619,6 @@ class Furseal{
                 if(res.error){
                     console.error('resolveResult',res);
                 }else{
-                    console.log(data.unprotected.blockName+' use key ')
-                    console.log(res.key)
                     var keyBack = base58.decode(res.key)
                     keyBack = keyBack.toString()
                     var dataBuffer = base58.decode(data.protected);
@@ -611,15 +627,6 @@ class Furseal{
                     debug('reported result:'+postPair.blockName);
                     //update work progress
                     data.protected = JSON.parse(protectedTmp)
-                    var infos = []
-                    var infoTmp = {}
-                    infoTmp.workName = data.workName
-                    infoTmp.index = data.unprotected.block.index
-                    infoTmp.startTime = data.unprotected.info.startTime
-                    infoTmp.timeCost = data.unprotected.info.timeCost
-                    infoTmp.status = 'preDone'
-                    infos.push(infoTmp)
-                    ipcManager.serverEmit('updateBlockStatus',infos)
                     //updage db
                     dbB.get(data.unprotected.blockName,(err,val) => {
                         if(err){
@@ -660,6 +667,50 @@ class Furseal{
                                             console.error(err)
                                         }else{
                                             debug(ret.unprotected.blockName+'  upate to '+ret.unprotected.status+'!!!!!!!!!')
+                                            //update workInfo
+                                            dbW.get(ret.workName,(err,wVal) => {
+                                                if(err){
+
+                                                }else{
+                                                    var blockDim = wVal.unprotected.block.indexs;
+                                                    var indexs = blockDim.split('_');
+                                                    var total = wVal.unprotected.block.number
+                                                    
+                                                    var blockIndex = wVal.unprotected.block.index;
+                                                    var index = blockIndex.split('_');
+                                                    if(index.length < 2){
+                                                        console.error('bad block index');
+                                                    }
+                                                    if(index.length < 2){
+                                                        console.error('bad block index');
+                                                    }
+                                                    var pm = new ProgressManager(parseInt(indexs[0]),total,wVal.unprotected.progress)
+                                                    pm.updateProgressWithIndex(parseInt(index[1]),parseInt(index[0]),true)
+                                                    wVal.unprotected.info.progress = pm.getProgress();
+                                                    if(wVal.unprotected.info.progress == 1.0){
+                                                        eventManager.emit('startAssimilate',wVal)
+                                                    }
+                                                    wVal.unprotected.progress = pm.mProgress;
+                                                    dbW.put(wVal.workName,wVal,(err) => {
+                                                        if(err){
+                                                            console.error('ERROR: ',err);
+                                                        }
+                                                    })
+                                                    // update blockinfo
+                                                    var blockStatus = {}
+                                                    blockStatus.workName = wVal.workName
+                                                    blockStatus.index = wVal.unprotected.block.index
+                                                    blockStatus.status = 'validated'
+                                                    var infos = []
+                                                    infos.push(blockStatus)
+                                                    ipcManager.serverEmit('updateBlockStatus',infos)
+                                                    
+                                                }
+                                            })
+                                           
+                                        
+                                           
+
                                         }
                                     })
                                 }else{
@@ -703,7 +754,6 @@ class Furseal{
                     return
                 }
                 data.enKey = res.key
-                console.log(data.enKey)
                 //download input files
                 var targetPath = inputFileTmp+'/'+data.unprotected.blockName+'_'+data.protected.inputFiles[0].fileName
                 debug('start to download '+data.protected.inputFiles[0].fileName+' to '+targetPath)
@@ -737,10 +787,8 @@ class Furseal{
                                 retBk.protected.outputFiles[0].path = ''
                                 retBk.protected.outputFiles[0].hash = res2.hash
                                 //encrypto block protected infomation
-                                var keyBack = base58.decode(ret.enKey);
+                                var keyBack = base58.decode(retBk.enKey);
                                 keyBack = keyBack.toString()
-                                console.log(retBk.unprotected.blockName+' Use key ')
-                                console.log(res.key)
                                 var protecStr = JSON.stringify(retBk.protected)
                                 var gcArray = []
                                 for(var p=0;p<retBk.protected.outputFiles.length;p++){
@@ -829,7 +877,6 @@ class Furseal{
                                             //     debug(data)
                                             // })
                                             addElement(bIndexes,val.unprotected.blockName)
-                                            console.log('maybe busy')
                                             nodeManager.hardUnBlock(pIDStr)
                                         }
                                         

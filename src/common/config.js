@@ -91,14 +91,12 @@ class Config{
 
     decrypto(encodeStr){
         var dataBuffer = base58.decode(encodeStr);
-        debug('dataBuffer.length '+dataBuffer.length)
         var key = base58.decode(this.config.keys.publicKey)
         var protectedTmp =  null
         for(var i=0;i<dataBuffer.length;i+=msgPDLength){
             var len = msgPDLength
             var subBuffer = Buffer.alloc(len)
             dataBuffer.copy(subBuffer,0,i,i+len)
-            debug('process encrypto str len '+subBuffer.length)
             var tmp = crypto.publicDecrypt(
                 {
                 key:key,

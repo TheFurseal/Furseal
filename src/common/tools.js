@@ -83,7 +83,6 @@ module.exports = {
             var len = msgPDLength
             var subBuffer = Buffer.alloc(len)
             data.copy(subBuffer,0,i,i+len)
-            console.log('subData length '+subBuffer.length)
             var tmp = crypto.privateDecrypt(
                 {
                     key:privKey,
