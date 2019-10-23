@@ -935,10 +935,10 @@ class Furseal{
                                 devStat.update('standby')
                             })
                         }else{
-                            eventManager.emit('startCompute',tmpRecive)
+                            eventManager.emit('startCompute',infoOut)
                             var notif = {
                                 title: 'New task',
-                                body: 'Got one request: '+tmpRecive.unprotected.blockName
+                                body: 'Got one request: '+infoOut.unprotected.blockName
                             }
                             ipcManager.serverEmit('notification',notif)
                         }
