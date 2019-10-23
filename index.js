@@ -573,7 +573,7 @@ class Furseal{
                     data.unprotected.info.timeCost = date.valueOf() - value.unprotected.info.startTime
                     value.unprotected.info.timeCost = data.unprotected.info.timeCost
                     value.unprotected.status = 'preDone'
-                    dbB.put(value.unprotected.blockName,value,(err) => {
+                    dbB.put(data.unprotected.blockName,value,(err) => {
                         if(err){
                             console.error(err)
                         }
@@ -588,7 +588,6 @@ class Furseal{
         })
 
         eventManager.registEvent('startValidate',(data) => {
-            //resolve result first
             optAuth.path = '/resolveResult'
             optAuth.method = 'POST'
             var postPair = {};
@@ -602,10 +601,10 @@ class Furseal{
                 if(res.error){
                     console.error('resolveResult',res);
                 }else{
+                    console.log(data.unprotected.blockName+' use key ')
+                    console.log(res.key)
                     var keyBack = base58.decode(res.key)
                     keyBack = keyBack.toString()
-                    console.log(keyBack)
-                    console.log(data.protected)
                     var dataBuffer = base58.decode(data.protected);
                     var protectedTmp =  Tools.privateDecrypt(keyBack,dataBuffer)
                     protectedTmp = protectedTmp.toString()
@@ -702,6 +701,7 @@ class Furseal{
                     debug('Confirm block failed')
                     return
                 }
+                data.enKey = res.key
                 //download input files
                 var targetPath = inputFileTmp+'/'+data.unprotected.blockName+'_'+data.protected.inputFiles[0].fileName
                 debug('start to download '+data.protected.inputFiles[0].fileName+' to '+targetPath)
@@ -735,9 +735,9 @@ class Furseal{
                                 retBk.protected.outputFiles[0].path = ''
                                 retBk.protected.outputFiles[0].hash = res2.hash
                                 //encrypto block protected infomation
-                                var keyBack = base58.decode(res.key);
+                                var keyBack = base58.decode(ret.enKey);
                                 keyBack = keyBack.toString()
-                                console.log('Use key ')
+                                console.log(retBk.unprotected.blockName+' Use key ')
                                 console.log(res.key)
                                 var protecStr = JSON.stringify(retBk.protected)
                                 var gcArray = []
@@ -748,8 +748,7 @@ class Furseal{
                                 var enBuf = Tools.publicEncrypt(keyBack,protecStr)
                                 enBuf = base58.encode(enBuf)
                                 retBk.protected = enBuf.toString()
-                                console.log('encode')
-                                console.log(retBk.protected)
+                                delete retBk.enKey
                                 eventManager.emit('finishCompute',retBk)
                             })
                         })
@@ -777,10 +776,10 @@ class Furseal{
         //controll events
         eventManager.registEvent('demand',(peerID) => {
             if(bIndexes.length){
-                var tmp = bIndexes[0]
-                bIndexes.splice(0,1)
                 var pIDStr = peerID.id.toB58String()
                 nodeManager.hardBlock(pIDStr)
+                var tmp = bIndexes[0]
+                bIndexes.splice(0,1)
                 dbB.get(tmp,(err,val) => {
                     if(err){
                         console.error(err)
@@ -828,6 +827,7 @@ class Furseal{
                                             //     debug(data)
                                             // })
                                             addElement(bIndexes,val.unprotected.blockName)
+                                            console.log('maybe busy')
                                             nodeManager.hardUnBlock(pIDStr)
                                         }
                                         

@@ -29,9 +29,11 @@ class NodeManager{
 
     isBlock(id){
         if(id == null){
+            debug('Empty ID')
             return false
         }
         if(this.pBlockList[id] >= 5 || this.pHardBlockList.indexOf(id) >= 0){
+            debug(id + 'is blocked')
             return true
         }else{
             return false
@@ -57,7 +59,7 @@ class NodeManager{
             return
         }
         if(this.pHardBlockList.indexOf(id) < 0){
-            //debug('Block '+id+' hard')
+            debug('Block '+id+' hard')
             this.pHardBlockList.push(id)
         }
     }
@@ -68,7 +70,7 @@ class NodeManager{
         }
         var index = this.pHardBlockList.indexOf(id)
         if(index >= 0){
-            //debug('Unblock '+id+' hard')
+            debug('Unblock '+id+' hard')
             this.pHardBlockList.splice(index,1)
         }
     }
