@@ -685,7 +685,6 @@ class Furseal{
 
         // init event handlers
         eventManager.registEvent('startCompute',(data) => {
-            devStat.update('busy')
             debug('Confirm block '+data.unprotected.blockName)
             var bstr =  base58.decode(configure.config.goldenKey)
             var protectBuffer = data.protected
@@ -776,11 +775,12 @@ class Furseal{
                 var tmp = bIndexes[0]
                 bIndexes.splice(0,1)
                 var pIDStr = peerID.id.toB58String()
+                nodeManager.hardBlock(pIDStr)
                 dbB.get(tmp,(err,val) => {
                     if(err){
                         console.error(err)
+                        nodeManager.hardUnBlock(pIDStr)
                     }else{
-                        nodeManager.hardBlock(pIDStr)
                         p2pNode.libp2p.dialProtocol(peerID,'/cot/workrequest/1.0.0',(err,conn) => {
                             if(err){
                                 console.warn(err)
@@ -817,7 +817,6 @@ class Furseal{
                                                     ipcManager.serverEmit('updateBlockStatus',infos)
                                                 }
                                             })
-                                            
                                         }else{
                                             // p2pNode.libp2p.hangUp(peerID,(err) => {
                                             //     debug('close connection to '+peerID.id.toB58String())
@@ -858,6 +857,7 @@ class Furseal{
                     debug('handle',tmpRecive.unprotected.blockName)
                     p.push('recived')
                     p.end()
+                    devStat.update('busy')
                     decideEngine.enviromentValidation(tmpRecive,(err) => {
                         if(err){
                             console.error(err)
