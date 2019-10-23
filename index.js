@@ -685,7 +685,8 @@ class Furseal{
         })
 
         // init event handlers
-        eventManager.registEvent('startCompute',(data) => {
+        eventManager.registEvent('startCompute',(dataIn) => {
+            var data  = JSON.parse(JSON.stringify(dataIn))
             debug('Confirm block '+data.unprotected.blockName)
             var bstr =  base58.decode(configure.config.goldenKey)
             var protectBuffer = data.protected
@@ -702,6 +703,7 @@ class Furseal{
                     return
                 }
                 data.enKey = res.key
+                console.log(data.enKey)
                 //download input files
                 var targetPath = inputFileTmp+'/'+data.unprotected.blockName+'_'+data.protected.inputFiles[0].fileName
                 debug('start to download '+data.protected.inputFiles[0].fileName+' to '+targetPath)
@@ -895,7 +897,6 @@ class Furseal{
                 },function(err){
                     if(err){
                         console.error(err)
-                        devStat.update('standby')
                     }
                 })
             )
