@@ -671,13 +671,13 @@ class Furseal{
                                             //update workInfo
                                             dbW.get(ret.workName,(err,wVal) => {
                                                 if(err){
-
+                                                    console.error(err)
                                                 }else{
                                                     var blockDim = wVal.unprotected.block.indexs;
                                                     var indexs = blockDim.split('_');
                                                     var total = wVal.unprotected.block.number
                                                     
-                                                    var blockIndex = wVal.unprotected.block.index;
+                                                    var blockIndex = ret.unprotected.block.index;
                                                     var index = blockIndex.split('_');
                                                     if(index.length < 2){
                                                         console.error('bad block index');
@@ -697,10 +697,11 @@ class Furseal{
                                                             console.error('ERROR: ',err);
                                                         }
                                                     })
+                                                    debug('update progress to '+wVal.unprotected.info.progress)
                                                     // update blockinfo
                                                     var blockStatus = {}
-                                                    blockStatus.workName = wVal.workName
-                                                    blockStatus.index = wVal.unprotected.block.index
+                                                    blockStatus.workName = ret.workName
+                                                    blockStatus.index = ret.unprotected.block.index
                                                     blockStatus.status = 'validated'
                                                     var infos = []
                                                     infos.push(blockStatus)
@@ -913,7 +914,7 @@ class Furseal{
                     p.push('recived')
                     p.end()
                     devStat.update('busy')
-                    decideEngine.enviromentValidation(tmpRecive,(err) => {
+                    decideEngine.enviromentValidation(tmpRecive,(err,infoOut) => {
                         if(err){
                             console.error(err)
                             conn.getPeerInfo((err,info) => {

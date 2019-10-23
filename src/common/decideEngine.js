@@ -95,21 +95,23 @@ class DecideEngine{
     }
 
     // (err)
-    enviromentValidation(info,callback){
-        if(info == null){
-            callback(new Error('empty block info'))
+    enviromentValidation(infoInput,callback){
+       
+        if(infoInput == null){
+            callback(new Error('empty block info'),infoInput)
             return
         }
+        var infoIn = JSON.parse(JSON.stringify(infoInput))
         var detector = this.envDetector
         var cliTemp = this.cli
-        var setName = info.unprotected.appSet 
+        var setName = infoIn.unprotected.appSet 
         this.db.get(setName,(err,value) => {
             if(err){//don't have
                 cliTemp.getDapp(setName,(err,info) => {
                     if(err){  
-                        callback(err)
+                        callback(err,infoIn)
                     }else{
-                        callback(null)
+                        callback(null,infoIn)
                     }
                 })
             }else{// have
@@ -126,15 +128,15 @@ class DecideEngine{
                                 value.apps.dapp.push(valueTmp)
                                 //enviroment check passed, preper input files
                                 
-                                callback(null)
+                                callback(null,infoIn)
                             }else{
-                                callback(new Error('3rd Party requrement check failed'))
+                                callback(new Error('3rd Party requrement check failed'),infoIn)
                             }
                         })
                         return
                     }
                 }
-                callback(new Error('no dapp for current platform'))
+                callback(new Error('no dapp for current platform'),infoIn)
             }
         })
     }
