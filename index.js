@@ -604,6 +604,8 @@ class Furseal{
                 }else{
                     var keyBack = base58.decode(res.key)
                     keyBack = keyBack.toString()
+                    console.log(keyBack)
+                    console.log(data.protected)
                     var dataBuffer = base58.decode(data.protected);
                     var protectedTmp =  Tools.privateDecrypt(keyBack,dataBuffer)
                     protectedTmp = protectedTmp.toString()
@@ -735,6 +737,8 @@ class Furseal{
                                 //encrypto block protected infomation
                                 var keyBack = base58.decode(res.key);
                                 keyBack = keyBack.toString()
+                                console.log('Use key ')
+                                console.log(res.key)
                                 var protecStr = JSON.stringify(retBk.protected)
                                 var gcArray = []
                                 for(var p=0;p<retBk.protected.outputFiles.length;p++){
@@ -743,8 +747,9 @@ class Furseal{
                                 gcManager.register(gcArray,retBk.workName+'_close')
                                 var enBuf = Tools.publicEncrypt(keyBack,protecStr)
                                 enBuf = base58.encode(enBuf)
-                                enBuf = enBuf.toString()
-                                retBk.protected = enBuf
+                                retBk.protected = enBuf.toString()
+                                console.log('encode')
+                                console.log(retBk.protected)
                                 eventManager.emit('finishCompute',retBk)
                             })
                         })
@@ -876,6 +881,7 @@ class Furseal{
                                         }
                                     })
                                 }
+                                devStat.update('standby')
                             })
                         }else{
                             eventManager.emit('startCompute',tmpRecive)
@@ -887,7 +893,10 @@ class Furseal{
                         }
                     })
                 },function(err){
-                    if(err)console.error(err)
+                    if(err){
+                        console.error(err)
+                        devStat.update('standby')
+                    }
                 })
             )
         })

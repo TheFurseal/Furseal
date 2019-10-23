@@ -2,51 +2,42 @@ const crypto = require('crypto')
 const base58 = require('bs58')
 const fs = require('fs')
 const Tools = require('../src/common/tools.js')
-var str = 'asdfghjklaqwerty'
-
-var buf = Buffer.from(str)
-
-console.log(str.length)
-console.log(buf.length)
-
-var data = fs.readFileSync('/Users/John/Desktop/data_1571762057627_4_3')
-data = data.toString()
 
 
-crypto.generateKeyPair('rsa', {
-        modulusLength: 1024,
-        publicKeyEncoding: {
-            type: 'pkcs1',
-            format: 'pem'
-        },
-        privateKeyEncoding: {
-            type: 'pkcs1',
-            format: 'pem'
-        }
-    }, 
-    (err, publicKey, privateKey) => {
-        
-        if(err != null){
-            console.error(err);
-        }
 
-        // console.log('construct key\n',privateKey);
-        var key2 = {};
 
-        // key2.privateKey = base58.encode(Buffer.from(privateKey));
-        // key2.privateKey =  key2.privateKey.toString();
 
-        // key2.publicKey = base58.encode(Buffer.from(publicKey));
-        // key2.publicKey = key2.publicKey.toString();
-        // console.log(postData);
-        console.log(privateKey)
-        console.log(publicKey)
-        console.log('original')
-        console.log(data)
-        var ret = Tools.publicEncrypt(publicKey,data)
-        console.log('encode done')
-        var final = Tools.privateDecrypt(privateKey,ret)
-        console.log(final.toString())
-      
-    });
 
+var a = {
+    privateKey: 'hX3yf9Am3Np7mWCDuD2TLhn56yA1zLqmTzu8Awp7fmDiqCcfxUjfw6K88PQh1hop3ynrc1pbojqhzdktE2n573zpUNG22yTaaJKAeqamQrKiMPvCc8CxYqVinjuKgCctmscXqQTVBFNfgNbRARMtXjdLL7L8KriquE9TV2KFNi9ihQLHXzi3cPt4KA8PA6gesA9gFATyrmwWtzrWReCiPQsCdFvSJdq1k2RNjusPyawwbErP5wqifR8Cpj4Sd8gwC3Ep5d7wCCfepsqSuHyGUbmUHdk5HTUo8nCQ1vLCCQzy7iy87RNXPRHjW5QgoKQRRH184kMFEno5Gonc1RmqUiNPiF55wk1R4Lnv4hTRJ5HCqLRG8gEGDdthYUTEqhEVUQxfG8kbD3rZpegnS7tcXiSaPKQHcRokbX2H8FsRuuTbZgvyFn3pct47oSwG27aPbVif39dtzy9odTt7iWFxEVhWVzP7H3tz2kC74P7ydLQZUkqkEZxnCbwG4QHotbEXaUaHh7yhzjZnV4TbbtgANRTufH7UsGQkjJir26r4wK3eyuqvyVEMnD3xEnrw6i5PpU8wKYNpaBh5y3Ua5eqespv8cToKPcjCGJjRAgLVp7x8huooYE1pjbqDdtH9BUpcannjX7RDHa7QZHfSngJABrSExAhAMJSmX3uTFy8BzJA4uXnBfZr3952CwFbYSPDG8S1kPWZCt1gQTT4ZuzSBCotFioRmdCwTC7wdVVz7r228A1dv6RTaLrgjm2jMtEuXJheeJXEJok2nBwE6K3BU6eoGBjbo645tV3QP7cXVmhx5Gkbg4os6Sdhb8ad6G6wTN9ftXSSPv8ufnLy1fNYJD5fxfdBeudcHKb78sZud12YdVeRrt2gRTcYCNrPe2G7nfva2voAydUsSM5pufMnDhzq2EBAyMjsVXrgnRi3UCok1pRUgzQ3A2vqxzPfjdY6ERCZgZ6Fszpi7r98H9vK4MBEJJdBK8QSZMn4ZHAwAamF7uk3KP2ivQzijb7s78uWouvYN2r2iSHUhZqpK7J6rkCkD1W8vyZxFFJVWDieLwHxZhdJkT8zEwKjTEU8PioxZ7vifLpV3osPyAMexVUmZzyqYJ9C3r8hJK52pJbpvSYgTHPbRy6aQnqv8T84WkdC7kkLW1QqwtxjUeqsVCKGQXic7fSxg21YHtfM5qjFTntP1x6Pj8mFWRuLssqb',
+    publicKey: '5CCQyGjgGDvAzitVeArScutEw5jREb3EgTrZ2BZaETxttZHFLSj3jYJPF5rXpPbzwvmPLW25JpuQbdpPRS2zHhMb6gMDT3KXB7m6pQjMqEfohD7juhnGkeHjGmAkpYTscsVTPYCnhHByYt9LsFsBQtDoPqwZ1K6iRCPNTFB5V3dFfMhUrrjtYRQo8USAkMaeBRngGFDdLGj3LGkLNB5CN9gRYEpfwqJYpyZmgHPnKU6A3KhBKrWibJur38k9ysqAoBQRCffpRSR6Lrg1jVqTKS83mCzvpLwVX48mVBpckNByo8JMTz1HYRpeSJsXttzaj27t5pH8GVH5FZoxeQaReJD'
+}
+
+var b = {
+    privateKey: 'hX3yf9Am3Np7mWCDuD2TLhn56yA1zLqmTzu8Awp7fmDiqCcfxUjfw6K88PQh1hommyL4LUhTkqk8PvPiMQnBSoBCHhxgS1Qs6Rjhz6ZqzQiRwGUjj4Ak7hyuUUTHbjiEbByi5Di7VydjLj6NATRSXxN4jqPfaQEx3TCnwUpRpYUEv7wYwYUU6NfqktdfPxhAC1NNiNFZEC2vnGgeT23s8awGUCwZqCLe1WSinXWd9JnRbKM5G5N7BeQT3DavTH1owG1U4JWUK3ErfzZ1HXtcW8JRiUFynhwmptkvMdGf4wnwwCrcUfCD3ZKsXFm2dTtKRDZwWBiV3ZM7tD1eSmhoqUeQ5TA9YemFEq8mbQkXwD9hybr2qmc4GrrwKamWUC7aqd5rFN63vSmMUSoYwZUp2H6J2o118fJsLsw4ZNEbU1Y7bifFuwCfExYu7KGkbU8g1hoWH2RaR6UVvY2fdSyGoXrGDVRciPir5LbnLoYgbbKjqNHpJ74Q28ae1vC2RnYiLK48TEWp1QxsGxidQxKw7dkgpNkPaBGLmLGSdcYMQKb3tCdwSNnnYDkbmF4oWqicC5ErnvncgNMWoWPwgzmQfEhGqdNxxgprPKG5UjKDwd6bXDif171envvJQpQpXkhnjgZKamEX8szi1tUX1BncaHzJX9tK3sQRfbZuLdWCdc6N6fQT7ZkFYvRtYKiwVVweeqXrq3q756EW5X3pdwT7sRUvMBn95adigE5S9a696JKd3w4swynLt6bQryD8n5Tw2R8BySeAjHxGdL5pFBHnWqEL4WdQEf93KYnHzd8TLhVxRM5Hrv7pDr8TxV2UC3RjRT7V4o4WpWkVHSsaaRMKACRnjNFYNC74fJHYg45u47A6sML1phzEnndSW4eajw47XmYJMzoLuF68B5iW19ZXTPZSngRdWFnLsA3EMyT8qJN6UXaCw21CRTz5RS4u5Rviys4YiLzTTwhaqUEdMmf3643PxJWTHffcoL56QanAT52SPrtJgndQ1fuFEWHLxsQHty1qtLbr2FqTqdJC2VwzxufWY52cWfF6mHri6ZxhHhokgPwxu2w6iRpWuLZf5naWF1Lv9UZsfNLxU39mQSU1255akfw65WUPxL8bqAZr5JMQABsLtDbsa3tXFdYh3B1e56xqANYRKvPbKVr21zMLY4o4CxrBREz2B3dnqgaSaJUGySobbdgEU4SvU2D',
+    publicKey: '5CCQyGjgGDvAzitVeArScutEw5jREb3EgTrZ2BZaETxttZHFLSj3jYJMz2Be6funaf4oDf9to2SjecnaN1ySyN4Z3hZXLhWNAXkhSfhUvkgF2zL9XgPqkda42JMKLJaYGnqPPV72vwYfedG87Mt6NuQHfBWHJFdFdieRoh5hA51mub1iGbJKbPUc9MNHZxUUA9xN9JxUHE5Hos3m4QGY9m48hbfN7FZGCGUR6bSWcfWdXdRDx2Z9xzKBRQsZA2yyhNjYJdbVCjo5QsVjmBaPEq2jjCNpjCdKUEqyqeKXjgxkhxXExf1zZvw2Zz51BhGion5NVBPiMF7TTcrwcMbF6bK'
+  }
+
+var c = {
+    privateKey: 'hX3yf9Am3Np7mWCDuD2TLhn56yA1zLqmTzu8Awp7fmDiqCcfxUjfw6K88PQh1hop2FKRY5yeUN6YV4AbGTh3UvkGHMhT5eq46khkS5LwxqUMH6XxjgXTYXkS3CSr73PRE2cbGYAofdSB4ChQtebHxw7PDHdgH3V8A7opMjDNPg9UFnpwhs4Ts7YQgpYfqY4m2wSXasf2bnfxtbEsDY2qcQ7e2BVTV1tzZ4tfxnCDQ5TUMGBT7F9yuoXvMRmaoXo6xW57EPSxcbzTX6NSBen8SvMveADK5MhWn3GYQeLmNvPWFcK27WuLGckiXVnW1VPCQBFTcfRRhefeBwtppqtq1YgKqNxsdUkf2Mt1tTTL4zHoZFybdgEH5fanH4DDZ4Z6PaN5wQqJwiQuMpvvBKRhQknbd3wRVHs6rELo4y5hPTs82J7yGHvqFjpd2WjqwZ2bLofBFhRbS9Emxtdzo3sudrKGK8nKq8a5pMDH6G76RowA7XnwH2heXSGkRv74oSdmFDNYjtVWWxf8LdC6sApEdd8YcLfnzLVSaAv2mFhxrVGDojZLNyD5SACiFvVmLMeUbwd5LUdD5eZzZAkDPD7Vr3JuyHeNWPhNdpV4ZsxqHAt7YK2yTkSfYAT6YTkfz4ta93EvuL1Q9kvZQgDWXLhNCir4gWYK52KvmuTH1K4aQzyWCNKfovwfAjsZR56NYfcACdzu1EFus6UWGoewce2McBdcRPd4JDEcoucrMnGPN2hWJLKmgW4Jnf6k8nsiMXJn3oYbMzKNhyy31Z8c5bnFHHp2NBnekmKmXkopXATWK2Aou6tWAmUWJyKpPNAFQTzGsviifu4XLtFwpdayhYYjPo75bcPQhZ9ur91f1Vh1ECKKcAsTr351YazRV4uimdByfCumapZxUrSwekPSwMWEsyoSTncEiwp4k5GZwjiy1YoRCSgoSvszqKwCmFBtNBNM26tXfdQRpH2trSGWpENZMzG3fqVpT53h4k3pLZSgHUBFES3aDKLjyWPSckyEHM5Eg8j7pyHhL9DwFkc6UVxVKeYqVrc5557n79ZBM2uz4ZXfMRsDtczdn2dK1Pwaj5vXDmXCdktCnsc4X2CNjTHDYoAxhkXpd4eDU46oUZmiMtEWv8JcSvL1U6VEyH7PBcnFDvH6UPXsFupbb79dVnfti1zhnGGnMp26p9cnnVYWAFk3Sv3Cq3mekueHfU5',
+    publicKey: '5CCQyGjgGDvAzitVeArScutEw5jREb3EgTrZ2BZaETxttZHFLSj3jYJNnMFz3xDUVWTbNWauZtGy92kx8KTkyx8RPbtXFyJDL3LTc2VLuJhK2mjPHoSqDPgUvGM7FgMzg9RRg6T1reF7NCCPrnojUvWmmjKC64ihhsAQ3wRprEnnU18Jo2ovQ5nLP5uXQ89mVTudU9dF9M7a3dM1xwmUDgspctbzBt9ZCFQAVejotRv4ZuJpj8H2h6HLcZ4gSMEPpVet7deTS3MHArq3E6DDqenqV4W691YR1Bu7xSTifTHxRM9XFEcUQgcE8b4BBnAL1D1Py7wBjqaKpLwoT2UK31b'
+  }
+
+
+  console.log('a')
+  console.log(base58.decode(a.privateKey).toString())
+  console.log(base58.decode(a.publicKey).toString())
+
+  console.log('b')
+  console.log(base58.decode(b.privateKey).toString())
+  console.log(base58.decode(b.publicKey).toString())
+
+  console.log('c')
+  console.log(base58.decode(c.privateKey).toString())
+  console.log(base58.decode(c.publicKey).toString())
+
+
+
+  var data = "395kuk4gPgNUU3dHwJypjRPJY2jEsRWNd6tWHasfXPFGmgxUdA5y2BQpghvgkpkor5t9EMmtZ9CfwZAocBwjFHiQqtuGZ5P93o7HfwBtBo9PT7uvXf6cV7uPbST83gFisa8nuvQKEbRNbrPMDf3bxnVeHhzZYstNNPXFojZEWKGoWDuNobGgLubXg5F7UBU61FRWD5hkM6WJmu6qS6Z9TtWKh6GUDSeLgULnYknLGSquQiU8UnHbNR2V2HWPhbDRTSiCarR5i4VCDwRTnADNtmQdHY3QiqaRkXaEHFsMd9JvrZvhqS23BoZdCP2i5ix5cWabeQosvFGuJwaHqZ5weRTp3fKCaB9zNt83vjHDJQCCcD9BgJ7xUNEbH4RNCe1SHVBMuo3Evtokj8YdUqsxSEXyAgMDtcxAzT6TEiCi4vd4PuGEaFfAKpiy4hC8DpLc8z9nZmrnNLHyoofkLD7Je7tfmToBLawd8r7SwLUTTW7zCw2F7QqxiJWLd5ed3SZYDxejizpG8Bu2xgb6baJMGhdhKdVjjkiv3hwv62YZvHniM7huonb6igLDDBuKbgVKXPf7CdBXcWkSP4dtwz1m2PezecjQhr4HGKASMrzxriBxFTSeMcBfiMysYvmgZBHfriBpHTjXXXNgvhpymuK788KAGi17XJrdJNKmJx4YkeuyM6MXvPpw8mFarvfqJpLdJAGz2TPxVeSnpaxrD6JPwXSbYrWNxMnmFdxLkb5GjjLwmmA5Se8n8n2A8PxyQajp9vKMyLWJFdY92qCmWEPsWCAEhfzNoXf6nMDX6XxoeUj3gkA7v7cfDH7tDAAR6MxeY8umho51EkRqK7XgzSjsLY7dCuoQfPxxUe9j7UZzwhFDJKvhY3iLFLNuoukJmc6S8F7E13X74BoFpkwhbbhEJEMGLQfVzMn6TBiKdNxbcdAmQbdmAXCzhSKGtDvY4GsSGAarCXMx9AKd2qrDvLK9mDurWVDmS8gjFJwbWsJmRPpfearmn1jXJqiYrhgDhq1arqALsBbSeqhW2EDCaGMByPe7Z9qC849gioYmYb3dKA7uMZZxgWRc2uMRWo7Jwm329CUPFuj6nauT2wRukjzqbwyLAeqNQDPKv2A6dFkCK7CYK5uQpAS9kB53V4VWRtKm8xSmqcVCB8gsGbUKD1Md2W4W5UnDEuos9LnZdE5CtmPDTaFq5yaStfmnamCAyxrkUYj79bjM"
+  var tmp = Tools.privateDecrypt(base58.decode(b.privateKey).toString(),base58.decode(data))
+  console.log(tmp.toString())

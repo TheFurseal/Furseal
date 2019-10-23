@@ -21,9 +21,7 @@ const msgLength = 110
 
 module.exports = {
     publicEncrypt: (pubKey,data) => {
-        if(typeof(data) != 'string'){
-            data = JSON.stringify(data)
-        }
+       
         var enBuf = null
         for(var i = 0; i< data.length; i+=msgLength){
             var len = msgLength
@@ -48,6 +46,7 @@ module.exports = {
     },
     publicDecrypt: (pubKey,data) => {
         if(typeof(data) == 'string'){
+            debug('Convert string to Buffer')
             data = Buffer.from(data)
         }
         var protectedTmp = null
@@ -76,6 +75,7 @@ module.exports = {
     },
     privateDecrypt: (privKey,data) => {
         if(typeof(data) == 'string'){
+            debug('Convert string to Buffer')
             data = Buffer.from(data)
         }
         var protectedTmp = null
@@ -83,6 +83,7 @@ module.exports = {
             var len = msgPDLength
             var subBuffer = Buffer.alloc(len)
             data.copy(subBuffer,0,i,i+len)
+            console.log('subData length '+subBuffer.length)
             var tmp = crypto.privateDecrypt(
                 {
                     key:privKey,
