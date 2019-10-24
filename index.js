@@ -785,7 +785,7 @@ class Furseal{
                         status.recived = totalBytes
                         downloadManager.update(status)
                     }),
-                    pull.collect((err, buf) => {
+                    pull.concat((err, buf) => {
                         if(err){
 
                         }else{
