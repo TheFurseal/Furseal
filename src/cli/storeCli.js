@@ -21,7 +21,8 @@ class StoreCli{
         {
             parameter:param,
             p2pNode:p2pNode,
-            appDB:db
+            appDB:db,
+            downloadManager:dMgr
         }
     ){
        if(p2pNode == null){
@@ -41,6 +42,7 @@ class StoreCli{
             )
         }
         this.appRepo = appRepo
+        this.downloadManager = dMgr
     }
 
     getAppList(callback){
@@ -115,6 +117,7 @@ class StoreCli{
             debug(res)
             res = res[0]
             postData.apps.validator.url = res.hash
+            postData.apps.validator.size = res.size
             count++
         })
 
@@ -133,6 +136,7 @@ class StoreCli{
             res = res[0]
             
             postData.apps.dividor.url = res.hash
+            postData.apps.dividor.size = res.size
            
             count++
         })
@@ -152,6 +156,7 @@ class StoreCli{
             res = res[0]
             
             postData.apps.assimilator.url = res.hash
+            postData.apps.assimilator.size = res.size
             
             count++
         })
@@ -181,6 +186,7 @@ class StoreCli{
                     var item = {}
                     item.name = pathArry.apps.dapp[countReg].name
                     item.url = res.hash
+                    item.size = res.size
                     item.path =  appRepo+'/'+item.name
                     item.target = pathArry.apps.dapp[countReg].target
                     resArry.push(item)
@@ -230,7 +236,7 @@ class StoreCli{
     }
 
     getDapp(setName,callback){
-
+        var downloadManager = this.downloadManager
         var appRepoTmp = this.appRepo 
         var p2pNode =  this.p2pNode
         var db = this.db
@@ -249,34 +255,46 @@ class StoreCli{
             }
 
             //download dapp
-            p2pNode.get(res.apps.dapp[0].url,(err,files) => {
-                if(err){
-                    callback(new Error('donwnload dapp filed'),res) 
-                }else{
-                    var targetPath = appRepoTmp+'/'+res.apps.dapp[0].name
-                    res.apps.dapp[0].path = targetPath
-                    var inBuffer = Tools.decompressionBuffer(files[0].content)
-                    fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
-                        // throws an error, you could also catch it here
-                        if(err){
-                            console.error(err)
-                        }else{
-                            debug('Download '+files[0].path+' to '+targetPath)
-                            db.put(setName,res,(err) => {
-                                if(err){
-                                    console.error(err)
-                                }
-                                callback(null,res)
-                            })
-                        }
-                    })
-                }
-            })
+            var totalBytesDapp = 0
+            pull(
+                p2pNode.catPullStream(res.apps.dapp[0].url),
+                pull.through(dataIn => {
+                    totalBytesDapp += dataIn.length
+                    var status = {}
+                    status.Total = data.protected.outputFiles[0].size
+                    status.recived = totalBytesDapp
+                    downloadManager.update(status)
+                }),
+                pull.collect((err, buf) => {
+                    if(err){
+                        callback(new Error('donwnload dapp filed'),res) 
+                    }else{
+                        var targetPath = appRepoTmp+'/'+res.apps.dapp[0].name
+                        res.apps.dapp[0].path = targetPath
+                        var inBuffer = Tools.decompressionBuffer(buf)
+                        fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
+                            // throws an error, you could also catch it here
+                            if(err){
+                                console.error(err)
+                            }else{
+                                debug('Download '+res.apps.dapp[0].url+' to '+targetPath)
+                                db.put(setName,res,(err) => {
+                                    if(err){
+                                        console.error(err)
+                                    }
+                                    callback(null,res)
+                                })
+                            }
+                        })
+                    }
+                })
+            )
         })
 
     }
 
     getAppSet(setName,callback){
+        var downloadManager = this.downloadManager
         var appRepoTmp = this.appRepo 
         var p2pNode = this.p2pNode
         var db = this.db
@@ -304,75 +322,108 @@ class StoreCli{
                 })
                 
                 debug('start to get '+res.apps.assimilator.url)
-                p2pNode.get(res.apps.assimilator.url,(err,files) => {
-                    if(err){
-                        console.error(err,files)
-                    }else{
-                        files.forEach((file) => {
-                            var targetPath = appRepoTmp+'/'+res.apps.assimilator.name
-                            var inBuffer = Tools.decompressionBuffer(file.content)
-                            fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
-                                // throws an error, you could also catch it here
-                                if(err){
-                                    console.error(err)
-                                }else{
-                                    debug('Download '+file.path+' to '+targetPath)
-                                    steps++
-                                }
-                            })
-                        })
-                    }
-                })
 
+                var totalBytesAs = 0
+                pull(
+                    p2pNode.catPullStream(res.apps.assimilator.url),
+                    pull.through(dataIn => {
+                        totalBytesAs += dataIn.length
+                        var status = {}
+                        status.Total = res.apps.assimilator.size
+                        status.recived = totalBytesAs
+                        downloadManager.update(status)
+                    }),
+                    pull.collect((err, buf) => {
+                        if(err){
+                            console.error(err)
+                        }else{
+                            files.forEach((file) => {
+                                var targetPath = appRepoTmp+'/'+res.apps.assimilator.name
+                                var inBuffer = Tools.decompressionBuffer(buf)
+                                fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
+                                    // throws an error, you could also catch it here
+                                    if(err){
+                                        console.error(err)
+                                    }else{
+                                        debug('Download '+res.apps.assimilator.url+' to '+targetPath)
+                                        steps++
+                                    }
+                                })
+                            })
+                        }
+                    })
+                )
                 
-                p2pNode.get(res.apps.validator.url,(err,files) => {
-                    if(err){
-                        console.error(err)
-                    }else{
-                        files.forEach((file) => {
+                var totalBytesVa = 0
+                pull(
+                    p2pNode.catPullStream(res.apps.validator.url),
+                    pull.through(dataIn => {
+                        totalBytesVa += dataIn.length
+                        var status = {}
+                        status.Total = res.apps.validator.size
+                        status.recived = totalBytesVa
+                        downloadManager.update(status)
+                    }),
+                    pull.collect((err, buf) => {
+                        if(err){
+                            console.error(err)
+                        }else{
+                           
                             var targetPath = appRepoTmp+'/'+res.apps.validator.name
-                            var inBuffer = Tools.decompressionBuffer(file.content)
+                            var inBuffer = Tools.decompressionBuffer(buf)
                             fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
                                 // throws an error, you could also catch it here
                                 if(err){
                                     console.error(err)
                                 }else{
-                                    debug('Download '+file.path+' to '+targetPath)
+                                    debug('Download '+res.apps.validator.url+' to '+targetPath)
                                     steps++
                                 }
                             })
+                                
                             
-                        })
-                    }
-                })
-
+                        }
+                    })
+                )
                 
-                p2pNode.get(res.apps.dividor.url,(err,files) => {
-                    if(err){
-                        console.error(err)
-                    }else{
-                        files.forEach((file) => {
+                var totalBytesDi = 0
+                pull(
+                    p2pNode.catPullStream(res.apps.dividor.url),
+                    pull.through(dataIn => {
+                        totalBytesDi += dataIn.length
+                        var status = {}
+                        status.Total = res.apps.dividor.size
+                        status.recived = totalBytesDi
+                        downloadManager.update(status)
+                    }),
+                    pull.collect((err, buf) => {
+                        if(err){
+                            console.error(err)
+                        }else{
+                            
                             var targetPath = appRepoTmp+'/'+res.apps.dividor.name
-                            var inBuffer = Tools.decompressionBuffer(file.content)
+                            var inBuffer = Tools.decompressionBuffer(buf)
 
                             fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
                                 // throws an error, you could also catch it here
                                 if(err){
                                     console.error(err)
                                 }else{
-                                    debug('Download '+file.path+' to '+targetPath)
+                                    debug('Download '+res.apps.dividor.url+' to '+targetPath)
                                     steps++
                                 }
                             })
+                                
                             
-                        })
-                    }
-                })
+                        }
+                    })
+                )
 
                 var arch = Tools.getArchInfo()
                 var platform = Tools.getPlatformInfo()
                 var url = ''
                 var name = ''
+                var size = 0
                 debug(res.apps.dapp)
                 for(var i=0;i<res.apps.dapp.length;i++){
                     var target = res.apps.dapp[i].target
@@ -381,31 +432,41 @@ class StoreCli{
                     if(Tools.matchOS(sp[0],platform) && Tools.matchArch(sp[1],arch)){
                         url = res.apps.dapp[i].url
                         name = res.apps.dapp[i].name
+                        size = res.apps.dapp[i].size
                         break
                     }
                 }
 
                 if(url != ''){
-                    
-                    p2pNode.get(url,(err,files) => {
-                        if(err){
-                            console.error(err)
-                        }else{
-                            files.forEach((file) => {
+
+                    var totalBytesDA = 0
+                    pull(
+                        p2pNode.catPullStream(url),
+                        pull.through(dataIn => {
+                            totalBytesDA += dataIn.length
+                            var status = {}
+                            status.Total = size
+                            status.recived = totalBytesDA
+                            downloadManager.update(status)
+                        }),
+                        pull.collect((err, buf) => {
+                            if(err){
+                                console.error(err)
+                            }else{
                                 var targetPath = appRepoTmp+'/'+name
-                                var inBuffer = Tools.decompressionBuffer(file.content)
+                                var inBuffer = Tools.decompressionBuffer(buf)
                                 fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
                                     // throws an error, you could also catch it here
                                     if(err){
                                         console.error(err)
                                     }else{
-                                        debug('Download '+file.path+' to '+targetPath)
+                                        debug('Download '+url+' to '+targetPath)
                                     }
                                 })
-                                
-                            })
-                        }
-                    })
+                            }
+                        })
+                    )
+                   
                 }else{
                     console.error('can not find dapp for '+platform+'-'+arch+' from app set '+res.setName)
                 }

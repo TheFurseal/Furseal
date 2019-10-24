@@ -16,7 +16,8 @@ class AppManager{
             workDB:workDB,
             p2pNode:p2pNode,
             appRepoPath:appRepoPath,
-            configure:conf
+            configure:conf,
+            downloadManager:dMgr
         }
     ){
         debug('Create AppManager')
@@ -28,6 +29,7 @@ class AppManager{
         this.p2pNode = p2pNode,
         this.dividorCount = 0
         this.appRepoPath = appRepoPath
+        this.downloadManager = dMgr
     }
 
     launchDividor(setName,callback){
@@ -165,7 +167,8 @@ class AppManager{
         var storeCli = new StoreCli({
             parameter:param,
             p2pNode:this.p2pNode,
-            appDB:this.appDB
+            appDB:this.appDB,
+            downloadManager:this.downloadManager
         })
         if(this.setsRegister['storeCli'] == null){
             this.setsRegister['storeCli'] = storeCli
