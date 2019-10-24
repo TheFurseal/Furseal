@@ -56,7 +56,7 @@ class AssimilatorCli{
             return 
         }
         this.ipcManager = new IPCManager()
-        this.globalCallback = {}
+        this.globalCallback = null
 
         this.dbB = dbB
         this.dbA = dbA
@@ -86,17 +86,14 @@ class AssimilatorCli{
             finalRes.workName = res.workName
            
             if(res.result == 'YES'){
-                finalRes.path = res.finalResult.path
+                finalRes.path = res.outputFile.path
                 callback(null,finalRes)
-                delete pa.globalCallback[res.workName]
+               
             }else if(res.result == 'NO'){
                 callback(res.error,null)
-                delete pa.globalCallback[res.workName]
             }else{
                 callback('system error',null)
-                delete pa.globalCallback[res.workName]
             }
-           
         }
 
          //IPC
@@ -106,7 +103,7 @@ class AssimilatorCli{
                 data = JSON.parse(data)
             }
             debug('revice result 2',data)
-            assimilate(data,pa.globalCallback[data.workName])
+            assimilate(data,pa.globalCallback)
         })
         this.ipcManager.connect(param.id)
         this.param = param
@@ -130,8 +127,7 @@ class AssimilatorCli{
                 wInfo = JSON.parse(wInfo)
             }
             
-            dbB.getAll((value) => {
-               
+            dbB.getAllValue((value) => {
                 var requestTmp = {}
                 requestTmp.type = 'assimilateRequest'
                 requestTmp.workName = wInfo.workName
@@ -140,28 +136,28 @@ class AssimilatorCli{
                 requestTmp.outputs = []
                 var count = 0
                 value.forEach(element => {
-                    var tmp = element.value
-                    if(typeof(tmp == 'string')){
-                        tmp = JSON.parse(tmp)
-                    }
-                    if(tmp.workName == wInfo.workName){
+                   
+                    if(element.workName == wInfo.workName){
                         var subTmp = {}
-                        subTmp.path = tmp.protected.outputFiles[0].path
-                        subTmp.index = tmp.unprotected.block.index
+                        subTmp.path = element.protected.outputFiles[0].path
+                        subTmp.index = element.unprotected.block.index
                         requestTmp.outputs.push(subTmp)
                         count++
                         if(count == requestTmp.totalBlock){
                             callback(requestTmp)
-                            debug(requestTmp)
+                            console.log(requestTmp)
+                        }else{
+                            console.log('Wrong block number!!!!!')
                         }
                     }
-                    
                 })
-                
             })
         }
-       
-        this.globalCallback[workInfo.workName] = callback
+
+        if(this.globalCallback == null){
+            this.globalCallback = callback
+        }
+        
        
         if(!this.ipcManager.serverConnected){
             var handle = setInterval(() => {
@@ -174,7 +170,6 @@ class AssimilatorCli{
                         }
                         this.ipcManager.clientEmit('request',value)
                     })
-                    
                 }
                 debug('wait assimilator ....')
             }, 500);
@@ -183,10 +178,8 @@ class AssimilatorCli{
                 if(typeof(value) != 'string'){
                     value = JSON.stringify(value)
                 }
-
                 this.ipcManager.clientEmit('request',value)
                 debug('send assimilate request 2')
-
             })  
         }
     }

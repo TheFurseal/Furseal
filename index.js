@@ -98,6 +98,39 @@ function addElement(obj,elem){
     obj[elem] = 1
 }
 
+// tool function 
+function globalGC(workName){
+    gcManager.clearByEvent(workName+'_close')
+    dbB.getAllValue((value) => {
+        var slaves = []
+        for(var i=0;i<value.length;i++){
+            var tmp = value[i]
+            if(tmp.workName == workName && tmp.unprotected.slave != null){
+                if(slaves.indexOf(tmp.unprotected.slave) < 0){
+                    slaves.push(tmp.unprotected.slave)
+                }
+            }else{
+                
+            }
+        }
+        slaves.forEach((element) => {
+            var pID = PeerID.createFromB58String(element)
+            p2pNode.libp2p.dialProtocol(pID,'/cot/workoption/1.0.0',(protocol,conn) =>{
+                var p = Pushable()
+                pull(p,conn)
+                var message = {}
+                message.workName = workName
+                message.type = ['gc','stop']
+                message.event = 'close'
+                p.push(JSON.stringify(message))
+                p.end()
+                debug('send on gc command')
+            })
+        })
+    })
+}
+
+
 class Furseal{
     constructor(homePath){
         this.homePath = homePath
@@ -137,38 +170,6 @@ class Furseal{
         eventManager = new EventsManager()
         Tools.setEnv('COT_DATA_PATH',homePath)
         nodeManager = new NodeManager()
-        // tool function 
-        function globalGC(workName){
-            gcManager.clearByEvent(workName+'_close')
-            dbB.getAllValue((value) => {
-                var slaves = []
-                for(var i=0;i<value.length;i++){
-                    var tmp = value[i]
-                    if(tmp.workName == workName && tmp.unprotected.slave != null){
-                        if(slaves.indexOf(tmp.unprotected.slave) < 0){
-                            slaves.push(tmp.unprotected.slave)
-                        }
-                    }else{
-                        
-                    }
-                }
-                slaves.forEach((element) => {
-                    var pID = PeerID.createFromB58String(element)
-                    p2pNode.libp2p.dialProtocol(pID,'/cot/workoption/1.0.0',(protocol,conn) =>{
-                        var p = Pushable()
-                        pull(p,conn)
-                        var message = {}
-                        message.workName = workName
-                        message.type = ['gc','stop']
-                        message.event = 'close'
-                        p.push(JSON.stringify(message))
-                        p.end()
-                        debug('send on gc command')
-                    })
-                })
-            })
-        }
-
         //init ipc 
         ipcManager.createServer({
             id:'nodeServer'
@@ -486,6 +487,9 @@ class Furseal{
                     dbW.put(element.workName,element)
                 }else if(element.unprotected.status == 'processing'){
                     addElement(wIndexes,element.workName)
+                    if(element.unprotected.info.progress == 1){
+                        eventManager.emit('startAssimilate',element)
+                    }
                 }else if(element.unprotected.status == 'assiming'){
                     // TODO
                 }else{
@@ -524,11 +528,11 @@ class Furseal{
                                 value.unprotected.status = 'finish'
                                 var notif = {
                                     title: 'work complated',
-                                    body: element.workName+' was complated'
+                                    body: value.workName+' was complated'
                                 }
                                 ipcManager.serverEmit('notification',notif)
                                 globalGC(value.workName)
-                                dbW.put(value.workName,element,(err) => {
+                                dbW.put(value.workName,value,(err) => {
                                     if(err){
                                         console.error(err)
                                     }
@@ -1049,7 +1053,6 @@ class Furseal{
                 val.forEach(elem => {
                     if(wIndexes[elem.workName]  == 1 && elem.unprotected.status == 'init'){
                         addElement(bIndexes,elem.unprotected.blockName)
-                        debug('add block '+elem.unprotected.blockName)
                         dbB.put(elem.unprotected.blockName,elem,(err) => {
                             if(err){
                                 console.log(err)
