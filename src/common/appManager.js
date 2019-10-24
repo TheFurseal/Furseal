@@ -19,6 +19,7 @@ class AppManager{
             configure:conf
         }
     ){
+        debug('Create AppManager')
         this.setsRegister = {}
         this.conf = conf
         this.appDB = appDB
@@ -126,7 +127,9 @@ class AppManager{
 
     launchDapp(setName,arg,workInfo,callback){
         debug('launch Dapp')
-
+        if(setName == null){
+            console.error(setName)
+        }
         if(this.setsRegister[setName] == null){
             this.setsRegister[setName] = {}
         }else{

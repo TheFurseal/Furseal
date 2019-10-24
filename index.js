@@ -490,8 +490,10 @@ class Furseal{
                     if(element.unprotected.info.progress == 1){
                         eventManager.emit('startAssimilate',element)
                     }
-                }else if(element.unprotected.status == 'assiming'){
+                }else if(element.unprotected.status == 'assimilating'){
                     // TODO
+                    element.unprotected.status = 'processing'
+                    dbW.put(element.workName,element)
                 }else{
                     debug(element)
                 }
@@ -520,7 +522,14 @@ class Furseal{
                 if(err){
                     console.error(err)
                 }else{
-                    if(value.unprotected.info.progress == 1){
+                    if(value.unprotected.info.progress == 1 &&  value.unprotected.status == 'processing'){
+                        value.unprotected.status = 'assimilating'
+                        dbW.put(value.workName,value,(err) => {
+                            if(err){
+                                console.error(err)
+                            }
+                        })
+                        debug('Start luanch assimilator')
                         appManager.launchAssimilator(value.unprotected.appSet,value,(err,res) => {
                             if(err){
                                 console.error(err)
@@ -685,7 +694,7 @@ class Furseal{
                                                     var pm = new ProgressManager(parseInt(indexs[0]),total,wVal.unprotected.progress)
                                                     pm.updateProgressWithIndex(parseInt(index[1]),parseInt(index[0]),true)
                                                     wVal.unprotected.info.progress = pm.getProgress();
-                                                    if(wVal.unprotected.info.progress == 1.0){
+                                                    if(wVal.unprotected.info.progress == 1){
                                                         eventManager.emit('startAssimilate',wVal)
                                                     }
                                                     wVal.unprotected.progress = pm.mProgress;
@@ -767,7 +776,7 @@ class Furseal{
                         debug('download finish')
                         appManager.launchDapp(data.unprotected.appSet,null,data,(ret) => {
                             //compressing buffer
-                            appManager.killDapp(data.unprotected.appSet)
+                            //appManager.killDapp(data.unprotected.appSet)
                             var retBk = ret
                             var resultBuffer = fs.readFileSync(Tools.fixPath(retBk.protected.outputFiles[0].path))
                             resultBuffer = Tools.compressionBuffer(resultBuffer)
@@ -885,7 +894,8 @@ class Furseal{
                                             addElement(bIndexes,val.unprotected.blockName)
                                             nodeManager.hardUnBlock(pIDStr)
                                         }
-                                        
+                                        // one comunication complated, unblock node whatever blocked count is
+                                        nodeManager.unblock(pIDStr)
                                     },function (err){
                                         if(err)console.error(err)
                                     })
@@ -1046,6 +1056,12 @@ class Furseal{
                                 console.error(err)
                             }
                         })
+                    }else if(elem.unprotected.status == 'processing'){
+                        if(elem.unprotected.info.progress == 1){
+                            eventManager.emit('startAssimilate',elem)
+                        }
+                    }else{
+
                     }
                 })
             })
