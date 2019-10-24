@@ -10,21 +10,24 @@ async function create(){
     var size = 0
     pull(
         p2pNode.catPullStream(hash),
-        pull.through(dataIn => {
+        pull.map(dataIn => {
             totalBytesDA += dataIn.length
             var status = {}
             status.Total = size
             status.recived = totalBytesDA
             console.log(status)
+            return dataIn
         }),
-        pull.concat((err, buf) => {
+        pull.drain((buf) => {
+           
+            console.log(buf.length)
+            console.log(typeof(buf))
+            
+        }), (err) => {
             if(err){
                 console.error(err)
-            }else{
-                console.log(buf.length)
-                console.log(typeof(buf))
             }
-        })
+        }
     )
 }
 

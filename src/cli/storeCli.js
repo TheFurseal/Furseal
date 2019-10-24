@@ -256,34 +256,37 @@ class StoreCli{
             var totalBytesDapp = 0
             pull(
                 p2pNode.catPullStream(res.apps.dapp[0].url),
-                pull.through(dataIn => {
+                pull.map(dataIn => {
                     totalBytesDapp += dataIn.length
                     var status = {}
                     status.Total = data.protected.outputFiles[0].size
                     status.recived = totalBytesDapp
                     downloadManager.update(status)
+                    return dataIn
                 }),
-                pull.concat((err, buf) => {
+                pull.drain((buf) => {
+                
+                    var targetPath = appRepoTmp+'/'+res.apps.dapp[0].name
+                    res.apps.dapp[0].path = targetPath
+                    var inBuffer = Tools.decompressionBuffer(buf)
+                    fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
+                        // throws an error, you could also catch it here
+                        if(err){
+                            console.error(err)
+                        }else{
+                            debug('Download '+res.apps.dapp[0].url+' to '+targetPath)
+                            db.put(setName,res,(err) => {
+                                if(err){
+                                    console.error(err)
+                                }
+                                callback(null,res)
+                            })
+                        }
+                    })
+                    
+                },(err) => {
                     if(err){
                         callback(new Error('donwnload dapp filed'),res) 
-                    }else{
-                        var targetPath = appRepoTmp+'/'+res.apps.dapp[0].name
-                        res.apps.dapp[0].path = targetPath
-                        var inBuffer = Tools.decompressionBuffer(buf)
-                        fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
-                            // throws an error, you could also catch it here
-                            if(err){
-                                console.error(err)
-                            }else{
-                                debug('Download '+res.apps.dapp[0].url+' to '+targetPath)
-                                db.put(setName,res,(err) => {
-                                    if(err){
-                                        console.error(err)
-                                    }
-                                    callback(null,res)
-                                })
-                            }
-                        })
                     }
                 })
             )
@@ -324,30 +327,31 @@ class StoreCli{
                 var totalBytesAs = 0
                 pull(
                     p2pNode.catPullStream(res.apps.assimilator.url),
-                    pull.through(dataIn => {
+                    pull.map(dataIn => {
                         totalBytesAs += dataIn.length
                         var status = {}
                         status.Total = res.apps.assimilator.size
                         status.recived = totalBytesAs
                         downloadManager.update(status)
+                        return dataIn
                     }),
-                    pull.concat((err, buf) => {
+                    pull.drain((buf) => {
+                        files.forEach((file) => {
+                            var targetPath = appRepoTmp+'/'+res.apps.assimilator.name
+                            var inBuffer = Tools.decompressionBuffer(buf)
+                            fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
+                                // throws an error, you could also catch it here
+                                if(err){
+                                    console.error(err)
+                                }else{
+                                    debug('Download '+res.apps.assimilator.url+' to '+targetPath)
+                                    steps++
+                                }
+                            })
+                        })  
+                    },(err) => {
                         if(err){
                             console.error(err)
-                        }else{
-                            files.forEach((file) => {
-                                var targetPath = appRepoTmp+'/'+res.apps.assimilator.name
-                                var inBuffer = Tools.decompressionBuffer(buf)
-                                fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
-                                    // throws an error, you could also catch it here
-                                    if(err){
-                                        console.error(err)
-                                    }else{
-                                        debug('Download '+res.apps.assimilator.url+' to '+targetPath)
-                                        steps++
-                                    }
-                                })
-                            })
                         }
                     })
                 )
@@ -355,65 +359,57 @@ class StoreCli{
                 var totalBytesVa = 0
                 pull(
                     p2pNode.catPullStream(res.apps.validator.url),
-                    pull.through(dataIn => {
+                    pull.map(dataIn => {
                         totalBytesVa += dataIn.length
                         var status = {}
                         status.Total = res.apps.validator.size
                         status.recived = totalBytesVa
                         downloadManager.update(status)
+                        return dataIn
                     }),
-                    pull.concat((err, buf) => {
-                        if(err){
-                            console.error(err)
-                        }else{
-                           
-                            var targetPath = appRepoTmp+'/'+res.apps.validator.name
-                            var inBuffer = Tools.decompressionBuffer(buf)
-                            fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
-                                // throws an error, you could also catch it here
-                                if(err){
-                                    console.error(err)
-                                }else{
-                                    debug('Download '+res.apps.validator.url+' to '+targetPath)
-                                    steps++
-                                }
-                            })
-                                
-                            
-                        }
+                    pull.drain((err, buf) => {
+                        var targetPath = appRepoTmp+'/'+res.apps.validator.name
+                        var inBuffer = Tools.decompressionBuffer(buf)
+                        fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
+                            // throws an error, you could also catch it here
+                            if(err){
+                                console.error(err)
+                            }else{
+                                debug('Download '+res.apps.validator.url+' to '+targetPath)
+                                steps++
+                            }
+                        })
+                    },(err) => {
+                        console.error(err)
                     })
                 )
                 
                 var totalBytesDi = 0
                 pull(
                     p2pNode.catPullStream(res.apps.dividor.url),
-                    pull.through(dataIn => {
+                    pull.map(dataIn => {
                         totalBytesDi += dataIn.length
                         var status = {}
                         status.Total = res.apps.dividor.size
                         status.recived = totalBytesDi
                         downloadManager.update(status)
+                        return dataIn
                     }),
-                    pull.concat((err, buf) => {
-                        if(err){
-                            console.error(err)
-                        }else{
-                            
-                            var targetPath = appRepoTmp+'/'+res.apps.dividor.name
-                            var inBuffer = Tools.decompressionBuffer(buf)
+                    pull.drain((buf) => {
+                        var targetPath = appRepoTmp+'/'+res.apps.dividor.name
+                        var inBuffer = Tools.decompressionBuffer(buf)
 
-                            fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
-                                // throws an error, you could also catch it here
-                                if(err){
-                                    console.error(err)
-                                }else{
-                                    debug('Download '+res.apps.dividor.url+' to '+targetPath)
-                                    steps++
-                                }
-                            })
-                                
-                            
-                        }
+                        fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
+                            // throws an error, you could also catch it here
+                            if(err){
+                                console.error(err)
+                            }else{
+                                debug('Download '+res.apps.dividor.url+' to '+targetPath)
+                                steps++
+                            }
+                        })
+                    },(err) => {
+                        console.error(err)
                     })
                 )
 
@@ -440,27 +436,28 @@ class StoreCli{
                     var totalBytesDA = 0
                     pull(
                         p2pNode.catPullStream(url),
-                        pull.through(dataIn => {
+                        pull.map(dataIn => {
                             totalBytesDA += dataIn.length
                             var status = {}
                             status.Total = size
                             status.recived = totalBytesDA
                             downloadManager.update(status)
+                            return dataIn
                         }),
-                        pull.concat((err, buf) => {
+                        pull.drain((buf) => {
+                            var targetPath = appRepoTmp+'/'+name
+                            var inBuffer = Tools.decompressionBuffer(buf)
+                            fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
+                                // throws an error, you could also catch it here
+                                if(err){
+                                    console.error(err)
+                                }else{
+                                    debug('Download '+url+' to '+targetPath)
+                                }
+                            })
+                        },(err) => {
                             if(err){
                                 console.error(err)
-                            }else{
-                                var targetPath = appRepoTmp+'/'+name
-                                var inBuffer = Tools.decompressionBuffer(buf)
-                                fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
-                                    // throws an error, you could also catch it here
-                                    if(err){
-                                        console.error(err)
-                                    }else{
-                                        debug('Download '+url+' to '+targetPath)
-                                    }
-                                })
                             }
                         })
                     )
