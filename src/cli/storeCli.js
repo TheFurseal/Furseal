@@ -263,7 +263,7 @@ class StoreCli{
                     status.recived = totalBytesDapp
                     downloadManager.update(status)
                 }),
-                pull.contact((err,buf) => {
+                pull.collect((err,buf) => {
                     if(err){
                         callback(new Error('donwnload dapp filed'),res) 
                     }else{
@@ -331,7 +331,7 @@ class StoreCli{
                         status.recived = totalBytesAs
                         downloadManager.update(status)
                     }),
-                    pull.contact((err,buf) => {
+                    pull.collect((err,buf) => {
                         if(err){
                             console.error(err)
                         }else{
@@ -362,7 +362,7 @@ class StoreCli{
                         status.recived = totalBytesVa
                         downloadManager.update(status)
                     }),
-                    pull.contact((err, buf) => {
+                    pull.collect((err, buf) => {
                         if(err){
                             console.error(err)
                         }else{
@@ -391,7 +391,7 @@ class StoreCli{
                         status.recived = totalBytesDi
                         downloadManager.update(status)
                     }),
-                    pull.contact((err,buf) => {
+                    pull.collect((err,buf) => {
                         if(err){
                             console.error(err)
                         }else{
@@ -441,12 +441,12 @@ class StoreCli{
                             status.recived = totalBytesDA
                             downloadManager.update(status)
                         }),
-                        pull.contact((err,buf) => {
+                        pull.collect((err,buf) => {
                             if(err){
                                 console.error(err)
                             }else{
                                 var targetPath = appRepoTmp+'/'+name
-                                var inBuffer = Tools.decompressionBuffer(Buffer.from(buf))
+                                var inBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
                                 fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
                                     // throws an error, you could also catch it here
                                     if(err){
