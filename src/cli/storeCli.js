@@ -269,7 +269,7 @@ class StoreCli{
                     }else{
                         var targetPath = appRepoTmp+'/'+res.apps.dapp[0].name
                         res.apps.dapp[0].path = targetPath
-                        var inBuffer = Tools.decompressionBuffer(Buffer.from(buf))
+                        var inBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
                         fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
                             // throws an error, you could also catch it here
                             if(err){
@@ -337,7 +337,7 @@ class StoreCli{
                         }else{
                             files.forEach((file) => {
                                 var targetPath = appRepoTmp+'/'+res.apps.assimilator.name
-                                var inBuffer = Tools.decompressionBuffer(Buffer.from(buf))
+                                var inBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
                                 fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
                                     // throws an error, you could also catch it here
                                     if(err){
@@ -367,7 +367,7 @@ class StoreCli{
                             console.error(err)
                         }else{
                             var targetPath = appRepoTmp+'/'+res.apps.validator.name
-                            var inBuffer = Tools.decompressionBuffer(Buffer.from(buf))
+                            var inBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
                             fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
                                 // throws an error, you could also catch it here
                                 if(err){
@@ -396,7 +396,7 @@ class StoreCli{
                             console.error(err)
                         }else{
                             var targetPath = appRepoTmp+'/'+res.apps.dividor.name
-                            var inBuffer = Tools.decompressionBuffer(Buffer.from(buf))
+                            var inBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
 
                             fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
                                 // throws an error, you could also catch it here

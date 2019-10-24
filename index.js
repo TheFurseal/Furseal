@@ -667,7 +667,7 @@ class Furseal{
                             }else{
                                 var targetPath = resultFileTmp+'/'+data.protected.outputFiles[0].fileName
                                 data.protected.outputFiles[0].path = targetPath
-                                var inBuffer = Tools.decompressionBuffer(Buffer.from(buf))
+                                var inBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
                                 fs.writeFile(targetPath, inBuffer, (err) => {
                                     if(err){
                                         console.error(err)
@@ -788,7 +788,7 @@ class Furseal{
                         if(err){
                             console.error(err)
                         }else{
-                            var outBuffer = Tools.decompressionBuffer(Buffer.from(buf))
+                            var outBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
                             fs.writeFileSync(targetPath,outBuffer)
                             gcManager.register(targetPath,data.workName+'_close')
                             data.protected.inputFiles[0].path = targetPath
