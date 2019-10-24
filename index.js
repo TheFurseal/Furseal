@@ -574,7 +574,9 @@ class Furseal{
                     console.error(err)
                     //retry
                     if(reporter.check(data.unprotected.blockName)){
-                        eventManager.emit('finishCompute',data)
+                        setTimeout(() => {
+                            eventManager.emit('finishCompute',data)
+                        }, 5000)
                     }
                 }else{
                     var p = Pushable()
