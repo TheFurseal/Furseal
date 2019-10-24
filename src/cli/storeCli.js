@@ -117,7 +117,7 @@ class StoreCli{
             debug(res)
             res = res[0]
             postData.apps.validator.url = res.hash
-            postData.apps.validator.size = res.size
+            postData.apps.validator.size = inBufferVali.length
             count++
         })
 
@@ -136,7 +136,7 @@ class StoreCli{
             res = res[0]
             
             postData.apps.dividor.url = res.hash
-            postData.apps.dividor.size = res.size
+            postData.apps.dividor.size = inBufferDiv.length
            
             count++
         })
@@ -156,7 +156,7 @@ class StoreCli{
             res = res[0]
             
             postData.apps.assimilator.url = res.hash
-            postData.apps.assimilator.size = res.size
+            postData.apps.assimilator.size = inBufferAss.length
             
             count++
         })
@@ -186,7 +186,7 @@ class StoreCli{
                     var item = {}
                     item.name = pathArry.apps.dapp[countReg].name
                     item.url = res.hash
-                    item.size = res.size
+                    item.size = inBufferDapp.length
                     item.path =  appRepo+'/'+item.name
                     item.target = pathArry.apps.dapp[countReg].target
                     resArry.push(item)

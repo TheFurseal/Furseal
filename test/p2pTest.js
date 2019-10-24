@@ -1,7 +1,7 @@
 const P2PBundle = require('../src/p2p/bundle.js')
 const pull = require('pull-stream')
 
-var hash = 'QmbPuHTUZJJcoERkueHnUXB1N6N2e7DscPSQNxfQBZ7UyU'
+var hash = 'QmdNfj57WGetsFsymgNas8RpbDoFfmFZQ4QvMYxmHYcPmy'
 
 var p2pNode 
 async function create(){

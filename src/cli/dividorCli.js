@@ -158,7 +158,7 @@ class DividorCli{
                                 workInfo.protected.inputFiles[index].url =  resInfo.hash
                                 workInfo.protected.inputFiles[index].hash = resInfo.hash
                                 workInfo.protected.inputFiles[index].key =  resInfo.hash
-                                workInfo.protected.inputFiles[index].size = resInfo.size
+                                workInfo.protected.inputFiles[index].size = buf.length
                                 currentFileNumber++
                                 if(element.type == 'public'){
                                     //update key-value

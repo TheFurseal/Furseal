@@ -814,7 +814,7 @@ class Furseal{
                                 })
                                 retBk.protected.outputFiles[0].path = ''
                                 retBk.protected.outputFiles[0].hash = res2.hash
-                                retBk.protected.outputFiles[0].size = res2.size
+                                retBk.protected.outputFiles[0].size = resultBuffer.length
                                 //encrypto block protected infomation
                                 var keyBack = base58.decode(retBk.enKey);
                                 keyBack = keyBack.toString()
