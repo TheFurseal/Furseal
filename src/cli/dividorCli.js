@@ -157,6 +157,7 @@ class DividorCli{
                                 var urlTmp = element.url
                                 workInfo.protected.inputFiles[index].url = resInfo[0].hash
                                 workInfo.protected.inputFiles[index].key = resInfo[0].hash
+                                workInfo.protected.inputFiles[index].size = resInfo[0].size
                                 currentFileNumber++
                                 if(element.type == 'public'){
                                     //update key-value
