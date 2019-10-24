@@ -138,6 +138,7 @@ class DividorCli{
                         currentFileNumber++
                         workInfo.protected.inputFiles[index].url = pubValue
                         workInfo.protected.inputFiles[index].key = pubValue
+                        workInfo.protected.inputFiles[index].hash = pubValue
                     }else{
                         var buf = fs.readFileSync(Tools.fixPath(element.url))
                         debug('start to compression buffer '+element.url)
@@ -148,34 +149,27 @@ class DividorCli{
                         workInRegister[workInfo.workName].publicFiles[element.url] = {}
                         workInRegister[workInfo.workName].publicFiles[element.url].value = 'x'
 
-                        node.add(buf,(err,resInfo) => {
-
+                        node.add(buf,{ recursive: false , ignore: ['.DS_Store']},(err,resInfo) => {
                             if(err){
                                console.error(err)
                             }else{
-                                debug('add input',resInfo)
+                                resInfo = resInfo[0]
                                 var urlTmp = element.url
-                                workInfo.protected.inputFiles[index].url = resInfo[0].hash
-                                workInfo.protected.inputFiles[index].key = resInfo[0].hash
-                                workInfo.protected.inputFiles[index].size = resInfo[0].size
+                                workInfo.protected.inputFiles[index].url =  resInfo.hash
+                                workInfo.protected.inputFiles[index].hash = resInfo.hash
+                                workInfo.protected.inputFiles[index].key =  resInfo.hash
+                                workInfo.protected.inputFiles[index].size = resInfo.size
                                 currentFileNumber++
                                 if(element.type == 'public'){
                                     //update key-value
                                     var tmpKV = {}
-                                    tmpKV.value = resInfo[0].hash
+                                    tmpKV.value = resInfo.hash
                                     workInRegister[workInfo.workName].publicFiles[urlTmp] = tmpKV
                                     debug('reset value for '+urlTmp)
                                 }
                             }
-                            
-                           
                         })
-                        
                     }
-
-
-                    //GCManager ?????
-
                     //waitting
                     var handler = setInterval(() => {
                         if(totalFileNumber == currentFileNumber){
@@ -192,11 +186,9 @@ class DividorCli{
                             workInRegister[workInfo.workName].current++
                             //register work(block)
                         }
-                        
                     }, 100);
                 }
             })
-
         }
 
 
@@ -204,15 +196,11 @@ class DividorCli{
             if(isFirst == null){
                 isFirst = false
             }
-           
             httpClinet.access(JSON.stringify(workInfo),optAuth,function(res){
                 if(res == null){
                     return ;
                 }
-
                 var resObj = JSON.parse(res);
-                debug(resObj);
-
                 if(resObj.status == 'unregisted'){
                     console.error('Unregisted account!!!!')
                     return;
@@ -252,15 +240,9 @@ class DividorCli{
                         }
                     })
                     debug('register work done');
-                    debug(JSON.stringify(resObj))
                 }
-
-                
-    
             });
         }
-
-
     }
 
     stop(){

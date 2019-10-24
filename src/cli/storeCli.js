@@ -249,11 +249,9 @@ class StoreCli{
         postData.setName = setName
 
         httpClinet.access(JSON.stringify(postData),optStroe,function(res){
-            debug(res)
             if(typeof(res) == 'string'){
                 res = JSON.parse(res)
             }
-
             //download dapp
             var totalBytesDapp = 0
             pull(
@@ -265,7 +263,7 @@ class StoreCli{
                     status.recived = totalBytesDapp
                     downloadManager.update(status)
                 }),
-                pull.collect((err, buf) => {
+                pull.concat((err, buf) => {
                     if(err){
                         callback(new Error('donwnload dapp filed'),res) 
                     }else{
@@ -333,7 +331,7 @@ class StoreCli{
                         status.recived = totalBytesAs
                         downloadManager.update(status)
                     }),
-                    pull.collect((err, buf) => {
+                    pull.concat((err, buf) => {
                         if(err){
                             console.error(err)
                         }else{
@@ -364,7 +362,7 @@ class StoreCli{
                         status.recived = totalBytesVa
                         downloadManager.update(status)
                     }),
-                    pull.collect((err, buf) => {
+                    pull.concat((err, buf) => {
                         if(err){
                             console.error(err)
                         }else{
@@ -396,7 +394,7 @@ class StoreCli{
                         status.recived = totalBytesDi
                         downloadManager.update(status)
                     }),
-                    pull.collect((err, buf) => {
+                    pull.concat((err, buf) => {
                         if(err){
                             console.error(err)
                         }else{
@@ -449,7 +447,7 @@ class StoreCli{
                             status.recived = totalBytesDA
                             downloadManager.update(status)
                         }),
-                        pull.collect((err, buf) => {
+                        pull.concat((err, buf) => {
                             if(err){
                                 console.error(err)
                             }else{

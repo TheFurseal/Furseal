@@ -392,7 +392,6 @@ class Furseal{
             dbA.getAllValue((value) => {
                 var retTmp = []
                 for(var i=0;i<value.length;i++){
-                    debug(value[i])
                     var ret = {}
                     var element = value[i]
                     if(element == null || element.apps == null || element.apps.dividor == null){
@@ -403,7 +402,6 @@ class Furseal{
                     ret.status = element.status
                     retTmp.push(ret)
                 }
-                debug(retTmp)
                 ipcManager.serverEmit('updateActiveDividor',retTmp)
             
             })
@@ -411,9 +409,7 @@ class Furseal{
 
         ipcManager.addServerListenner('getAppSet',(data,socket) => {
             appManager.getAppSet(data,(value) => {
-                        
                 dbA.getAll((value2) => {
-                    
                     var retTmp = []
                     value2.forEach(element => {
                         var obj
@@ -422,10 +418,8 @@ class Furseal{
                         }else{
                             obj = element
                         }
-                        
                         var ret = {}
                         var vObj = JSON.parse(obj.value)
-                    
                         if(vObj.apps.dividor == null){
                             return
                         }
@@ -668,7 +662,7 @@ class Furseal{
                           downloadManager.update(status)
 
                         }),
-                        pull.collect((err, buf) => {
+                        pull.concat((err, buf) => {
                             if(err){
                                 console.error(err)
                             }else{
@@ -1110,7 +1104,6 @@ class Furseal{
                                     console.error(err)
                                 }else{
                                     debug('Start validate')
-                                    debug(value)
                                     eventManager.emit('startValidate',value)
                                 }
                             })
@@ -1147,10 +1140,8 @@ class Furseal{
             optAuth.path = '/userLogin'
             optAuth.method = 'POST'
             data.device = p2pNode._peerInfo.id.toB58String()
-            debug(data)
             httpClinet.access(JSON.stringify(data),optAuth,function(res){ 
                 res = JSON.parse(res)
-                debug(res)
                 if(res.status == 'YES'){
                     configure.update('ownner',res.ownner)
                     configure.update('goldenKey',res.goldenKey)
