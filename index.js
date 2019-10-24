@@ -654,100 +654,97 @@ class Furseal{
                     var totalBytes = 0
                     pull(
                         p2pNode.catPullStream(data.protected.outputFiles[0].hash),
-                        pull.map(dataIn => {
+                        pull.through(dataIn => {
                           totalBytes += dataIn.length
                           var status = {}
                           status.Total = data.protected.outputFiles[0].size
                           status.recived = totalBytes
                           downloadManager.update(status)
-                          return  dataIn
-
                         }),
-                        pull.drain((buf) => {
-                            var targetPath = resultFileTmp+'/'+data.protected.outputFiles[0].fileName
-                            data.protected.outputFiles[0].path = targetPath
-                            var inBuffer = Tools.decompressionBuffer(buf)
-                            fs.writeFile(targetPath, inBuffer, (err) => {
-                                if(err){
-                                    console.error(err)
-                                }else{
-                                    debug('Download '+data.protected.outputFiles[0].hash+' to '+targetPath)
-                                }
-                            })
-                            gcManager.register(targetPath,data.workName+'_close')
-                            appManager.launchValidator(data.unprotected.appSet,data,(ret) => {
-                                if(ret.protected.inputFiles[0].path != ''){
-                                    debug('block '+ret.unprotected.blockName+' is valid')
-                                    debug('result is '+ret.protected.inputFiles[0].path)
-                                    ret.unprotected.status = 'validated'
-                                    dbB.update(ret.unprotected.blockName,ret,(err) => {
-                                        if(err){
-                                            console.error(err)
-                                        }else{
-                                            debug(ret.unprotected.blockName+'  upate to '+ret.unprotected.status+'!!!!!!!!!')
-                                            //update workInfo
-                                            dbW.get(ret.workName,(err,wVal) => {
-                                                if(err){
-                                                    console.error(err)
-                                                }else{
-                                                    var blockDim = wVal.unprotected.block.indexs;
-                                                    var indexs = blockDim.split('_');
-                                                    var total = wVal.unprotected.block.number
-                                                    
-                                                    var blockIndex = ret.unprotected.block.index;
-                                                    var index = blockIndex.split('_');
-                                                    if(index.length < 2){
-                                                        console.error('bad block index');
-                                                    }
-                                                    if(index.length < 2){
-                                                        console.error('bad block index');
-                                                    }
-                                                    var pm = new ProgressManager(parseInt(indexs[0]),total,wVal.unprotected.progress)
-                                                    pm.updateProgressWithIndex(parseInt(index[1]),parseInt(index[0]),true)
-                                                    wVal.unprotected.info.progress = pm.getProgress();
-                                                    if(wVal.unprotected.info.progress == 1){
-                                                        eventManager.emit('startAssimilate',wVal)
-                                                    }
-                                                    wVal.unprotected.progress = pm.mProgress;
-                                                    dbW.put(wVal.workName,wVal,(err) => {
-                                                        if(err){
-                                                            console.error('ERROR: ',err);
-                                                        }
-                                                    })
-                                                    debug('update progress to '+wVal.unprotected.info.progress)
-                                                    // update blockinfo
-                                                    var blockStatus = {}
-                                                    blockStatus.workName = ret.workName
-                                                    blockStatus.index = ret.unprotected.block.index
-                                                    blockStatus.status = 'validated'
-                                                    var infos = []
-                                                    infos.push(blockStatus)
-                                                    ipcManager.serverEmit('updateBlockStatus',infos)
-                                                    
-                                                }
-                                            })
-                                        }
-                                    })
-                                }else{
-                                    debug('result invalid, start to resend')
-                                    dbB.get(ret.unprotected.blockName,(err,value) => {
-                                        if(err){
-                                            console.error(err)
-                                        }else{
-                                            value.unprotected.status = 'init'
-                                            dbB.put(value.unprotected.blockName,value,(err) => {
-                                                if(err){
-                                                    console.error(err)
-                                                }
-                                            })
-                                        }
-                                    })
-                                }
-                            })
-                            
-                        },(err) => {
+                        pull.concat((err,buf) => {
                             if(err){
                                 console.error(err)
+                            }else{
+                                var targetPath = resultFileTmp+'/'+data.protected.outputFiles[0].fileName
+                                data.protected.outputFiles[0].path = targetPath
+                                var inBuffer = Tools.decompressionBuffer(Buffer.from(buf))
+                                fs.writeFile(targetPath, inBuffer, (err) => {
+                                    if(err){
+                                        console.error(err)
+                                    }else{
+                                        debug('Download '+data.protected.outputFiles[0].hash+' to '+targetPath)
+                                    }
+                                })
+                                gcManager.register(targetPath,data.workName+'_close')
+                                appManager.launchValidator(data.unprotected.appSet,data,(ret) => {
+                                    if(ret.protected.inputFiles[0].path != ''){
+                                        debug('block '+ret.unprotected.blockName+' is valid')
+                                        debug('result is '+ret.protected.inputFiles[0].path)
+                                        ret.unprotected.status = 'validated'
+                                        dbB.update(ret.unprotected.blockName,ret,(err) => {
+                                            if(err){
+                                                console.error(err)
+                                            }else{
+                                                debug(ret.unprotected.blockName+'  upate to '+ret.unprotected.status+'!!!!!!!!!')
+                                                //update workInfo
+                                                dbW.get(ret.workName,(err,wVal) => {
+                                                    if(err){
+                                                        console.error(err)
+                                                    }else{
+                                                        var blockDim = wVal.unprotected.block.indexs;
+                                                        var indexs = blockDim.split('_');
+                                                        var total = wVal.unprotected.block.number
+                                                        
+                                                        var blockIndex = ret.unprotected.block.index;
+                                                        var index = blockIndex.split('_');
+                                                        if(index.length < 2){
+                                                            console.error('bad block index');
+                                                        }
+                                                        if(index.length < 2){
+                                                            console.error('bad block index');
+                                                        }
+                                                        var pm = new ProgressManager(parseInt(indexs[0]),total,wVal.unprotected.progress)
+                                                        pm.updateProgressWithIndex(parseInt(index[1]),parseInt(index[0]),true)
+                                                        wVal.unprotected.info.progress = pm.getProgress();
+                                                        if(wVal.unprotected.info.progress == 1){
+                                                            eventManager.emit('startAssimilate',wVal)
+                                                        }
+                                                        wVal.unprotected.progress = pm.mProgress;
+                                                        dbW.put(wVal.workName,wVal,(err) => {
+                                                            if(err){
+                                                                console.error('ERROR: ',err);
+                                                            }
+                                                        })
+                                                        debug('update progress to '+wVal.unprotected.info.progress)
+                                                        // update blockinfo
+                                                        var blockStatus = {}
+                                                        blockStatus.workName = ret.workName
+                                                        blockStatus.index = ret.unprotected.block.index
+                                                        blockStatus.status = 'validated'
+                                                        var infos = []
+                                                        infos.push(blockStatus)
+                                                        ipcManager.serverEmit('updateBlockStatus',infos)
+                                                        
+                                                    }
+                                                })
+                                            }
+                                        })
+                                    }else{
+                                        debug('result invalid, start to resend')
+                                        dbB.get(ret.unprotected.blockName,(err,value) => {
+                                            if(err){
+                                                console.error(err)
+                                            }else{
+                                                value.unprotected.status = 'init'
+                                                dbB.put(value.unprotected.blockName,value,(err) => {
+                                                    if(err){
+                                                        console.error(err)
+                                                    }
+                                                })
+                                            }
+                                        })
+                                    }
+                                })
                             }
                         })
                     )
@@ -780,61 +777,59 @@ class Furseal{
                 var totalBytes = 0
                 pull(
                     p2pNode.catPullStream(data.protected.inputFiles[0].hash),
-                    pull.map(dataIn => {
+                    pull.through(dataIn => {
                         totalBytes += dataIn.length
                         var status = {}
                         status.Total = data.protected.inputFiles[0].size
                         status.recived = totalBytes
                         downloadManager.update(status)
-                        return dataIn
                     }),
-                    pull.drain((buf) => {
-                        var outBuffer = Tools.decompressionBuffer(buf)
-                        fs.writeFileSync(targetPath,outBuffer)
-                        gcManager.register(targetPath,data.workName+'_close')
-                        data.protected.inputFiles[0].path = targetPath
-                        debug('download finish')
-                        appManager.launchDapp(data.unprotected.appSet,null,data,(ret) => {
-                            //compressing buffer
-                            //appManager.killDapp(data.unprotected.appSet)
-                            var retBk = ret
-                            var resultBuffer = fs.readFileSync(Tools.fixPath(retBk.protected.outputFiles[0].path))
-                            resultBuffer = Tools.compressionBuffer(resultBuffer)
-                            //upload result file
-                            p2pNode.add(resultBuffer,{ recursive: false , ignore: ['.DS_Store']},(err,res2) => {
-                                if(err){
-                                    console.error(err)
-                                    return
-                                }
-                                res2 = res2[0]
-                                fs.unlink(retBk.protected.outputFiles[0].path,(err) => {
-                                    if(err){
-                                        console.error(err)
-                                    }
-                                })
-                                retBk.protected.outputFiles[0].path = ''
-                                retBk.protected.outputFiles[0].hash = res2.hash
-                                retBk.protected.outputFiles[0].size = resultBuffer.length
-                                //encrypto block protected infomation
-                                var keyBack = base58.decode(retBk.enKey);
-                                keyBack = keyBack.toString()
-                                var protecStr = JSON.stringify(retBk.protected)
-                                var gcArray = []
-                                for(var p=0;p<retBk.protected.outputFiles.length;p++){
-                                    gcArray.push(retBk.protected.outputFiles[p].path)
-                                }
-                                gcManager.register(gcArray,retBk.workName+'_close')
-                                var enBuf = Tools.publicEncrypt(keyBack,protecStr)
-                                enBuf = base58.encode(enBuf)
-                                retBk.protected = enBuf.toString()
-                                delete retBk.enKey
-                                eventManager.emit('finishCompute',retBk)
-                            })
-                        })
-                        
-                    },(err) => {
+                    pull.concat((err,buf) => {
                         if(err){
                             console.error(err)
+                        }else{
+                            var outBuffer = Tools.decompressionBuffer(Buffer.from(buf))
+                            fs.writeFileSync(targetPath,outBuffer)
+                            gcManager.register(targetPath,data.workName+'_close')
+                            data.protected.inputFiles[0].path = targetPath
+                            debug('download finish')
+                            appManager.launchDapp(data.unprotected.appSet,null,data,(ret) => {
+                                //compressing buffer
+                                //appManager.killDapp(data.unprotected.appSet)
+                                var retBk = ret
+                                var resultBuffer = fs.readFileSync(Tools.fixPath(retBk.protected.outputFiles[0].path))
+                                resultBuffer = Tools.compressionBuffer(resultBuffer)
+                                //upload result file
+                                p2pNode.add(resultBuffer,{ recursive: false , ignore: ['.DS_Store']},(err,res2) => {
+                                    if(err){
+                                        console.error(err)
+                                        return
+                                    }
+                                    res2 = res2[0]
+                                    fs.unlink(retBk.protected.outputFiles[0].path,(err) => {
+                                        if(err){
+                                            console.error(err)
+                                        }
+                                    })
+                                    retBk.protected.outputFiles[0].path = ''
+                                    retBk.protected.outputFiles[0].hash = res2.hash
+                                    retBk.protected.outputFiles[0].size = resultBuffer.length
+                                    //encrypto block protected infomation
+                                    var keyBack = base58.decode(retBk.enKey);
+                                    keyBack = keyBack.toString()
+                                    var protecStr = JSON.stringify(retBk.protected)
+                                    var gcArray = []
+                                    for(var p=0;p<retBk.protected.outputFiles.length;p++){
+                                        gcArray.push(retBk.protected.outputFiles[p].path)
+                                    }
+                                    gcManager.register(gcArray,retBk.workName+'_close')
+                                    var enBuf = Tools.publicEncrypt(keyBack,protecStr)
+                                    enBuf = base58.encode(enBuf)
+                                    retBk.protected = enBuf.toString()
+                                    delete retBk.enKey
+                                    eventManager.emit('finishCompute',retBk)
+                                })
+                            })
                         }
                     })
                 )

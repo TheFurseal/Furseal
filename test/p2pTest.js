@@ -1,7 +1,7 @@
 const P2PBundle = require('../src/p2p/bundle.js')
 const pull = require('pull-stream')
-
-var hash = 'QmdNfj57WGetsFsymgNas8RpbDoFfmFZQ4QvMYxmHYcPmy'
+const Tools = require('../src/common/tools.js')
+var hash = 'QmbWhXuF5LNvNi375Dz6RBpszq5vvMrHL6nsPyXAqvb9XK'
 
 var p2pNode 
 async function create(){
@@ -10,24 +10,25 @@ async function create(){
     var size = 0
     pull(
         p2pNode.catPullStream(hash),
-        pull.map(dataIn => {
+        pull.through(dataIn => {
             totalBytesDA += dataIn.length
             var status = {}
             status.Total = size
             status.recived = totalBytesDA
             console.log(status)
-            return dataIn
+            //return dataIn
         }),
-        pull.drain((buf) => {
+        pull.concat((err,buf) => {
            
-            console.log(buf.length)
-            console.log(typeof(buf))
+            console.log('drain ',buf.length)
+            // console.log(buf)
+            // var deBuf = Tools.decompressionBuffer(buf)
+            // console.log(deBuf)
+            console.log(Buffer.from(buf))
+            var deBuf = Tools.decompressionBuffer(Buffer.from(buf))
+            console.log(deBuf)
             
-        }), (err) => {
-            if(err){
-                console.error(err)
-            }
-        }
+        })
     )
 }
 
