@@ -32,8 +32,12 @@ class NodeManager{
             console.error('Empty ID')
             return true
         }
-        if(this.pBlockList[id] >= 5 || this.pHardBlockList.indexOf(id) >= 0){
+        if(this.pHardBlockList.indexOf(id) >= 0){
             //debug(id + 'is blocked')
+
+            return true
+        }else if(this.pBlockList[id] >= 5){
+            debug(id + 'is soft blocked')
             return true
         }else{
             return false

@@ -20,6 +20,7 @@ const EventsManager = require('./src/common/eventsManager.js')
 const DeviceState = require('./src/common/deviceState.js')
 const NodeManager = require('./src/common/nodeManager.js')
 const DownloadManager = require('./src/common/downloadManager.js')
+const Reporter = require('./src/common/reporter.js')
 
 // data base handlers
 var dbW     //work
@@ -27,6 +28,8 @@ var dbB     //block
 var dbA     //application sets
 var dbG     //gc
 var dbR     //result data base
+
+//reporter
 
 //device state
 var devStat
@@ -36,6 +39,9 @@ var eventManager
 
 //download manager
 var downloadManager
+
+//reporter
+var reporter
 
 //p2p node handler
 var p2pNode
@@ -174,6 +180,7 @@ class Furseal{
         eventManager = new EventsManager()
         Tools.setEnv('COT_DATA_PATH',homePath)
         nodeManager = new NodeManager()
+        reporter = new Reporter()
         //init ipc 
         ipcManager.createServer({
             id:'nodeServer'
@@ -557,11 +564,8 @@ class Furseal{
             })
         })
 
-        eventManager.registEvent('finishCompute',(dataIn,times) => {
+        eventManager.registEvent('finishCompute',(dataIn) => {
             var data = JSON.parse(JSON.stringify(dataIn))
-            if(times == null){
-                times = 0
-            }
             //devStat.update('reporting')
             debug('Report result to owner '+data.unprotected.owner)
             var pID = PeerID.createFromB58String(data.unprotected.owner)
@@ -569,8 +573,8 @@ class Furseal{
                 if(err){
                     console.error(err)
                     //retry
-                    if(times<5){
-                        eventManager.emit('finishCompute',(data,times++))
+                    if(reporter.check(data.unprotected.blockName)){
+                        eventManager.emit('finishCompute',data)
                     }
                 }else{
                     var p = Pushable()
@@ -1016,6 +1020,7 @@ class Furseal{
                         data = JSON.parse(data)
                     }
                     eventManager.emit('reportIn',data)
+                    nodeManager.unblock(data.unprotected.slave)
                     nodeManager.hardUnBlock(data.unprotected.slave)
                 },function(err){
                     if(err)console.error(err)
