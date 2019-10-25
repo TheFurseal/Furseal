@@ -31,6 +31,7 @@ class AppManager{
         this.dividorCount = 0
         this.appRepoPath = appRepoPath
         this.downloadManager = dMgr
+        this.gcManager = gcMrg
     }
 
     launchDividor(setName,callback){
@@ -60,7 +61,7 @@ class AppManager{
             p2pNode:this.p2pNode,
             configure:this.conf,
             callback:callback,
-            gcManager:gcMrg
+            gcManager:this.gcManager
         })
         this.dividorCount++
         this.setsRegister[setName].dividor.start() 

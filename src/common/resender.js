@@ -59,7 +59,8 @@ function checkNeighbor(blockName,array,startTime,callback){
     }
     sum = sum / array.length
     var date = new Date()
-    if(date.valueOf() - startTime > sum*2){
+    var currentCost = date.valueOf() - startTime
+    if(currentCost > sum*2 && currentCost > 120000){
         var hDate = new Date(startTime)
         debug('Block started at: '+hDate.toLocaleString())
         debug('Block time cost for now: '+((date.valueOf() - startTime)/1000/60)+' Min')
@@ -74,6 +75,7 @@ class Resender{
         BlockDatabase:dbBlock,
         WorkDatabase:dbWwork
     }){
+        debug('Create a new resender')
         dbB = dbBlock
         dbW = dbWwork
         workIndexs = wIndexs

@@ -46,6 +46,10 @@ class DividorCli{
             blockDB = dbB;
         }
 
+        if(gcMrg == null){
+            console.error('GCManager is empty')
+        }
+
         if(dbW == null){
             var err = new Error('No work database');
             console.error(err);

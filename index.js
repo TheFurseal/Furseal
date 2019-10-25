@@ -408,6 +408,10 @@ class Furseal{
         if(p2pNode == null){
             p2pNode = await P2PBundle.createP2PNode(this.homePath)
             debug('P2P node created')
+            gcManager = new GCManager({
+                GCRecordDB:dbG,
+                P2PNode:p2pNode
+            })
             appManager = new AppManager({
                 appDB:dbA,
                 blockDB:dbB,
@@ -424,11 +428,6 @@ class Furseal{
             decideEngine = new DecideEngine({
                 DappDatabase:dbA,
                 AppManager:appManager
-            })
-    
-            gcManager = new GCManager({
-                GCRecordDB:dbG,
-                P2PNode:p2pNode
             })
           
             devStat.stageUp('moduleReady')
@@ -747,7 +746,7 @@ class Furseal{
                             appManager.launchDapp(data.unprotected.appSet,null,data,(ret) => {
                                 //compressing buffer
                                 gcManager.clearByEvent(ret.unprotected.blockName+'_close')
-                                gcManager.registEvent(retBk.protected.outputFiles[0].path,ret.unprotected.blockName+'_uploaded')
+                                gcManager.registEvent(ret.protected.outputFiles[0].path,ret.unprotected.blockName+'_uploaded')
                                 appManager.killDapp(data.unprotected.appSet)
                                 var retBk = ret
                                 var resultBuffer = fs.readFileSync(Tools.fixPath(retBk.protected.outputFiles[0].path))
