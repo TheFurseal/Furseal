@@ -8,7 +8,6 @@ class IPCManager{
         this.serverHandleFuncs = []
         this.clientHandleFuncs = []
         this.IPC = IPC
-        this.callbackAdded = false
     }
 
     createServer({
@@ -76,42 +75,40 @@ class IPCManager{
         }
         this.serverID = id
         var parent = this
-        if(this.callbackAdded){
-            parent.IPC.connectTo(id)
-        }else{
-            this.callbackAdded = true
-            parent.IPC.connectTo(id,function(){
-                parent.IPC.of[parent.serverID].on(
-                    'connect',
-                    function(){
-                        parent.serverConnected = true
-                        debug('Connect to '+parent.serverID)
-        
+        parent.IPC.connectTo(id,function(){
+            
+            if(parent.IPC.of[parent.serverID]._events_.connect == null){
+                parent.IPC.of[parent.serverID]._events_.connect = []
+                parent.IPC.of[parent.serverID]._events_.connect[0] = function(){
+                    parent.serverConnected = true
+                    debug('Connect to '+parent.serverID)
+                }
+            }
+            
+            if(parent.IPC.of[parent.serverID]._events_.disconnect == null){
+                parent.IPC.of[parent.serverID]._events_.disconnect = []
+                parent.IPC.of[parent.serverID]._events_.disconnect[0] = function(){
+                    if(parent.serverConnected){
+                        debug('Disconnected from server '+parent.serverID)
                     }
-                )
-                parent.IPC.of[parent.serverID].on(
-                    'disconnect',
-                    function(){
-                        if(parent.serverConnected){
-                            debug('Disconnected from server '+parent.serverID)
-                        }
-                        parent.serverConnected = false
-                    }
-                )
-                parent.IPC.of[parent.serverID].on(
-                    'error',
-                    function(err){
-                       // console.log(err)
-                    }
-                )
-                parent.clientHandleFuncs.forEach(element => {
-                    parent.IPC.of[parent.serverID].on(
-                        element.event,
-                        element.callback
-                    )
-                });
-            })
-        }
+                    parent.serverConnected = false
+                }
+            }
+            
+            if(parent.IPC.of[parent.serverID]._events_.error == null){
+                parent.IPC.of[parent.serverID]._events_.error = []
+                parent.IPC.of[parent.serverID]._events_.error[0] = function(err){
+                    // console.log(err)
+                }
+            }
+         
+            parent.clientHandleFuncs.forEach(element => {
+                if(parent.IPC.of[parent.serverID]._events_[element.event] == null){
+                    parent.IPC.of[parent.serverID]._events_[element.event] = []
+                    parent.IPC.of[parent.serverID]._events_[element.event][0] = element.callback
+                }
+            });
+        })
        
     }
 
