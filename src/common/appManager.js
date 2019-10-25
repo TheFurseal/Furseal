@@ -42,7 +42,7 @@ class AppManager{
         }else{
             if(this.setsRegister[setName].dividor != null){
                 console.log('dividor handler already exist')
-                this.setsRegister[setName].dividor.start()
+                this.setsRegister[setName].dividor.start(callback)
                 return
             }else{
                 console.log('No  dividor handler found')
@@ -60,11 +60,10 @@ class AppManager{
             appDB:this.appDB,
             p2pNode:this.p2pNode,
             configure:this.conf,
-            callback:callback,
             gcManager:this.gcManager
         })
         this.dividorCount++
-        this.setsRegister[setName].dividor.start() 
+        this.setsRegister[setName].dividor.start(callback) 
     }
 
     launchValidator(setName,workInfo,callback){
@@ -74,7 +73,7 @@ class AppManager{
         }else{
             if(this.setsRegister[setName].validator != null){
                 debug('Validator request 1')
-                this.setsRegister[setName].validator.start()
+                this.setsRegister[setName].validator.start(callback)
                 this.setsRegister[setName].validator.request(workInfo) 
                 return
             }else{
@@ -89,11 +88,10 @@ class AppManager{
             paramater:param,
             workInfo:workInfo,
             dbBlock:this.blockDB,
-            dbApp:this.appDB,
-            callback:callback
+            dbApp:this.appDB
         })
 
-        this.setsRegister[setName].validator.start()
+        this.setsRegister[setName].validator.start(callback)
         this.validtorCount++
         debug('Validator request 0')
         this.setsRegister[setName].validator.request(workInfo)
@@ -140,7 +138,7 @@ class AppManager{
         }else{
             if(this.setsRegister[setName].dapp != null){
                 debug('Dapp request 1')
-                this.setsRegister[setName].dapp.start()
+                this.setsRegister[setName].dapp.start(callback)
                 this.setsRegister[setName].dapp.request(workInfo) 
                 return
             }else{
@@ -153,10 +151,9 @@ class AppManager{
         param.arg = arg
         this.setsRegister[setName].dapp = new DappCli({
             paramater:param,
-            appDB:this.appDB,
-            callback:callback
+            appDB:this.appDB
         })
-        this.setsRegister[setName].dapp.start()
+        this.setsRegister[setName].dapp.start(callback)
         this.dappCount++
         debug('Dapp request 0')
         this.setsRegister[setName].dapp.request(workInfo)  

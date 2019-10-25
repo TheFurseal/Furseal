@@ -32,7 +32,6 @@ class DividorCli{
             appDB:appDB,
             p2pNode:node,
             configure:conf,
-            callback:cb,
             gcManager:gcMrg
         }
     ){
@@ -71,7 +70,6 @@ class DividorCli{
         }
 
         var pa = this
-        pa.callback = cb
         param.id = param.setName+'_dividor'
         param.type = 'dividor'
         this.param = param
@@ -239,8 +237,9 @@ class DividorCli{
          }
     }
 
-    start(){
+    start(callback){
         debug('Dividor cli start')
+        this.callback = callback
         var pa = this
         this.appCommon.start((pid) => {
             debug('set pid '+pid)

@@ -747,7 +747,11 @@ class Furseal{
                                 //compressing buffer
                                 gcManager.clearByEvent(ret.unprotected.blockName+'_close')
                                 gcManager.register(ret.protected.outputFiles[0].path,ret.unprotected.blockName+'_uploaded')
-                                appManager.killDapp(data.unprotected.appSet)
+                                setTimeout(() => {
+                                    if(devStat.avaliable()){
+                                        appManager.killDapp(data.unprotected.appSet)
+                                    }
+                                }, 15000);
                                 var retBk = ret
                                 var resultBuffer = fs.readFileSync(Tools.fixPath(retBk.protected.outputFiles[0].path))
                                 resultBuffer = Tools.compressionBuffer(resultBuffer)

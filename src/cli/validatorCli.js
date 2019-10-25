@@ -7,8 +7,7 @@ class ValidatorCli{
         paramater:param,
         workInfo:workInfo,
         dbBlock:dbB,
-        dbApp:dbA,
-        callback:cb
+        dbApp:dbA
     }){
         debug("Create a validator cli")
         if(param == null){
@@ -30,7 +29,6 @@ class ValidatorCli{
             console.error('empty workinfo handler')
             return 
         }
-        this.callback = cb
         this.ipcManager = new IPCManager()
         var pa = this
         param.id = param.setName+'_validator'
@@ -60,13 +58,16 @@ class ValidatorCli{
             debug('validate record',wInfo)
             if(pa.callback != null){
                 pa.callback(wInfo)
+            }else{
+                console.error('No callback found !!!!')
             }
         }
         this.param = param
     }
 
-    start(){
+    start(callback){
         var pa = this
+        pa.callback = callback
         debug('Validator cli start')
         this.appCommon.start((pid) => {
             debug('set pid '+pid)

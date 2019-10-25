@@ -190,9 +190,6 @@ class IPCManager{
                 data
             )
         }
-       
-        
-
     }
 
     clientEmit(event,data,sock){
@@ -213,8 +210,9 @@ class IPCManager{
                 event,
                 data
             )
+        }else{
+            console.error('No server connection')
         }
-        
     }
 
     serverDisconnect(){
