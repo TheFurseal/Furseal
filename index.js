@@ -21,6 +21,7 @@ const DeviceState = require('./src/common/deviceState.js')
 const NodeManager = require('./src/common/nodeManager.js')
 const DownloadManager = require('./src/common/downloadManager.js')
 const Reporter = require('./src/common/reporter.js')
+const Resender = require('./src/common/resender.js')
 
 // data base handlers
 var dbW     //work
@@ -42,6 +43,9 @@ var downloadManager
 
 //reporter
 var reporter
+
+//resender
+var resender
 
 //p2p node handler
 var p2pNode
@@ -140,6 +144,16 @@ function globalGC(workName){
     })
 }
 
+function supplyMessage(){
+    var peers = p2pNode._peerInfoBook.getAllArray()
+    peers.forEach(peer => {
+        p2pNode.libp2p.dialProtocol(peer,'/cot/worksupply/1.0.0',(err,conn) => {
+
+        })
+    })
+    
+}
+
 
 class Furseal{
     constructor(homePath){
@@ -176,11 +190,18 @@ class Furseal{
         dbG = new DBManager(homePath+'/data/gc')
         dbR = new DBManager(homePath+'/data/result')
         configure = new Configure(homePath)
-        devStat = new DeviceState()
+        devStat = new DeviceState({
+            SupplyCallback:supplyMessage
+        })
         eventManager = new EventsManager()
         Tools.setEnv('COT_DATA_PATH',homePath)
         nodeManager = new NodeManager()
         reporter = new Reporter()
+        resender = new Resender({
+            WorkIndexs:wIndexes,
+            WorkDatabase:dbW,
+            BlockDatabase:dbB
+        })
         //init ipc 
         ipcManager.createServer({
             id:'nodeServer'
@@ -228,18 +249,15 @@ class Furseal{
         })
 
         ipcManager.addServerListenner('updateBlockStatusReq',(data,socket) => {
-            
             dbB.getAll((data2) => {
                 var infos = []
                 for(var i=0;i<data2.length;i++){
-                
                     var tmp;
                     if(typeof(data2[i].value) == 'string'){
                         tmp = JSON.parse(data2[i].value)   
                     }else{
                         tmp = data2[i].value
                     }
-                
                     if(tmp.workName == data){
 
                         var blockStatus = {}
@@ -249,83 +267,16 @@ class Furseal{
                         blockStatus.startTime = tmp.unprotected.info.startTime
                         blockStatus.timeCost = tmp.unprotected.info.timeCost
                         infos.push(blockStatus)
-                    
                     }
                 }
-
                 if(infos.length){
-                
                     ipcManager.serverEmit('updateBlockStatus',infos)
-
                 }
-                
             })
-        
         })
 
         ipcManager.addServerListenner('resendBlock',(data,socket) => {
-        
-            dbB.get(data,(err,value) => {
-                if(err){
-                    console.error(err)
-                }else{
-                    if(typeof(value) == 'string'){
-                        value = JSON.parse(value)
-                    }
-                    
-
-                    var blockDim = value.unprotected.block.indexs;
-                    var indexs = blockDim.split('_');
-                    var total = value.unprotected.block.number
-                    
-                    var blockIndex = value.unprotected.block.index;
-                    var index = blockIndex.split('_');
-                    if(index.length < 2){
-                        console.error('bad block index');
-                    }
-                    
-                    if(value.unprotected.status == 'processing'){
-                        dbW.get(value.workName,(err,value2) => {
-                            if(err){
-                                console.error('ERROR: ',err);
-                            }
-                            var valueObj;
-                            if(typeof(value2) == 'string'){
-                                valueObj = JSON.parse(value2);
-                            }else{
-                                valueObj = value2;
-                            }
-                        
-                            var pm = new ProgressManager(parseInt(indexs[0]),total,valueObj.unprotected.progress);
-                        
-                            pm.updateProgressWithIndex(parseInt(index[1]),parseInt(index[0]),false);
-                        
-                            valueObj.unprotected.info.progress = pm.getProgress();
-                            valueObj.unprotected.progress = pm.mProgress;
-                            dbW.put(valueObj.workName,valueObj,(err) => {
-                                if(err){
-                                    console.error('ERROR: ',err);
-                                }
-                            })
-                        })
-
-                        value.unprotected.status = 'init'
-                        var date = new Date()
-                        value.unprotected.info.startTime = date.valueOf()
-                        dbB.put(data,value,(err) => {
-                            if(err){
-                                console.error(err)
-                            }
-                        })
-
-                    }else{
-                        debug('Can not resend block '+value.unprotected.blockName+' with '+value.unprotected.status)
-                    }
-
-                }
-            })
-
-        
+            resender.resendByBlockName(data)
         })
 
         ipcManager.addServerListenner('getBlockInfo',(data,socket) => {
@@ -683,6 +634,7 @@ class Furseal{
                                 })
                                 gcManager.register(targetPath,data.workName+'_close')
                                 appManager.launchValidator(data.unprotected.appSet,data,(ret) => {
+                                    //appManager.killValidator(data.unprotected.appSet)
                                     if(ret.protected.inputFiles[0].path != ''){
                                         debug('block '+ret.unprotected.blockName+' is valid')
                                         debug('result is '+ret.protected.inputFiles[0].path)
@@ -737,18 +689,7 @@ class Furseal{
                                         })
                                     }else{
                                         debug('result invalid, start to resend')
-                                        dbB.get(ret.unprotected.blockName,(err,value) => {
-                                            if(err){
-                                                console.error(err)
-                                            }else{
-                                                value.unprotected.status = 'init'
-                                                dbB.put(value.unprotected.blockName,value,(err) => {
-                                                    if(err){
-                                                        console.error(err)
-                                                    }
-                                                })
-                                            }
-                                        })
+                                        resender.resendByBlockName(ret.unprotected.blockName)
                                     }
                                 })
                             }
@@ -801,7 +742,7 @@ class Furseal{
                             debug('download finish')
                             appManager.launchDapp(data.unprotected.appSet,null,data,(ret) => {
                                 //compressing buffer
-                                //appManager.killDapp(data.unprotected.appSet)
+                                appManager.killDapp(data.unprotected.appSet)
                                 var retBk = ret
                                 var resultBuffer = fs.readFileSync(Tools.fixPath(retBk.protected.outputFiles[0].path))
                                 resultBuffer = Tools.compressionBuffer(resultBuffer)
@@ -876,10 +817,9 @@ class Furseal{
                         if(val.unprotected.status != 'init'){
                             return
                         }
-
                         p2pNode.libp2p.dialProtocol(peerID,'/cot/workrequest/1.0.0',(err,conn) => {
                             if(err){
-                                console.warn(err)
+                                //console.warn(err)
                                 nodeManager.hardUnBlock(pIDStr)
                                 nodeManager.check(pIDStr)
                             }else{
@@ -1000,11 +940,10 @@ class Furseal{
                 pull.map((data) => {
                     return data.toString('utf8').replace('\n', '')
                 }),pull.drain((data) => {
-                    // record to db 
                     if(typeof(data) == 'string'){
                         data = JSON.parse(data)
                     }
-                    eventManager.emit('blockIn',data)
+                    resender.resendByBlockName(data.unprotected.blockName)
                 },function(err){
                     if(err)console.error(err)
                 })
@@ -1052,6 +991,19 @@ class Furseal{
                     if(err)console.error(err)
                 })
             )
+        })
+
+        p2pNode.libp2p.handle('/cot/worksupply/1.0.0',(proto,conn) => {
+            conn.getPeerInfo((err,info) => {
+                if(err){
+
+                }else{
+                    debug('Peer '+info.id.toB58String()+' supply message coming')
+                    nodeManager.hardUnBlock(info.id.toB58String())
+                    //resend processing blocks who's slave is this node
+                    resender.resendBySlaveID(info.id.toB58String())
+                }
+            })
         })
     }
 

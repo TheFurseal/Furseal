@@ -45,16 +45,15 @@ class AppCommon{
     start(callback){
         debug('step 1',this.param)
         // see if file is exist
+        if(this.hadler != null){
+            return
+        }
         var paramTmp = this.param
         var pa = this
         var resetFunc = this.resetStatus
         var dbTmp = this.db
-
-
-         this.hadler = setInterval(() => {
-
+        this.hadler = setInterval(() => {
             dbTmp.get(paramTmp.setName,(err,value) => {
-               
                 if(err || value == null){
                     console.error(err,paramTmp.setName)
                 }else{
@@ -67,7 +66,6 @@ class AppCommon{
                         infoObj = infoObj[0]
                     }
                     if(infoObj.path != null && infoObj.path != ''){
-                     
                         Tool.getPIDByName(infoObj.name,(pid) => {
                             if(pid > 0){
                                 resetFunc(true,pa)
@@ -94,13 +92,9 @@ class AppCommon{
                         debug('app path is empty')
                         debug(paramTmp,tmp)
                     }
-                    
                 }
-               
             })
-             
-         }, 10000);        
-        
+        }, 10000);        
     }
 
     stop(){
@@ -111,6 +105,7 @@ class AppCommon{
         }
         debug('Clear interval handler')
         clearInterval(handler)
+        this.hadler = null
     }
 
 }
