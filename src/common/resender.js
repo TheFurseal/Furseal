@@ -53,6 +53,9 @@ var dbW
 var workIndexs
 
 function checkNeighbor(blockName,array,startTime,callback){
+    if(array.length == 0){
+        return
+    }
     var sum = 0
     for(var i=0;i<array.length;i++){
         sum+=array[i].cost
@@ -60,7 +63,7 @@ function checkNeighbor(blockName,array,startTime,callback){
     sum = sum / array.length
     var date = new Date()
     var currentCost = date.valueOf() - startTime
-    if(currentCost > sum*2 && currentCost > 120000){
+    if(currentCost > sum*2 && currentCost > 900000){
         var hDate = new Date(startTime)
         debug('Block started at: '+hDate.toLocaleString())
         debug('Block time cost for now: '+((date.valueOf() - startTime)/1000/60)+' Min')

@@ -20,7 +20,7 @@ class DAppCli{
         //IPC
         this.ipcManager.createClient({})
         this.ipcManager.addClientListenner('result',(data) => {
-            //debug('revice result',data)
+            debug('revice result')
             if(typeof(data) == 'string'){
                 data = JSON.parse(data)
             }

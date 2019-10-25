@@ -32,6 +32,7 @@ class IPCManager{
         }else{
             IPC.config.retry = 500
         }
+        IPC.config.maxRetries = 100
 
 
     }
@@ -142,6 +143,7 @@ class IPCManager{
         }else{
             IPC.config.retry = 500
         }
+        IPC.config.maxRetries = 100
 
         this.callbackAdded = false
     }
