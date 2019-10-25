@@ -10,18 +10,23 @@ var messageCount = 0
 
 ipcManager.addClientListenner('test',(data,socket) => {
     //debug(data)
-    debug('message come '+messageCount++)
+    console.log('message come '+messageCount++)
+    ipcManager.clientDisconnect()
 
 })
 
-ipcManager.connect('serverTest')
 
-// setInterval(() => {
-//     if(ipcManager.serverConnected){
-//         ipcManager.clientEmit('test','message from client') 
-//     }
+
+setInterval(() => {
+    ipcManager.connect('serverTest')
+    if(ipcManager.serverConnected){
+        console.log('1')
+        ipcManager.clientEmit('server','message from client') 
+    }else{
+        console.log('wait to connect server')
+    }
     
-// }, 100);
+}, 3000);
 
 
 

@@ -11,8 +11,9 @@ ipcManager.createServer({
 
 })
 
-ipcManager.addServerListenner('test',(data,sock) => {
-    debug(data)
+ipcManager.addServerListenner('server',(data,sock) => {
+    console.log(data)
+    ipcManager.serverEmit('test','message from client') 
 })
 
 ipcManager.serve()
@@ -43,15 +44,7 @@ This article will explain you to salt hash passwords using Node.js Crypto. Here 
    and cons of different ways of storing passwords, rather we’ll see how we can implement salt hashing mechanism for storing passwords in NodeJS.\
 '
 
-var messageCount = 0
-setInterval(() => {
-    if(ipcManager.clientConnected){
-        ipcManager.serverEmit('test',message)
-        debug('message go '+messageCount++)
-    }else{
-        debug('client offline')
-    }
-}, 5);
+
 
 // setInterval(() => {
 

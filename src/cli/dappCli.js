@@ -10,12 +10,24 @@ class DAppCli{
         appDB:appDB
     }){
         debug('Create dapp cli')
+        var pa = this
         this.ipcManager = new IPCManager()
         param.id = param.setName+'_dapp'
         param.type = 'dapp'
         this.appCommon = new AppCommon(param,appDB)
         //IPC
         this.ipcManager.createClient({})
+        this.ipcManager.addClientListenner('result',(data) => {
+            debug('revice result')
+            if(typeof(data) == 'string'){
+                data = JSON.parse(data)
+            }
+            if(pa.callback != null){
+                pa.callback(data)
+            }else{
+                console.error('No callback for '+data.unprotected.blockName)
+            }
+        })
         this.param = param
     }
 
@@ -32,17 +44,8 @@ class DAppCli{
             debug('set pid '+pid)
             pa.pid = pid
         })
-        this.ipcManager.addClientListenner('result',(data) => {
-            debug('revice result')
-            if(typeof(data) == 'string'){
-                data = JSON.parse(data)
-            }
-            if(callback != null){
-                callback(data)
-            }else{
-                console.error('No callback for '+data.unprotected.blockName)
-            }
-        })
+        pa.callback = callback
+        
         this.ipcManager.connect(this.param.id)
     }
 

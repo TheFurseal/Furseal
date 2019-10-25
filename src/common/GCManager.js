@@ -66,7 +66,7 @@ class GCManager{
                                 if(err){
                                     console.error(err)
                                 }else{
-                                    debug(res)
+                                    //debug(res)
                                 }
                             })
                         }

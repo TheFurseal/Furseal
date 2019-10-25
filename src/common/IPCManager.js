@@ -1,6 +1,5 @@
-const IPC = require('node-ipc')
-var crypto = require('crypto')
 const debug = require('debug')('common:IPCManager')
+const IPC = require('node-ipc')
 
 class IPCManager{
     constructor(){
@@ -8,6 +7,8 @@ class IPCManager{
         this.serverConnected = false
         this.serverHandleFuncs = []
         this.clientHandleFuncs = []
+        this.IPC = IPC
+        this.callbackAdded = false
     }
 
     createServer({
@@ -15,159 +16,142 @@ class IPCManager{
         silent:silent,
         retry:retry
     }){
+        var parent = this
         if(id == null){
             console.error('Empty id for server')
             return
         }
 
-        IPC.config.id = id
+        parent.IPC.config.id = id
 
         if(silent != null){
-            IPC.config.silent = silent
+            parent.IPC.config.silent = silent
         }else{
-            IPC.config.silent = true
+            parent.IPC.config.silent = true
         }
         if(retry != null){
-            IPC.config.retry = retry
+            parent.IPC.config.retry = retry
         }else{
-            IPC.config.retry = 500
+            parent.IPC.config.retry = 500
         }
-        IPC.config.maxRetries = 100
-
-
+        parent.IPC.config.maxRetries = 100
     }
 
     serve(){
         var parent = this
-        IPC.serve(
-            function(){
-                IPC.server.on("connect",function(socket){
-                    parent.clientSockTmp = socket;
-                    parent.clientConnected = true
-        
-                })
-                IPC.server.on(
-                    'socket.disconnected',
-                    function(socket,destroyedSocketID){
-                        debug('Client disconnected')
-                        parent.clientConnected = false
-
-                    }
+        parent.IPC.serve(function(){
+            parent.IPC.server.on("connect",function(socket){
+                parent.clientSockTmp = socket;
+                parent.clientConnected = true
+    
+            })
+            parent.IPC.server.on(
+                'socket.disconnected',
+                function(socket,destroyedSocketID){
+                    debug('Client disconnected')
+                    parent.clientConnected = false
+    
+                }
+            )
+            parent.IPC.server.on(
+                'error',
+                function(err){
+                    console.log(err)
+                }
+            )
+            parent.serverHandleFuncs.forEach(elem => {
+                parent.IPC.server.on(
+                    elem.event,
+                    elem.callback
                 )
-                IPC.server.on(
-                    'error',
-                    function(err){
-                        console.log(err)
-                    }
-                )
-                
-                parent.serverHandleFuncs.forEach((element) => {
-                    
-                    IPC.server.on(element.event,(data,socket) => {
-                       
-                        //debug('server confirm message')
-                        element.func(data,socket)
-                    })
-                })
-            }
-        )
-
-        IPC.server.start()
+            })
+        })
+        parent.IPC.server.start()
     }
 
     connect(id){
         if(id == null){
             console.error('Empty id to connecting')
         }
-        var parent = this
-        var serverID = id
         this.serverID = id
+        var parent = this
         if(this.callbackAdded){
-            IPC.connectTo(serverID)
+            parent.IPC.connectTo(id)
         }else{
-            IPC.connectTo(
-                serverID,
-                function(){
-                    IPC.of[serverID].on(
-                        'connect',
-                        function(){
-                            parent.serverConnected = true
-                            debug('Connect to '+serverID)
-    
-                        }
-                    )
-                    IPC.of[serverID].on(
-                        'disconnect',
-                        function(){
-                            if(parent.serverConnected){
-                                debug('Disconnected from server '+serverID)
-                            }
-                            parent.serverConnected = false
-                        }
-                    )
-                    IPC.of[serverID].on(
-                        'error',
-                        function(err){
-                           // console.log(err)
-                        }
-                    )
-                    
-                    parent.clientHandleFuncs.forEach((element) => {
-                        
-                        IPC.of[serverID].on(element.event,(data,socket) => {
-                            
-                            //debug('client confirm message')
-                            element.func(data,socket)
-                        })
-    
-                    })
-                }
-            )
-        }
+            this.callbackAdded = true
+            parent.IPC.connectTo(id,function(){
+                parent.IPC.of[parent.serverID].on(
+                    'connect',
+                    function(){
+                        parent.serverConnected = true
+                        debug('Connect to '+parent.serverID)
         
-        this.callbackAdded = true
+                    }
+                )
+                parent.IPC.of[parent.serverID].on(
+                    'disconnect',
+                    function(){
+                        if(parent.serverConnected){
+                            debug('Disconnected from server '+parent.serverID)
+                        }
+                        parent.serverConnected = false
+                    }
+                )
+                parent.IPC.of[parent.serverID].on(
+                    'error',
+                    function(err){
+                       // console.log(err)
+                    }
+                )
+                parent.clientHandleFuncs.forEach(element => {
+                    parent.IPC.of[parent.serverID].on(
+                        element.event,
+                        element.callback
+                    )
+                });
+            })
+        }
+       
     }
 
     createClient({
         silent:silent,
         retry:retry
     }){
-        
+        var parent = this
         if(silent != null){
-            IPC.config.silent = silent
+            parent.IPC.config.silent = silent
         }else{
-            IPC.config.silent = true
+            parent.IPC.config.silent = true
         }
         if(retry != null){
-            IPC.config.retry = retry
+            parent.IPC.config.retry = retry
         }else{
-            IPC.config.retry = 500
+            parent.IPC.config.retry = 500
         }
-        IPC.config.maxRetries = 100
-
-        this.callbackAdded = false
+        parent.IPC.config.maxRetries = 100
     }
 
     addServerListenner(event,callback){
         if(event == null || callback == null){
             console.error('Empty event or callback')
         }
+        var parent = this
         var tmp = {}
         tmp.event = event
-        tmp.func = callback
-        this.serverHandleFuncs.push(tmp)
-        debug('add '+event+' handler to server')
+        tmp.callback = callback
+        parent.serverHandleFuncs.push(tmp)
     }
 
     addClientListenner(event,callback){
         if(event == null || callback == null){
             console.error('Empty event or callback')
         }
+        var parent = this
         var tmp = {}
         tmp.event = event
-        tmp.func = callback
-        this.clientHandleFuncs.push(tmp)
-        debug('add '+event+' handler to client')
+        tmp.callback = callback
+        parent.clientHandleFuncs.push(tmp)
     }
 
     serverEmit(event,data,sock){
@@ -182,9 +166,9 @@ class IPCManager{
         if(sock == null){
             sock = this.clientSockTmp
         }
-
+        var parent = this
         if(sock != null){
-            IPC.server.emit(
+            parent.IPC.server.emit(
                 sock,
                 event,
                 data
@@ -204,9 +188,9 @@ class IPCManager{
         if(sock == null){
             sock = this.serverID
         }
-        
+        var parent = this
         if(sock != null){
-            IPC.of[sock].emit(
+            parent.IPC.of[sock].emit(
                 event,
                 data
             )
@@ -216,16 +200,12 @@ class IPCManager{
     }
 
     serverDisconnect(){
-        IPC.server.stop()
-        this.clientSockTmp = null
+        this.IPC.server.stop()
     }
 
     clientDisconnect(){
-        IPC.disconnect()
-        this.serverID = null
+        this.IPC.disconnect()
     }
-
-   
 }
 
 module.exports = IPCManager
