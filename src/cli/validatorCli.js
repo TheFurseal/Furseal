@@ -66,6 +66,7 @@ class ValidatorCli{
     }
 
     start(){
+        var pa = this
         debug('Validator cli start')
         this.appCommon.start((pid) => {
             debug('set pid '+pid)

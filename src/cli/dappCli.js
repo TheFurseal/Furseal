@@ -40,6 +40,7 @@ class DAppCli{
     }
 
     start(){
+        var pa = this
         debug('DApp cli start')
         this.appCommon.start((pid) => {
             debug('set pid '+pid)
