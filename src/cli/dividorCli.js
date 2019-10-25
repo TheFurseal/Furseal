@@ -35,7 +35,7 @@ class DividorCli{
             callback:cb
         }
     ){
-        debug('create dividor cli')
+        debug('Create dividor cli')
         configure = conf
         this.ipcManager = new IPCManager()
         if(dbB == null){
@@ -63,45 +63,24 @@ class DividorCli{
             var err = new Error('No file app param for dividor');
             console.error(err);
         }else{
-           
         }
 
         var pa = this
         pa.callback = cb
         param.id = param.setName+'_dividor'
         param.type = 'dividor'
+        this.param = param
         this.appCommon = new AppCommon(param,appDB)
-        this.appCommon.start((pid) => {
-            debug('set pid '+pid)
-            pa.pid = pid
-    
-        })
-
         var p2pNodeTmp = this.p2pNode
-
         this.ipcManager.createClient({})
         this.ipcManager.addClientListenner('request',(data,socket) => {
             debug('revice request',data)
             doDivide(data,p2pNodeTmp)
         })
-        
-        this.ipcManager.connect(param.id)
-
-
-        function findPublic(workName,key){
-           if(workInRegister[workName].publicFiles[key] != null){
-               return workInRegister[workName].publicFiles[key].value
-           }else{
-               return null
-           }
-
-        }
-
 
         function doDivide(workInfo,node){
             dealWithInputs(workInfo,node)
         }
-
 
         function dealWithInputs(workInfo,node){
             if(typeof(workInfo) == 'string'){
@@ -191,58 +170,78 @@ class DividorCli{
             })
         }
 
-
-        function registerBlock(workInfo,isFirst){
-            if(isFirst == null){
-                isFirst = false
+        function findPublic(workName,key){
+            if(workInRegister[workName].publicFiles[key] != null){
+                return workInRegister[workName].publicFiles[key].value
+            }else{
+                return null
             }
-            httpClinet.access(JSON.stringify(workInfo),optAuth,function(res){
-                if(res == null){
-                    return ;
-                }
-                var resObj = JSON.parse(res);
-                if(resObj.status == 'unregisted'){
-                    console.error('Unregisted account!!!!')
-                    return;
-                }else{
-                    
-                    if(resObj.unprotected.owner == null){
-                        debug('UN_REGISTED_ACCOUNT!');
-                        return;
-                    }
-                    resObj.unprotected.status = 'init';
-        
-                    //calculate total number
-                    var indexTmp = resObj.unprotected.block.indexs
-                    var sp = indexTmp.split('_');
-                    var total = 1;
-                    for(var i=0;i<sp.length;i++){
-                        total*= parseInt(sp[i])
-                    }
+ 
+         }
+ 
+ 
+         function registerBlock(workInfo,isFirst){
+             if(isFirst == null){
+                 isFirst = false
+             }
+             httpClinet.access(JSON.stringify(workInfo),optAuth,function(res){
+                 if(res == null){
+                     return ;
+                 }
+                 var resObj = JSON.parse(res);
+                 if(resObj.status == 'unregisted'){
+                     console.error('Unregisted account!!!!')
+                     return;
+                 }else{
+                     
+                     if(resObj.unprotected.owner == null){
+                         debug('UN_REGISTED_ACCOUNT!');
+                         return;
+                     }
+                     resObj.unprotected.status = 'init';
+         
+                     //calculate total number
+                     var indexTmp = resObj.unprotected.block.indexs
+                     var sp = indexTmp.split('_');
+                     var total = 1;
+                     for(var i=0;i<sp.length;i++){
+                         total*= parseInt(sp[i])
+                     }
+ 
+                     resObj.resolveKey = configure.encrypto(resObj.resolveKey)
+ 
+                     if(isFirst){
+                         var pm = new ProgressManager(parseInt(sp[0]),total);
+                         resObj.unprotected.progress = pm.mProgress;
+                         workDB.put(resObj.workName,resObj,function(err){
+                             if(err){
+                                 console.error('ERROR: ',err);
+                             }
+                         })
+                     }
+ 
+                     blockDB.put(resObj.unprotected.blockName,resObj,function(err){
+                         if(err){
+                             console.error('ERROR: ',err);
+                         }else{
+                             pa.callback(resObj)
+                         }
+                     })
+                     debug('register work done');
+                 }
+             });
+         }
+    }
 
-                    resObj.resolveKey = configure.encrypto(resObj.resolveKey)
-
-                    if(isFirst){
-                        var pm = new ProgressManager(parseInt(sp[0]),total);
-                        resObj.unprotected.progress = pm.mProgress;
-                        workDB.put(resObj.workName,resObj,function(err){
-                            if(err){
-                                console.error('ERROR: ',err);
-                            }
-                        })
-                    }
-
-                    blockDB.put(resObj.unprotected.blockName,resObj,function(err){
-                        if(err){
-                            console.error('ERROR: ',err);
-                        }else{
-                            pa.callback(resObj)
-                        }
-                    })
-                    debug('register work done');
-                }
-            });
-        }
+    start(){
+        debug('Dividor cli start')
+        var pa = this
+        this.appCommon.start((pid) => {
+            debug('set pid '+pid)
+            pa.pid = pid
+    
+        })
+        this.ipcManager.connect(this.param.id)
     }
 
     stop(){

@@ -73,14 +73,9 @@ class AppCommon{
                                 resetFunc(true,pa)
                                 callback(pid)
                                 pa.pid = pid
-                                // if(callback != null){
-                                //     callback(pid)
-                                // }
-                                //debug(infoObj.name,'  already launched!!')
                             }else{
                                 paramTmp.option.path = infoObj.path
                                 paramTmp.option.tempPath = paramTmp.tempPath
-                                debug(paramTmp)
                                 Tool.createProcess(paramTmp.option,(err,value) => {
                                     if(err){
                                         console.error(err)
@@ -110,6 +105,11 @@ class AppCommon{
 
     stop(){
         var handler = this.hadler
+        if(!isNaN(this.pid)){
+            Tool.killProcess(this.pid)
+            debug('Kill process '+this.pid)
+        }
+        debug('Clear interval handler')
         clearInterval(handler)
     }
 

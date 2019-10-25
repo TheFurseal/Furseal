@@ -34,20 +34,24 @@ class AppManager{
 
     launchDividor(setName,callback){
         debug('launch dividor')
-
         if(this.setsRegister[setName] == null){
             this.setsRegister[setName] = {}
+            console.log('No  handler found')
         }else{
             if(this.setsRegister[setName].dividor != null){
-
+                console.log('dividor handler already exist')
+                this.setsRegister[setName].dividor.start()
+                return
             }else{
+                console.log('No  dividor handler found')
             }
         }
 
+        console.log('Create a new dividor cli')
         var param = {}
         param.setName = setName
         param.arg = null
-        var dividorCli = new DividorCli({
+        this.setsRegister[setName].dividor = new DividorCli({
             paramater:param,
             blockDB:this.blockDB,
             workDB:this.workDB,
@@ -56,10 +60,8 @@ class AppManager{
             configure:this.conf,
             callback:callback
         })
-        this.setsRegister[setName].dividor = dividorCli
         this.dividorCount++
-       
-        
+        this.setsRegister[setName].dividor.start() 
     }
 
     launchValidator(setName,workInfo,callback){
@@ -69,6 +71,7 @@ class AppManager{
         }else{
             if(this.setsRegister[setName].validator != null){
                 debug('Validator request 1')
+                this.setsRegister[setName].validator.start()
                 this.setsRegister[setName].validator.request(workInfo) 
                 return
             }else{
@@ -79,21 +82,18 @@ class AppManager{
         var param = {}
         param.setName = setName
         param.arg = null
-        var validatorCli = new ValidatorCli({
+        this.setsRegister[setName].validator = new ValidatorCli({
             paramater:param,
             workInfo:workInfo,
             dbBlock:this.blockDB,
             dbApp:this.appDB,
             callback:callback
         })
-       
-        this.setsRegister[setName].validator = validatorCli
+
+        this.setsRegister[setName].validator.start()
         this.validtorCount++
         debug('Validator request 0')
         this.setsRegister[setName].validator.request(workInfo)
-        
-       
-       
     }
 
     launchAssimilator(setName,workInfo,callback){
@@ -104,6 +104,7 @@ class AppManager{
         }else{
             if(this.setsRegister[setName].assimilator != null){
                 debug('assimilator request 1')
+                this.setsRegister[setName].assimilator.start()
                 this.setsRegister[setName].assimilator.request(workInfo,callback) 
                 return
             }else{
@@ -113,15 +114,14 @@ class AppManager{
 
         var param = {}
         param.setName = setName
-        var assimilatorCli = new AssimilatorCli({
+        this.setsRegister[setName].assimilator = new AssimilatorCli({
             paramater:param,
             workInfo:workInfo,
             dbBlock:this.blockDB,
             dbApp:this.appDB,
             dbWork:this.workDB
         })
-       
-        this.setsRegister[setName].assimilator = assimilatorCli
+        this.setsRegister[setName].assimilator.start()
         this.assimilatorCount++
         debug('assimilator request 0')
         this.setsRegister[setName].assimilator.request(workInfo,callback)
@@ -137,6 +137,7 @@ class AppManager{
         }else{
             if(this.setsRegister[setName].dapp != null){
                 debug('Dapp request 1')
+                this.setsRegister[setName].dapp.start()
                 this.setsRegister[setName].dapp.request(workInfo) 
                 return
             }else{
@@ -147,13 +148,12 @@ class AppManager{
         var param = {}
         param.setName = setName
         param.arg = arg
-        var dappCli = new DappCli({
+        this.setsRegister[setName].dapp = new DappCli({
             paramater:param,
             appDB:this.appDB,
             callback:callback
         })
-       
-        this.setsRegister[setName].dapp = dappCli
+        this.setsRegister[setName].dapp.start()
         this.dappCount++
         debug('Dapp request 0')
         this.setsRegister[setName].dapp.request(workInfo)  
@@ -190,68 +190,30 @@ class AppManager{
             return
         }
         this.setsRegister[setName].dividor.stop()
-        var pid = this.setsRegister[setName].dividor.pid
-
-        if(!isNaN(pid)){
-            Tools.killProcess(pid)
-            debug('Kill dividor process '+pid)
-            this.setsRegister[setName].dividor = null
-        }else{
-            debug('Not a pid number: '+pid)
-        }
-        
-       
     }
 
     killAssimilator(setName){
         if(this.setsRegister[setName] == null){
-            debug('Assimilator not running ')
+            debug('Dividor not running ')
             return
         }
         this.setsRegister[setName].assimilator.stop()
-        var pid = this.setsRegister[setName].assimilator.pid
-
-        if(!isNaN(pid)){
-            Tools.killProcess(pid)
-            debug('Kill assimilator process '+pid)
-            this.setsRegister[setName].assimilator = null
-        }else{
-            debug('Not a pid number: '+pid)
-        }
     }
 
     killValidator(setName){
         if(this.setsRegister[setName] == null){
-            debug('Validator not running ')
+            debug('Dividor not running ')
             return
         }
         this.setsRegister[setName].validator.stop()
-        var pid = this.setsRegister[setName].validator.pid
-
-        if(!isNaN(pid)){
-            Tools.killProcess(pid)
-            debug('Kill validator process '+pid)
-            this.setsRegister[setName].validator = null
-        }else{
-            debug('Not a pid number: '+pid)
-        }
     }
 
     killDapp(setName){
         if(this.setsRegister[setName] == null){
-            debug('dapp not running ')
+            debug('Dividor not running ')
             return
         }
         this.setsRegister[setName].dapp.stop()
-        var pid = this.setsRegister[setName].dapp.pid
-
-        if(!isNaN(pid)){
-            Tools.killProcess(pid)
-            debug('Kill dapp process '+pid)
-            this.setsRegister[setName].dapp = null
-        }else{
-            debug('Not a pid number: '+pid)
-        }
     }
 
     killStore(setName){

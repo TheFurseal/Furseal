@@ -10,6 +10,7 @@ class ValidatorCli{
         dbApp:dbA,
         callback:cb
     }){
+        debug("Create a validator cli")
         if(param == null){
             console.error('empty paramater')
             return 
@@ -29,18 +30,12 @@ class ValidatorCli{
             console.error('empty workinfo handler')
             return 
         }
-
         this.callback = cb
         this.ipcManager = new IPCManager()
         var pa = this
         param.id = param.setName+'_validator'
         param.type = 'validator'
         this.appCommon = new AppCommon(param,dbA)
-        this.appCommon.start((pid) => {
-            debug('set pid '+pid)
-            pa.pid = pid
-
-        })
         //IPC
         this.ipcManager.createClient({})
         this.ipcManager.addClientListenner('result',(data) => {
@@ -49,7 +44,6 @@ class ValidatorCli{
             }
             validate(data)
         })
-        this.ipcManager.connect(param.id)
         function validate(res){
             var wInfo = res.workInfo
             if(typeof(wInfo) == 'string'){
@@ -71,11 +65,19 @@ class ValidatorCli{
         this.param = param
     }
 
+    start(){
+        debug('Validator cli start')
+        this.appCommon.start((pid) => {
+            debug('set pid '+pid)
+            pa.pid = pid
+    
+        })
+        this.ipcManager.connect(this.param.id)
+    }
     stop(){
         this.appCommon.stop()
         this.ipcManager.clientDisconnect()
     }
-
     request(workInfo){
         if(!this.ipcManager.serverConnected){
             var handle = setInterval(() => {
@@ -87,11 +89,7 @@ class ValidatorCli{
         }else{
             this.ipcManager.clientEmit('request',workInfo)
         }
-        
-
     }
-
-
 }
 
 

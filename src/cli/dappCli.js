@@ -10,17 +10,13 @@ class DAppCli{
         appDB:appDB,
         callback:cb
     }){
-        debug('create dapp cli')
+        debug('Create dapp cli')
         this.ipcManager = new IPCManager()
         var pa = this
         this.callback = cb
         param.id = param.setName+'_dapp'
         param.type = 'dapp'
         this.appCommon = new AppCommon(param,appDB)
-        this.appCommon.start((pid) => {
-            debug('set pid '+pid)
-            pa.pid = pid
-        })
         //IPC
         this.ipcManager.createClient({})
         this.ipcManager.addClientListenner('result',(data) => {
@@ -34,7 +30,6 @@ class DAppCli{
                 console.error('No callback for '+data.unprotected.blockName)
             }
         })
-        this.ipcManager.connect(param.id)
         this.param = param
     }
 
@@ -42,6 +37,15 @@ class DAppCli{
     stop(){
         this.appCommon.stop()
         this.ipcManager.clientDisconnect()
+    }
+
+    start(){
+        debug('DApp cli start')
+        this.appCommon.start((pid) => {
+            debug('set pid '+pid)
+            pa.pid = pid
+        })
+        this.ipcManager.connect(this.param.id)
     }
 
     request(workInfo){

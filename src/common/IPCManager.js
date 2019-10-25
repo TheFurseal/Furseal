@@ -81,44 +81,50 @@ class IPCManager{
         var parent = this
         var serverID = id
         this.serverID = id
-        IPC.connectTo(
-            serverID,
-            function(){
-                IPC.of[serverID].on(
-                    'connect',
-                    function(){
-                        parent.serverConnected = true
-                        debug('Connect to '+serverID)
-
-                    }
-                )
-                IPC.of[serverID].on(
-                    'disconnect',
-                    function(){
-                        if(parent.serverConnected){
-                            debug('Disconnected from server '+serverID)
+        if(this.callbackAdded){
+            IPC.connectTo(serverID)
+        }else{
+            IPC.connectTo(
+                serverID,
+                function(){
+                    IPC.of[serverID].on(
+                        'connect',
+                        function(){
+                            parent.serverConnected = true
+                            debug('Connect to '+serverID)
+    
                         }
-                        parent.serverConnected = false
-                    }
-                )
-                IPC.of[serverID].on(
-                    'error',
-                    function(err){
-                       // console.log(err)
-                    }
-                )
-                
-                parent.clientHandleFuncs.forEach((element) => {
+                    )
+                    IPC.of[serverID].on(
+                        'disconnect',
+                        function(){
+                            if(parent.serverConnected){
+                                debug('Disconnected from server '+serverID)
+                            }
+                            parent.serverConnected = false
+                        }
+                    )
+                    IPC.of[serverID].on(
+                        'error',
+                        function(err){
+                           // console.log(err)
+                        }
+                    )
                     
-                    IPC.of[serverID].on(element.event,(data,socket) => {
+                    parent.clientHandleFuncs.forEach((element) => {
                         
-                        //debug('client confirm message')
-                        element.func(data,socket)
+                        IPC.of[serverID].on(element.event,(data,socket) => {
+                            
+                            //debug('client confirm message')
+                            element.func(data,socket)
+                        })
+    
                     })
-
-                })
-            }
-        )
+                }
+            )
+        }
+        
+        this.callbackAdded = true
     }
 
     createClient({
@@ -136,6 +142,8 @@ class IPCManager{
         }else{
             IPC.config.retry = 500
         }
+
+        this.callbackAdded = false
     }
 
     addServerListenner(event,callback){

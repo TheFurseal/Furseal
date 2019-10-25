@@ -33,7 +33,7 @@ class AssimilatorCli{
         dbBlock:dbB,
         dbApp:dbA
     }){
-
+        debug('Create assimilator cli')
         if(param == null){
             console.error('empty paramater')
             return 
@@ -65,12 +65,6 @@ class AssimilatorCli{
         param.id = param.setName+'_assimilator'
         param.type = 'assimilator'
         this.appCommon = new AppCommon(param,dbA)
-        this.appCommon.start((pid) => {
-            debug('set pid '+pid)
-            pa.pid = pid
-
-        })
-
         function assimilate(res,callback){
             if(res == null){
                 return
@@ -105,7 +99,7 @@ class AssimilatorCli{
             debug('revice result 2',data)
             assimilate(data,pa.globalCallback)
         })
-        this.ipcManager.connect(param.id)
+        
         this.param = param
     }
 
@@ -114,6 +108,16 @@ class AssimilatorCli{
     stop(){
         this.appCommon.stop()
         this.ipcManager.clientDisconnect()
+    }
+
+    start(){
+        debug('Assimilator cli start')
+        this.appCommon.start((pid) => {
+            debug('set pid '+pid)
+            pa.pid = pid
+
+        })
+        this.ipcManager.connect(this.param.id)
     }
 
     request(workInfo,callback){
