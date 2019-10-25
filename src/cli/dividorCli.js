@@ -32,7 +32,8 @@ class DividorCli{
             appDB:appDB,
             p2pNode:node,
             configure:conf,
-            callback:cb
+            callback:cb,
+            gcManager:gcMrg
         }
     ){
         debug('Create dividor cli')
@@ -127,7 +128,7 @@ class DividorCli{
                         //make a templary value
                         workInRegister[workInfo.workName].publicFiles[element.url] = {}
                         workInRegister[workInfo.workName].publicFiles[element.url].value = 'x'
-
+                        
                         node.add(buf,{ recursive: false , ignore: ['.DS_Store']},(err,resInfo) => {
                             if(err){
                                console.error(err)
@@ -146,6 +147,7 @@ class DividorCli{
                                     workInRegister[workInfo.workName].publicFiles[urlTmp] = tmpKV
                                     debug('reset value for '+urlTmp)
                                 }
+                                gcMrg.register(resInfo.hash,workInfo.workName+'_close')
                             }
                         })
                     }

@@ -1,16 +1,4 @@
-class A{
-    constructor(){
-        var pa = this
-        setInterval(() => {
-            pa.hello()
-        }, 5000);
-    }
 
-    hello(){
-        console.log('hello,world')
-    }
-}
+var hash = 'Qmss3535dxfdkfdQm'
 
-module.exports = A
-
-var a = new A()
+console.log(hash.indexOf('Qm'))

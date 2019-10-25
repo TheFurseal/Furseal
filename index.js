@@ -415,7 +415,8 @@ class Furseal{
                 p2pNode:p2pNode,
                 appRepoPath:appRepository,
                 configure:configure,
-                downloadManager:downloadManager
+                downloadManager:downloadManager,
+                gcManager:gcManager
             })
     
             appManager.launchStore()
@@ -426,7 +427,8 @@ class Furseal{
             })
     
             gcManager = new GCManager({
-                GCRecordDB:dbG
+                GCRecordDB:dbG,
+                P2PNode:p2pNode
             })
           
             devStat.stageUp('moduleReady')
@@ -633,6 +635,7 @@ class Furseal{
                                     }
                                 })
                                 gcManager.register(targetPath,data.workName+'_close')
+                                gcManager.register(data.protected.outputFiles[0].hash,data.workName+'_close')
                                 appManager.launchValidator(data.unprotected.appSet,data,(ret) => {
                                     //appManager.killValidator(data.unprotected.appSet)
                                     if(ret.protected.inputFiles[0].path != ''){
@@ -737,11 +740,14 @@ class Furseal{
                         }else{
                             var outBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
                             fs.writeFileSync(targetPath,outBuffer)
-                            gcManager.register(targetPath,data.workName+'_close')
+                            gcManager.register(targetPath,data.unprotected.blockName+'_close')
+                            gcManager.register(data.protected.inputFiles[0].hash,data.workName+'_close')
                             data.protected.inputFiles[0].path = targetPath
                             debug('download finish')
                             appManager.launchDapp(data.unprotected.appSet,null,data,(ret) => {
                                 //compressing buffer
+                                gcManager.clearByEvent(ret.unprotected.blockName+'_close')
+                                gcManager.registEvent(retBk.protected.outputFiles[0].path,ret.unprotected.blockName+'_uploaded')
                                 appManager.killDapp(data.unprotected.appSet)
                                 var retBk = ret
                                 var resultBuffer = fs.readFileSync(Tools.fixPath(retBk.protected.outputFiles[0].path))
@@ -753,11 +759,8 @@ class Furseal{
                                         return
                                     }
                                     res2 = res2[0]
-                                    fs.unlink(retBk.protected.outputFiles[0].path,(err) => {
-                                        if(err){
-                                            console.error(err)
-                                        }
-                                    })
+                                    gcManager.clearByEvent(ret.unprotected.blockName+'_uploaded')
+                                    gcManager.register(res2.hash,data.workName+'_close')
                                     retBk.protected.outputFiles[0].path = ''
                                     retBk.protected.outputFiles[0].hash = res2.hash
                                     retBk.protected.outputFiles[0].size = resultBuffer.length
@@ -765,11 +768,6 @@ class Furseal{
                                     var keyBack = base58.decode(retBk.enKey);
                                     keyBack = keyBack.toString()
                                     var protecStr = JSON.stringify(retBk.protected)
-                                    var gcArray = []
-                                    for(var p=0;p<retBk.protected.outputFiles.length;p++){
-                                        gcArray.push(retBk.protected.outputFiles[p].path)
-                                    }
-                                    gcManager.register(gcArray,retBk.workName+'_close')
                                     var enBuf = Tools.publicEncrypt(keyBack,protecStr)
                                     enBuf = base58.encode(enBuf)
                                     retBk.protected = enBuf.toString()

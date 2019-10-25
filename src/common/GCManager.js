@@ -2,6 +2,7 @@ const fs = require('fs')
 const DBManager = require('./db.js')
 const Tools = require('./tools.js')
 const debug = require('debug')('common:GCManager')
+const EventsManager = require('./eventsManager.js')
 /**
  * EVENTS
  * XXX_DONE
@@ -11,146 +12,96 @@ const debug = require('debug')('common:GCManager')
  */
 
 var registedBuffer
-var optionLock = false
 var parseLock = false
 var complatedEvent = []
 class GCManager{
     constructor({
-        GCRecordDB:dbG
+        GCRecordDB:dbG,
+        P2PNode:node
     }){
         if(dbG != null){
             this.db = dbG
         }else{
-            
             dbG = new DBManager('./testRepo')
             this.db = dbG
         }
-
-       
-        
-        setInterval(() => {
-            if(registedBuffer != null){
-               
-                if(parseLock){
-
-                }else{
-                    parseLock = true
-                    var copy = registedBuffer
-                    registedBuffer = null
-                    parseLock = false
-                    
-                    Object.keys(copy).forEach(function(key) {
-                      
-                        var files = copy[key];
-                        var tmpArray
-                        dbG.get(key,(err,value) => {
-                        
-                            if(value == null){
-                                tmpArray  = files
-                            }else{
-                                if(typeof(value) == 'string'){
-                                    value = JSON.parse(value)
-                                }
-                              
-                                tmpArray = [...new Set([...value ,...files])]
+        this.eventsManager = new EventsManager()
+        this.eventsManager.registEvent('startGC',(subEvent) => {
+           
+            debug('clean '+subEvent+' record')
+            dbG.getAll(value => {
+                var processed = 0
+                var hashCount = 0
+                value.forEach(elem => {
+                    if(elem.value == subEvent){
+                        //clean db first
+                        dbG.del(elem.key,(err) => {
+                            if(err){
+                                console.log(err)
                             }
-                           
-                            dbG.put(key,JSON.stringify(tmpArray),(err) => {
-                                if(err){
-                                    debug(err)
-                                }
-                                
-                            })
-                                
                         })
-                    })
-                }
-                  
-            }else if(complatedEvent.length){
-                complatedEvent.forEach((element) => {
-                    debug('clean '+element+' record')
-                    dbG.get(element,(err,value) => {
-                        if(err){
-                          
-                        }else{
-                            //debug(value)
-                            if(typeof(value) == 'string'){
-                                value = JSON.parse(value)
-                            }
-
-                            value.forEach((file) => {
-                                if(fs.existsSync(Tools.fixPath(file))){
-                                    debug('start unlink '+file)
-                                    fs.unlink(file,(err) => {
-                                        if(err){
-                                            console.error(err)
-                                        }
-                                    })
-                                }
-                            })
-                            
-
-                            debug('handle gc complated: '+value.length)
-                            dbG.del(element,(err) => {
+                        if(elem.key.indexOf('Qm') == 0){
+                            //it is a hash
+                            node.pin.rm(elem.key,(err,pinset) => {
                                 if(err){
                                     console.error(err)
+                                }else{
+                                    debug('remove pinset '+pinset)
                                 }
                             })
-                           
+                            hashCount++
+                        }else{
+                            if(fs.existsSync(Tools.fixPath(elem.key))){
+                                debug('start unlink '+elem.key)
+                                fs.unlink(elem.key,(err) => {
+                                    if(err){
+                                        console.error(err)
+                                    }
+                                })
+                            }
+                        }
+                        processed++
+                        if(processed == value.length && hashCount > 0){
+                            node.repo.gc((err,res) => {
+                                if(err){
+                                    console.error(err)
+                                }else{
+                                    debug(res)
+                                }
+                            })
                         }
                         
-                    }) 
-                   
+                    }
                 })
-                complatedEvent = []
-            }else{
-
-            }
-        }, 3000);
-        
+            })
+        })
     }
 
     dump(){
         this.db.getAll((value) => {
-            value.forEach((element) => {
-                debug(element.key)
-                debug(JSON.parse(element.value))
-            })
+            // value.forEach((element) => {
+            //     console.log(element.key)
+            //     console.log(element.value)
+            // })
+            console.log(value.length)
         })
     }
     
 
     register(file,event){
-
-        debug('handle register')
-        if(typeof(file) == 'string'){
-            file = [].concat(file)
-        }
-        var handler = setInterval(() => {
-            if(parseLock){
-                
+        this.db.put(file,event,(err) => {
+            if(err){
+                console.error(err)
             }else{
-                parseLock = true
-                if(registedBuffer == null){
-                    registedBuffer = {}
-                    registedBuffer[event] = []
-                }else if(registedBuffer[event] == null){
-                    registedBuffer[event] = []
-                }
-                
-                registedBuffer[event] = [...new Set([...registedBuffer[event] ,...file])]
-                parseLock = false
-                clearInterval(handler)
+                debug('Registed '+file+' to gc envet '+event)
             }
-        }, 500);
-        
+        })
     }
 
     
 
     clearByEvent(event){
-        var dbTmp = this.db
-        complatedEvent.push(event)
+        this.eventsManager.emit('startGC',event)
     }
 
 }

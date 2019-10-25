@@ -17,7 +17,8 @@ class AppManager{
             p2pNode:p2pNode,
             appRepoPath:appRepoPath,
             configure:conf,
-            downloadManager:dMgr
+            downloadManager:dMgr,
+            gcManager:gcMrg
         }
     ){
         debug('Create AppManager')
@@ -58,7 +59,8 @@ class AppManager{
             appDB:this.appDB,
             p2pNode:this.p2pNode,
             configure:this.conf,
-            callback:callback
+            callback:callback,
+            gcManager:gcMrg
         })
         this.dividorCount++
         this.setsRegister[setName].dividor.start() 
