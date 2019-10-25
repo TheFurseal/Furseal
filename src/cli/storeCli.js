@@ -3,6 +3,7 @@ const Http = require('../common/httpClient.js')
 const Tools = require('../common/tools.js')
 const fs = require('fs')
 const debug = require('debug')('cli:storeCli')
+const pull = require('pull-stream')
 
 const httpClinet = new Http()
 var optStroe = {};
@@ -259,7 +260,7 @@ class StoreCli{
                 pull.through(dataIn => {
                     totalBytesDapp += dataIn.length
                     var status = {}
-                    status.Total = data.protected.outputFiles[0].size
+                    status.Total = res.apps.dapp[0].size
                     status.recived = totalBytesDapp
                     downloadManager.update(status)
                 }),
