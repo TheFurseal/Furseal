@@ -53,11 +53,12 @@ class DAppCli{
         if(typeof(workInfo) == 'string'){
             workInfo = JSON.parse(workInfo)
         }
+        var pa = this
         if(!this.ipcManager.serverConnected){
             var handle = setInterval(() => {
-                if(this.ipcManager.serverConnected){
+                if(pa.ipcManager.serverConnected){
                     clearInterval(handle)
-                    this.ipcManager.clientEmit('request',JSON.stringify(workInfo))
+                    pa.ipcManager.clientEmit('request',JSON.stringify(workInfo))
                 } 
                 
             }, 500)

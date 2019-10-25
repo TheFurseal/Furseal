@@ -81,11 +81,12 @@ class ValidatorCli{
         this.ipcManager.clientDisconnect()
     }
     request(workInfo){
+        var pa = this
         if(!this.ipcManager.serverConnected){
             var handle = setInterval(() => {
-                if(this.ipcManager.serverConnected){
+                if(pa.ipcManager.serverConnected){
                     clearInterval(handle)
-                    this.ipcManager.clientEmit('request',workInfo)
+                    pa.ipcManager.clientEmit('request',workInfo)
                 }
             }, 500);
         }else{
