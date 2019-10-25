@@ -16,9 +16,26 @@ const stage = {
 }
 
 class DeviceState{
-    constructor(){
+    constructor({
+        SupplyCallback:cb
+    }){
         this.mainState = 'init'
         this.mainStage = stage['init']
+        //free for long time (blocked for some reason)
+        // in this case send a supply message to every node in peerBook to make sure 
+        // nodes unblock this device hardly
+        var pa = this
+        setInterval(() => {
+            if(pa.mainStage == 'standby' && !isNaN(pa.freeFrom)){
+                var date = new Date()
+                if(date.valueOf() - pa.freeFrom > 60000){
+                    debug('Device may blocked by other node, send a supply message')
+                    cb()
+                }else{
+
+                }
+            }
+        }, 60000);
     }
 
     isLogin(){
@@ -40,6 +57,12 @@ class DeviceState{
     update(stat){
         if(stat == null || stateType.indexOf(stat) < 0){
             debug('invalid state string'+'['+stat+']')
+            if(stat == 'standby'){
+                var date = new Date()
+                this.freeFrom = date.valueOf()
+            }else if(stat == 'busy'){
+                this.freeFrom = NaN
+            }
             return
         }
         this.mainState = stat
@@ -58,6 +81,7 @@ class DeviceState{
             return false
         }
     }
+    
 }
 
 module.exports = DeviceState

@@ -37,7 +37,7 @@ class NodeManager{
 
             return true
         }else if(this.pBlockList[id] >= 5){
-            debug(id + 'is soft blocked')
+            //debug(id + 'is soft blocked')
             return true
         }else{
             return false
