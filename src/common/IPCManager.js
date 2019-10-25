@@ -50,6 +50,7 @@ class IPCManager{
                 function(socket,destroyedSocketID){
                     debug('Client disconnected')
                     parent.clientConnected = false
+                    parent.clientSockTmp = null
     
                 }
             )
@@ -173,6 +174,8 @@ class IPCManager{
                 event,
                 data
             )
+        }else{
+            console.error('No client connection')
         }
     }
 
