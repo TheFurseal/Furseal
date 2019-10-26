@@ -526,6 +526,7 @@ class Furseal{
                     //retry
                     if(reporter.check(data.unprotected.blockName)){
                         setTimeout(() => {
+                            debug('resend result ----------------------------------------------------------------')
                             eventManager.emit('finishCompute',data)
                         }, 5000)
                     }
@@ -793,19 +794,27 @@ class Furseal{
         })
 
         //      block events
-        eventManager.registEvent('blockIn',(data) => {
+        eventManager.registEvent('blockIn',(dataIn) => {
+            var data = JSON.parse(JSON.stringify(dataIn))
             data.unprotected.status = 'init'
-            dbB.put(data.unprotected.blockName,data)
-            if(wIndexes[data.workName] == null){
-                addElement(wIndexes,data.workName)
-                debug('One work detected '+data.workName)
-                dbW.put(data.workName,data,(err) => {
-                    if(err){
-                        console.error(err)
+            dbB.get(data.unprotected.blockName,(err,value) => {
+                if(err){
+                    dbB.put(data.unprotected.blockName,data)
+                    if(wIndexes[data.workName] == null){
+                        addElement(wIndexes,data.workName)
+                        debug('One work detected '+data.workName)
+                        dbW.put(data.workName,data,(err) => {
+                            if(err){
+                                console.error(err)
+                            }
+                        })
                     }
-                })
-            }
-            addElement(bIndexes,data.unprotected.blockName)
+                    addElement(bIndexes,data.unprotected.blockName)
+                }else{
+                    debug('block info already exist '+data.unprotected.blockName)
+                }
+            })
+           
         })
 
         //controll events
@@ -966,6 +975,7 @@ class Furseal{
                     return data.toString('utf8').replace('\n', '')
                 }),pull.drain((data) => {
                     // record to db 
+                    console.log(data)
                     if(typeof(data) == 'string'){
                         data = JSON.parse(data)
                     }

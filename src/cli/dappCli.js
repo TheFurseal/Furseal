@@ -23,6 +23,7 @@ class DAppCli{
             }
             if(pa.callback != null){
                 pa.callback(data)
+                debug('callback excuted')
             }else{
                 console.error('No callback for '+data.unprotected.blockName)
             }
@@ -44,7 +45,6 @@ class DAppCli{
             pa.pid = pid
         })
         pa.callback = callback
-        
         this.ipcManager.connect(this.param.id)
     }
 

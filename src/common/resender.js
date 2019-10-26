@@ -169,6 +169,7 @@ class Resender{
                     if(err){
                         console.error(err)
                     }
+                    debug('block '+blockName+' step back to '+value.unprotected.status)
                 })
             }
         })
