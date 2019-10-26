@@ -458,7 +458,6 @@ class Furseal{
                     element.unprotected.status = 'processing'
                     dbW.put(element.workName,element)
                 }else{
-                    debug(element)
                 }
             }
             dbB.getAllValue((data2) => {
@@ -645,7 +644,6 @@ class Furseal{
                                             if(err){
                                                 console.error(err)
                                             }else{
-                                                debug(ret.unprotected.blockName+'  upate to '+ret.unprotected.status+'!!!!!!!!!')
                                                 //update workInfo
                                                 dbW.get(ret.workName,(err,wVal) => {
                                                     if(err){
@@ -675,7 +673,6 @@ class Furseal{
                                                                 console.error('ERROR: ',err);
                                                             }
                                                         })
-                                                        debug('update progress to '+wVal.unprotected.info.progress)
                                                         // update blockinfo
                                                         var blockStatus = {}
                                                         blockStatus.workName = ret.workName
@@ -748,8 +745,10 @@ class Furseal{
                                 gcManager.clearByEvent(ret.unprotected.blockName+'_close')
                                 gcManager.register(ret.protected.outputFiles[0].path,ret.unprotected.blockName+'_uploaded')
                                 setTimeout(() => {
-                                    if(devStat.avaliable()){
+                                    if(devStat.timeFreed() > 14000){
                                         appManager.killDapp(data.unprotected.appSet)
+                                    }else{
+                                        debug('Not kill dapp beacourse is used')
                                     }
                                 }, 15000);
                                 var retBk = ret

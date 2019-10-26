@@ -128,7 +128,6 @@ module.exports = {
                         if(elem.includes(key)){
                             var fixed = '\nexport '+key+'=\''+value+'\'\n'
                             tmp = tmp + fixed
-                            console.log('rewrite '+fixed)
                         }else{
                             tmp = tmp+elem
                         }

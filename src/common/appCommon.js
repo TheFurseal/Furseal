@@ -43,7 +43,6 @@ class AppCommon{
     
 
     start(callback){
-        debug('step 1',this.param)
         // see if file is exist
         if(this.hadler != null){
             return
@@ -90,7 +89,6 @@ class AppCommon{
                         })
                     }else{
                         debug('app path is empty')
-                        debug(paramTmp,tmp)
                     }
                 }
             })

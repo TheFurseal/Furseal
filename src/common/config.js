@@ -48,10 +48,10 @@ class Config{
                 var jStr = JSON.stringify(this.config,null,'\t');
                 fs.writeFile(appPath+'/config.json', jStr, 'utf8', function (err) {
                     if (err) {
-                        console.log("An error occured while writing JSON Object to File.");
-                        return console.log(err);
+                        debug("An error occured while writing JSON Object to File.");
+                        return
                     }
-                    console.log("JSON file has been saved.");
+                    debug("JSON file has been saved.");
                 })
             })
         }else{

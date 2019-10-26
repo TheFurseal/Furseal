@@ -150,9 +150,8 @@ class AssimilatorCli{
                         count++
                         if(count == requestTmp.totalBlock){
                             callback(requestTmp)
-                            console.log(requestTmp)
                         }else{
-                            console.log('Wrong block number!!!!!')
+                            debug('Wrong block number!!!!!')
                         }
                     }
                 })

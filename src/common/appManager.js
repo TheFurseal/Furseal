@@ -32,24 +32,26 @@ class AppManager{
         this.appRepoPath = appRepoPath
         this.downloadManager = dMgr
         this.gcManager = gcMrg
+        this.activeMonitor = {}
+
     }
 
     launchDividor(setName,callback){
         debug('launch dividor')
         if(this.setsRegister[setName] == null){
             this.setsRegister[setName] = {}
-            console.log('No  handler found')
+            debug('No  handler found')
         }else{
             if(this.setsRegister[setName].dividor != null){
-                console.log('dividor handler already exist')
+                debug('dividor handler already exist')
                 this.setsRegister[setName].dividor.start(callback)
                 return
             }else{
-                console.log('No  dividor handler found')
+                debug('No  dividor handler found')
             }
         }
 
-        console.log('Create a new dividor cli')
+        debug('Create a new dividor cli')
         var param = {}
         param.setName = setName
         param.arg = null

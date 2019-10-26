@@ -46,6 +46,16 @@ class DeviceState{
         }
     }
 
+    timeFreed(){
+        var date = new Date()
+        if(this.mainStage == 'standby' && !isNaN(this.freeFrom)){
+            return date.valueOf() - this.freeFrom
+        }else{
+            return 0
+        }
+        
+    }
+
     avaliable(){
         if(this.mainState == 'standby' || this.mainState == 'reporting'){
             return true
