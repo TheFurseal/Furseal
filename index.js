@@ -621,6 +621,8 @@ class Furseal{
                         pull.collect((err,buf) => {
                             if(err){
                                 console.error(err)
+                                resender.stepBack(data.unprotected.blockName)
+                                return
                             }else{
                                 var targetPath = resultFileTmp+'/'+data.protected.outputFiles[0].fileName
                                 data.protected.outputFiles[0].path = targetPath
@@ -628,6 +630,8 @@ class Furseal{
                                 fs.writeFile(targetPath, inBuffer, (err) => {
                                     if(err){
                                         console.error(err)
+                                        resender.stepBack(data.unprotected.blockName)
+                                        return
                                     }else{
                                         debug('Download '+data.protected.outputFiles[0].hash+' to '+targetPath)
                                     }
@@ -643,6 +647,8 @@ class Furseal{
                                         dbB.update(ret.unprotected.blockName,ret,(err) => {
                                             if(err){
                                                 console.error(err)
+                                                resender.stepBack(data.unprotected.blockName)
+                                                return
                                             }else{
                                                 //update workInfo
                                                 dbW.get(ret.workName,(err,wVal) => {
@@ -666,6 +672,8 @@ class Furseal{
                                                         wVal.unprotected.info.progress = pm.getProgress();
                                                         if(wVal.unprotected.info.progress == 1){
                                                             eventManager.emit('startAssimilate',wVal)
+                                                        }else{
+                                                            debug('work '+wVal.workName+'\'s progress come to '+wVal.unprotected.info.progress)
                                                         }
                                                         wVal.unprotected.progress = pm.mProgress;
                                                         dbW.put(wVal.workName,wVal,(err) => {
