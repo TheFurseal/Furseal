@@ -283,6 +283,11 @@ class StoreCli{
                                     }
                                     callback(null,res)
                                 })
+                                p2pNode.pin.add(res.apps.dapp[0].url, (err) => {
+                                    if(err){
+                                        console.error(err)
+                                    }
+                                })
                             }
                         })
                     }
@@ -347,6 +352,11 @@ class StoreCli{
                                         debug('Download '+res.apps.assimilator.url+' to '+targetPath)
                                         steps++
                                     }
+                                    p2pNode.pin.add(res.apps.assimilator.url, (err) => {
+                                        if(err){
+                                            console.error(err)
+                                        }
+                                    })
                                 })
                             })  
                         }
@@ -377,6 +387,11 @@ class StoreCli{
                                     debug('Download '+res.apps.validator.url+' to '+targetPath)
                                     steps++
                                 }
+                                p2pNode.pin.add(res.apps.validator.url, (err) => {
+                                    if(err){
+                                        console.error(err)
+                                    }
+                                })
                             })
                         }
                     })
@@ -407,6 +422,11 @@ class StoreCli{
                                     debug('Download '+res.apps.dividor.url+' to '+targetPath)
                                     steps++
                                 }
+                                p2pNode.pin.add(res.apps.dividor.url, (err) => {
+                                    if(err){
+                                        console.error(err)
+                                    }
+                                })
                             })
                         }
                     })
@@ -454,6 +474,11 @@ class StoreCli{
                                         console.error(err)
                                     }else{
                                         debug('Download '+url+' to '+targetPath)
+                                    }
+                                })
+                                p2pNode.pin.add(url, (err) => {
+                                    if(err){
+                                        console.error(err)
                                     }
                                 })
                             }

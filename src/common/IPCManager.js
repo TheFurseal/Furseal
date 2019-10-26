@@ -59,11 +59,16 @@ class IPCManager{
                     console.log(err)
                 }
             )
+            var count = 0
             parent.serverHandleFuncs.forEach(elem => {
                 parent.IPC.server.on(
                     elem.event,
                     elem.callback
                 )
+                if(++count == parent.serverHandleFuncs.length){
+                    parent.serverHandleFuncs = []
+                    debug('set callbacks done')
+                }
             })
         })
         parent.IPC.server.start()
