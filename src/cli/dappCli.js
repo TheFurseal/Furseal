@@ -18,7 +18,6 @@ class DAppCli{
         //IPC
         this.ipcManager.createClient({})
         this.ipcManager.addClientListenner('result',(data) => {
-            debug('revice result')
             if(typeof(data) == 'string'){
                 data = JSON.parse(data)
             }
@@ -57,11 +56,9 @@ class DAppCli{
         if(!this.ipcManager.serverConnected){
             var handle = setInterval(() => {
                 if(pa.ipcManager.serverConnected){
-                    debug('send workInfo to server')
                     clearInterval(handle)
                     pa.ipcManager.clientEmit('request',JSON.stringify(workInfo))
                 } 
-                debug('waitting ...')
             }, 500)
             debug('waitting dapp .......')
         }else{

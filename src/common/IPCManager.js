@@ -76,37 +76,22 @@ class IPCManager{
         this.serverID = id
         var parent = this
         parent.IPC.connectTo(id,function(){
-            
-            if(parent.IPC.of[parent.serverID]._events_.connect == null){
-                parent.IPC.of[parent.serverID]._events_.connect = []
-                parent.IPC.of[parent.serverID]._events_.connect[0] = function(){
-                    parent.serverConnected = true
-                    debug('Connect to '+parent.serverID)
+
+            parent.IPC.of[parent.serverID].on('connect',function(){
+                parent.serverConnected = true
+                debug('Connect to '+parent.serverID)
+            })
+            parent.IPC.of[parent.serverID].on('disconnect',function(){
+                if(parent.serverConnected){
+                    debug('Disconnected from server '+parent.serverID)
                 }
-            }
-            
-            if(parent.IPC.of[parent.serverID]._events_.disconnect == null){
-                parent.IPC.of[parent.serverID]._events_.disconnect = []
-                parent.IPC.of[parent.serverID]._events_.disconnect[0] = function(){
-                    if(parent.serverConnected){
-                        debug('Disconnected from server '+parent.serverID)
-                    }
-                    parent.serverConnected = false
-                }
-            }
-            
-            if(parent.IPC.of[parent.serverID]._events_.error == null){
-                parent.IPC.of[parent.serverID]._events_.error = []
-                parent.IPC.of[parent.serverID]._events_.error[0] = function(err){
-                    // console.log(err)
-                }
-            }
-         
+                parent.serverConnected = false
+            })
+            parent.IPC.of[parent.serverID].on('err',function(err){
+                console.log(err)
+            })
             parent.clientHandleFuncs.forEach(element => {
-                if(parent.IPC.of[parent.serverID]._events_[element.event] == null){
-                    parent.IPC.of[parent.serverID]._events_[element.event] = []
-                    parent.IPC.of[parent.serverID]._events_[element.event][0] = element.callback
-                }
+                parent.IPC.of[parent.serverID].on(element.event,element.callback)
             });
         })
        
@@ -174,6 +159,7 @@ class IPCManager{
         }else{
             console.error('No client connection')
         }
+       
     }
 
     clientEmit(event,data,sock){
@@ -197,6 +183,8 @@ class IPCManager{
         }else{
             console.error('No server connection')
         }
+    
+       
     }
 
     serverDisconnect(){
@@ -204,7 +192,7 @@ class IPCManager{
     }
 
     clientDisconnect(){
-        this.IPC.disconnect()
+        this.IPC.disconnect(this.serverID)
     }
 }
 
