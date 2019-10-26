@@ -634,7 +634,7 @@ class Furseal{
                                     }
                                 })
                                 gcManager.register(targetPath,data.workName+'_close')
-                                gcManager.register(data.protected.outputFiles[0].hash,data.workName+'_close')
+                                //gcManager.register(data.protected.outputFiles[0].hash,data.workName+'_close')
                                 appManager.launchValidator(data.unprotected.appSet,data,(ret) => {
                                     //appManager.killValidator(data.unprotected.appSet)
                                     if(ret.protected.inputFiles[0].path != ''){
@@ -740,7 +740,7 @@ class Furseal{
                             var outBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
                             fs.writeFileSync(targetPath,outBuffer)
                             gcManager.register(targetPath,data.unprotected.blockName+'_close')
-                            gcManager.register(data.protected.inputFiles[0].hash,data.workName+'_close')
+                           // gcManager.register(data.protected.inputFiles[0].hash,data.workName+'_close')
                             data.protected.inputFiles[0].path = targetPath
                             debug('download finish')
                             appManager.launchDapp(data.unprotected.appSet,null,data,(ret) => {

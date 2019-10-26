@@ -107,11 +107,11 @@ class Resender{
             }else{
                 if(workIndexs[value.workName] != null && value.unprotected.status != 'validated'){ // processing work
                     value.unprotected.status = 'init'
-                    dbB.put(blockName,value,(err) => {
+                    dbB.put(value.unprotected.blockName,value,(err) => {
                         if(err){
                             console.error(err)
                         }
-                        debug('resend block '+blockName)
+                        debug('resend block '+value.unprotected.blockName)
                     })
                     var blockDim = value.unprotected.block.indexs;
                     var indexs = blockDim.split('_');
