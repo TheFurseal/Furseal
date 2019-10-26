@@ -51,6 +51,7 @@ function getNeighbor(blockName,db,callback){
 var dbB
 var dbW
 var workIndexs
+var ipcManager
 
 function checkNeighbor(blockName,array,startTime,callback){
     if(array.length == 0){
@@ -76,12 +77,14 @@ class Resender{
     constructor({
         WorkIndexs:wIndexs,
         BlockDatabase:dbBlock,
-        WorkDatabase:dbWwork
+        WorkDatabase:dbWwork,
+        IPCManager:ipc
     }){
         debug('Create a new resender')
         dbB = dbBlock
         dbW = dbWwork
         workIndexs = wIndexs
+        ipcManager = ipc
         var pa = this
         //resent check loop
         setInterval(() => {
@@ -112,6 +115,13 @@ class Resender{
                             console.error(err)
                         }
                         debug('resend block '+value.unprotected.blockName)
+                        var blockStatus = {}
+                        blockStatus.workName = value.workName
+                        blockStatus.index = value.unprotected.block.index
+                        blockStatus.status = 'init'
+                        var infos = []
+                        infos.push(blockStatus)
+                        ipcManager.serverEmit('updateBlockStatus',infos)
                     })
                     var blockDim = value.unprotected.block.indexs;
                     var indexs = blockDim.split('_');
