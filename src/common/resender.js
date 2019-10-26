@@ -153,6 +153,27 @@ class Resender{
         })
     }
 
+    stepBack(blockName){
+        dbB.get(blockName,(err,value) => {
+            if(err){
+                console.error(err)
+            }else{
+                if(value.unprotected.status == 'processing'){
+                    value.unprotected.status = 'init'
+                }else if(value.unprotected.status == 'validating'){
+                    value.unprotected.status = 'preDone'
+                }else{
+
+                }
+                dbB.put(value.unprotected.blockName,value,(err) => {
+                    if(err){
+                        console.error(err)
+                    }
+                })
+            }
+        })
+    }
+
     resendBySlaveID(sID){
         dbB.getAllValue(value => {
             value.forEach(element => {
