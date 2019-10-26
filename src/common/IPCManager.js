@@ -91,7 +91,7 @@ class IPCManager{
                 console.log(err)
             })
             var count = 0
-            funcs.forEach(element => {
+            parent.clientHandleFuncs.forEach(element => {
                 parent.IPC.of[parent.serverID].on(element.event,element.callback)
                 if(++count == parent.clientHandleFuncs.length){
                     parent.clientHandleFuncs = []

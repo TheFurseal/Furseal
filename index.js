@@ -197,14 +197,16 @@ class Furseal{
         Tools.setEnv('COT_DATA_PATH',homePath)
         nodeManager = new NodeManager()
         reporter = new Reporter()
+         //init ipc 
+         ipcManager.createServer({
+            id:'nodeServer'
+        })
+        
         resender = new Resender({
             WorkIndexs:wIndexes,
             WorkDatabase:dbW,
-            BlockDatabase:dbB
-        })
-        //init ipc 
-        ipcManager.createServer({
-            id:'nodeServer'
+            BlockDatabase:dbB,
+            IPCManager:ipcManager
         })
     
         ipcManager.addServerListenner('login',(data,socket) => {
