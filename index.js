@@ -745,12 +745,13 @@ class Furseal{
                                 gcManager.clearByEvent(ret.unprotected.blockName+'_close')
                                 gcManager.register(ret.protected.outputFiles[0].path,ret.unprotected.blockName+'_uploaded')
                                 setTimeout(() => {
-                                    if(devStat.timeFreed() > 14000){
+                                    if(devStat.timeFreed() > 20000){
                                         appManager.killDapp(data.unprotected.appSet)
                                     }else{
                                         debug('Not kill dapp beacourse is used')
+                                        debug(devStat.timeFreed())
                                     }
-                                }, 15000);
+                                }, 30000);
                                 var retBk = ret
                                 var resultBuffer = fs.readFileSync(Tools.fixPath(retBk.protected.outputFiles[0].path))
                                 resultBuffer = Tools.compressionBuffer(resultBuffer)
