@@ -67,15 +67,15 @@ class DeviceState{
     update(stat){
         if(stat == null || stateType.indexOf(stat) < 0){
             debug('invalid state string'+'['+stat+']')
-            if(stat == 'standby'){
-                var date = new Date()
-                this.freeFrom = date.valueOf()
-            }else if(stat == 'busy'){
-                this.freeFrom = NaN
-            }
             return
         }
         this.mainState = stat
+        if(stat == 'standby'){
+            var date = new Date()
+            this.freeFrom = date.valueOf()
+        }else if(stat == 'busy'){
+            this.freeFrom = NaN
+        }
         debug('Device update to '+stat)
     }
 

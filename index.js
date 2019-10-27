@@ -220,6 +220,7 @@ class Furseal{
         })
 
         ipcManager.addServerListenner('mainUpdate',(data,socket) => {
+            var step = 0
             dbW.getAll(function(data){
                 var dataWrap = {};
                 dataWrap.workList = data;
@@ -229,8 +230,25 @@ class Furseal{
                 dataWrap.avgTime = '180';
                 dataWrap.balanceCNC = '12,000';
                 dataWrap.balanceRNB = '1.2';
-                ipcManager.serverEmit('mainUpdate',dataWrap)
+                step++
+                var peersList = {}
+                dbB.getAllValue((value) => {
+                    var count = 0
+                    value.forEach(elem => {
+                        if(elem.unprotected.status == 'processing'){
+                            peersList[elem.unprotected.slave] = 1
+                        }
+                        if(++count == value.length){
+                            dataWrap.nodeNumber = Object.keys(peersList).length.toString()
+                            ipcManager.serverEmit('mainUpdate',dataWrap)
+                        }
+                    })
+                })
+
+               
             })
+           
+            
         })
 
         ipcManager.addServerListenner('releaseSet',(data,socket) => {
@@ -288,6 +306,21 @@ class Furseal{
                 }else{
                     ipcManager.serverEmit('gotBlockInfo',value)
                 }
+            })
+        })
+
+        ipcManager.addServerListenner('updateServicingNodeNumber',(data,socket) => {
+            var peersList = {}
+            dbB.getAllValue((value) => {
+                var count = 0
+                value.forEach(elem => {
+                    if(elem.unprotected.status == 'processing'){
+                        peersList[elem.unprotected.slave] = 1
+                    }
+                    if(++count == value.length){
+                        ipcManager.serverEmit('updateServicingNodeNumber',Object.keys(peersList).length)
+                    }
+                })
             })
         })
 
