@@ -108,7 +108,7 @@ class DividorCli{
                     var pubValue = findPublic(workInfo.workName,element.url)
                     if(element.type == 'public' && pubValue != null){
 
-                        if(pubValue == 'x'){
+                        if(pubValue.value == 'x'){
                             setTimeout(() => {
                                 debug('add not ready for '+element.url+', retry!!!!!')
                                 dealWithInputs(workInfo,node)
@@ -118,9 +118,11 @@ class DividorCli{
                         
                         //
                         currentFileNumber++
-                        workInfo.protected.inputFiles[index].url = pubValue
-                        workInfo.protected.inputFiles[index].key = pubValue
-                        workInfo.protected.inputFiles[index].hash = pubValue
+                        workInfo.protected.inputFiles[index].url = pubValue.value
+                        workInfo.protected.inputFiles[index].key = pubValue.value
+                        workInfo.protected.inputFiles[index].hash = pubValue.value
+                        workInfo.protected.inputFiles[index].size = pubValue.size
+
                     }else{
                         var buf = fs.readFileSync(Tools.fixPath(element.url))
                         debug('start to compression buffer '+element.url)
@@ -146,6 +148,7 @@ class DividorCli{
                                     //update key-value
                                     var tmpKV = {}
                                     tmpKV.value = resInfo.hash
+                                    tmpKV.size = buf.length
                                     workInRegister[workInfo.workName].publicFiles[urlTmp] = tmpKV
                                     debug('reset value for '+urlTmp)
                                 }
@@ -176,7 +179,7 @@ class DividorCli{
 
         function findPublic(workName,key){
             if(workInRegister[workName].publicFiles[key] != null){
-                return workInRegister[workName].publicFiles[key].value
+                return workInRegister[workName].publicFiles[key]
             }else{
                 return null
             }
