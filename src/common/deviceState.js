@@ -5,7 +5,8 @@ const stateType = [
     'standby',
     'busy',
     'reporting',
-    'disavaliable',
+    'disable',
+    'enable',
     'ready' //login
 ]
 
@@ -47,6 +48,14 @@ class DeviceState{
         }
     }
 
+    disableSharing(){
+        this.mainStage = 'disable'
+    }
+
+    enableSharing(){
+        this.mainStage = 'enable'
+    }
+
     timeFreed(){
         var date = new Date()
         if(this.mainStage == 'standby' && !isNaN(this.freeFrom)){
@@ -58,6 +67,11 @@ class DeviceState{
     }
 
     avaliable(){
+        // if it was disabled by user self
+        if(this.mainStage == 'disable'){
+            return false
+        }
+        // if it was disabled by progress
         if(this.mainState == 'standby' || this.mainState == 'reporting'){
             return true
         }else{

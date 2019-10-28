@@ -218,6 +218,18 @@ class AppManager{
         this.setsRegister[setName].dapp.stop()
     }
 
+    killAllDapp(){
+        debug('start kill all the launched dapp')
+        var keys = Object.keys(this.setsRegister)
+        var pa = this
+        keys.forEach(elem => {
+            if(pa.setsRegister[elem].dapp != null){
+                pa.setsRegister[elem].dapp.stop()
+                debug('Killed Dapp of set '+elem)
+            }
+        })
+    }
+
     killStore(setName){
 
     }

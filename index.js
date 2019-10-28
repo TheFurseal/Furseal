@@ -193,6 +193,7 @@ class Furseal{
         devStat = new DeviceState({
             SupplyCallback:supplyMessage
         })
+        this.devStat = devStat
         eventManager = new EventsManager()
         Tools.setEnv('COT_DATA_PATH',homePath)
         nodeManager = new NodeManager()
@@ -216,6 +217,21 @@ class Furseal{
             }
             if(obj.status == 'OK'){
                 mainPage();
+            }
+        })
+
+        ipcManager.addServerListenner('changeDeviceStatus',(data,socket) => {
+            var obj = data
+            if(typeof(obj) == 'string'){
+                obj = JSON.parse(obj)
+            }
+            if(obj.status == 'stop'){
+                devStat.disableSharing()
+                appManager.killAllDapp()
+            }else if(obj.status == 'start'){
+                devStat.enableSharing()
+            }else{
+
             }
         })
 
