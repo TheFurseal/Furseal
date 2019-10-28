@@ -564,6 +564,8 @@ class Furseal{
                             debug('resend result ----------------------------------------------------------------')
                             eventManager.emit('finishCompute',data)
                         }, 5000)
+                    }else{
+                        devStat.update('standby')
                     }
                 }else{
                     var p = Pushable()
@@ -632,18 +634,6 @@ class Furseal{
                     //update work progress
                     data.protected = JSON.parse(protectedTmp)
                     //updage db
-                    dbB.get(data.unprotected.blockName,(err,val) => {
-                        if(err){
-                            console.error(err)
-                        }else{
-                            val.unprotected.status = 'validating'
-                            dbB.put(val.unprotected.blockName,val,(err) => {
-                                if(err){
-                                    console.error(err)
-                                }
-                            })
-                        }
-                    })
                     var totalBytes = 0
                     pull(
                         p2pNode.catPullStream(data.protected.outputFiles[0].hash),
@@ -846,10 +836,9 @@ class Furseal{
                     }
                     addElement(bIndexes,data.unprotected.blockName)
                 }else{
-                    debug('block info already exist '+data.unprotected.blockName)
+                    //debug('block info already exist '+data.unprotected.blockName)
                 }
             })
-           
         })
 
         //controll events
@@ -1010,13 +999,13 @@ class Furseal{
                     return data.toString('utf8').replace('\n', '')
                 }),pull.drain((data) => {
                     // record to db 
-                    console.log(data)
                     if(typeof(data) == 'string'){
                         data = JSON.parse(data)
                     }
                     eventManager.emit('reportIn',data)
                     nodeManager.unblock(data.unprotected.slave)
                     nodeManager.hardUnBlock(data.unprotected.slave)
+                    debug('Unblock '+data.unprotected.slave+' soft & hard')
                 },function(err){
                     if(err)console.error(err)
                 })
@@ -1115,6 +1104,12 @@ class Furseal{
                                 if(err){
                                     console.error(err)
                                 }else{
+                                    elem.unprotected.status = 'validating'
+                                    dbB.put(elem.unprotected.blockName,elem,(err) => {
+                                        if(err){
+                                            console.error(err)
+                                        }
+                                    })
                                     debug('Start validate')
                                     eventManager.emit('startValidate',value)
                                 }

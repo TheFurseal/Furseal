@@ -21,6 +21,7 @@ class DeviceState{
     }){
         this.mainState = 'init'
         this.mainStage = stage['init']
+        this.freeFrom = NaN
         //free for long time (blocked for some reason)
         // in this case send a supply message to every node in peerBook to make sure 
         // nodes unblock this device hardly

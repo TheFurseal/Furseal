@@ -1,7 +1,7 @@
 const debug = require('debug')('common:nodeManager')
 class NodeManager{
     constructor(){
-        this.pHardBlockList = []
+        this.pHardBlockList = {}
         this.pBlockList = {}
         this.pBlockList['QmUoL3udUypkWjGzap46sw3AqxnBN6496xHS3YZ8NbnsLN'] = 5
         var pa = this
@@ -32,7 +32,7 @@ class NodeManager{
             console.error('Empty ID')
             return true
         }
-        if(this.pHardBlockList.indexOf(id) >= 0){
+        if(this.pHardBlockList[id] != null){
             //debug(id + 'is blocked')
 
             return true
@@ -65,9 +65,9 @@ class NodeManager{
             console.error('Empty ID')
             return
         }
-        if(this.pHardBlockList.indexOf(id) < 0){
+        if(this.pHardBlockList[id] == null){
             //debug('Block '+id+' hard')
-            this.pHardBlockList.push(id)
+            this.pHardBlockList[id] = 1
         }
     }
 
@@ -76,13 +76,10 @@ class NodeManager{
             console.error('Empty ID')
             return
         }
-        var index = this.pHardBlockList.indexOf(id)
-        if(index >= 0){
-            //debug('Unblock '+id+' hard')
-            this.pHardBlockList.splice(index,1)
+        if(this.pHardBlockList[id] != null){
+            delete this.pHardBlockList[id]
         }
     }
-
 }
 
 module.exports = NodeManager
