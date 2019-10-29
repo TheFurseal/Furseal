@@ -191,7 +191,8 @@ class Furseal{
         dbR = new DBManager(homePath+'/data/result')
         configure = new Configure(homePath)
         devStat = new DeviceState({
-            SupplyCallback:supplyMessage
+            SupplyCallback:supplyMessage,
+            Configure:configure
         })
         this.devStat = devStat
         eventManager = new EventsManager()
@@ -208,16 +209,6 @@ class Furseal{
             WorkDatabase:dbW,
             BlockDatabase:dbB,
             IPCManager:ipcManager
-        })
-    
-        ipcManager.addServerListenner('login',(data,socket) => {
-            var obj = data
-            if(typeof(obj) == 'string'){
-                obj = JSON.parse(obj)
-            }
-            if(obj.status == 'OK'){
-                mainPage();
-            }
         })
 
         ipcManager.addServerListenner('changeDeviceStatus',(data,socket) => {
@@ -237,32 +228,38 @@ class Furseal{
 
         ipcManager.addServerListenner('mainUpdate',(data,socket) => {
             var step = 0
+            var dataWrap = {};
             dbW.getAll(function(data){
-                var dataWrap = {};
                 dataWrap.workList = data;
-                
                 dataWrap.nodeNumber = '50';
                 dataWrap.taskNumber = '50000';
                 dataWrap.avgTime = '180';
                 dataWrap.balanceCNC = '12,000';
                 dataWrap.balanceRNB = '1.2';
+                dataWrap.powerSharing = configure.config.powerSharing
                 step++
-                var peersList = {}
-                dbB.getAllValue((value) => {
-                    var count = 0
-                    value.forEach(elem => {
-                        if(elem.unprotected.status == 'processing'){
-                            peersList[elem.unprotected.slave] = 1
-                        }
-                        if(++count == value.length){
-                            dataWrap.nodeNumber = Object.keys(peersList).length.toString()
-                            ipcManager.serverEmit('mainUpdate',dataWrap)
-                        }
-                    })
-                })
-
-               
             })
+            var peersList = {}
+            dbB.getAllValue((value) => {
+                var count = 0
+                value.forEach(elem => {
+                    if(elem.unprotected.status == 'processing'){
+                        peersList[elem.unprotected.slave] = 1
+                    }
+                    if(++count == value.length){
+                        dataWrap.nodeNumber = Object.keys(peersList).length.toString()
+                        step++
+                    }
+                })
+            })
+
+            var handle = setInterval(() => {
+                if(step == 2){
+                    clearInterval(handle)
+                    ipcManager.serverEmit('mainUpdate',dataWrap)
+                }
+            }, 200);
+            
            
             
         })

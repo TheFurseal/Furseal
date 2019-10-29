@@ -18,11 +18,13 @@ const stage = {
 
 class DeviceState{
     constructor({
-        SupplyCallback:cb
+        SupplyCallback:cb,
+        Configure:conf
     }){
         this.mainState = 'init'
         this.mainStage = stage['init']
         this.freeFrom = NaN
+        this.configure = conf
         //free for long time (blocked for some reason)
         // in this case send a supply message to every node in peerBook to make sure 
         // nodes unblock this device hardly
@@ -50,10 +52,12 @@ class DeviceState{
 
     disableSharing(){
         this.mainStage = 'disable'
+        this.configure.update('powerSharing',false)
     }
 
     enableSharing(){
         this.mainStage = 'enable'
+        this.configure.update('powerSharing',true)
     }
 
     timeFreed(){
