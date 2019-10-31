@@ -242,6 +242,9 @@ class Furseal{
             var peersList = {}
             dbB.getAllValue((value) => {
                 var count = 0
+                if(value.length == 0){
+                    step++
+                }
                 value.forEach(elem => {
                     if(elem.unprotected.status == 'processing'){
                         peersList[elem.unprotected.slave] = 1
