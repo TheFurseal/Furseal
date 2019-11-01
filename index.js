@@ -566,6 +566,11 @@ class Furseal{
             })
         })
 
+        //test code
+        p2pNode.libp2p.on('peer:connect',(peer) => {
+            console.log(peer.id.toB58String())
+        })
+
         eventManager.registEvent('finishCompute',(dataIn) => {
             var data = JSON.parse(JSON.stringify(dataIn))
             //devStat.update('reporting')
@@ -1168,6 +1173,7 @@ class Furseal{
                 if(res.status == 'YES'){
                     configure.update('ownner',res.ownner)
                     configure.update('goldenKey',res.goldenKey)
+                    configure.update('swarm',res.swarm)
                     ipcManager.serverEmit('login',res)
                     devStat.stageUp('login')
                 }else{

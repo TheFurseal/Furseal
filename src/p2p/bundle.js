@@ -9,6 +9,8 @@ const MulticastDNS = require('libp2p-mdns')
 const Bootstrap = require('libp2p-bootstrap')
 const KadDHT = require('libp2p-kad-dht')
 const Multiplex = require('libp2p-mplex')
+const Protector = require('libp2p-pnet')
+const fs = require('fs')
 
 
 const SECIO = require('libp2p-secio')
@@ -16,7 +18,9 @@ const SECIO = require('libp2p-secio')
 const bootstrapers = [
   
     '/dns4/peer1.cotnetwork.com/tcp/4001/ipfs/QmUoL3udUypkWjGzap46sw3AqxnBN6496xHS3YZ8NbnsLN',
-    "/ip4/101.206.123.159/tcp/4001/ipfs/QmUs7k1kLkB3zSiWUQGEXDZD8RyRHu9JDeYJhQmBxfnyD1"
+    "/ip4/101.206.123.159/tcp/4001/ipfs/QmUs7k1kLkB3zSiWUQGEXDZD8RyRHu9JDeYJhQmBxfnyD1",
+    "/dns4/peer3.cotnetwork.com/tcp/4001/ipfs/Qmeb33yPmGG2dv39gNZguA4GZEhCLfPrRpvbX9HsiXWHfm",
+    "/dns4/peer4.cotnetwork.com/tcp/4004/ipfs/QmTDMZ3gfB5JSSK5QYvZbBo5xrz5J3Ay4HFXqn3Mck998C"
   ]
 
 module.exports.createP2PNode = async (home) => {
@@ -28,6 +32,7 @@ module.exports.createP2PNode = async (home) => {
     }else{
       home = './fileStorage'
     }
+    var swarmKeyBuffer = fs.readFileSync(home+'/swarm.key')
     return await IPFS.create({
         repo: home,
         config: {
@@ -62,6 +67,7 @@ module.exports.createP2PNode = async (home) => {
               connEncryption: [
                 SECIO
               ],
+              connProtector: new Protector(swarmKeyBuffer),
               peerDiscovery: [
                 MulticastDNS,
                 Bootstrap,

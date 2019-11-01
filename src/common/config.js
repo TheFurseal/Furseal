@@ -123,6 +123,13 @@ class Config{
         this.config[key] = value;
         var jsonStr = JSON.stringify( this.config,null,'\t')
         fs.writeFileSync(this.appPath+'/config.json', jsonStr, 'utf8')
+        if(key == 'swarm'){
+            if(!fs.existsSync(this.appPath+'/fileStorage')){
+                fs.mkdirSync(this.appPath+'/fileStorage')
+            }
+            debug('update swarm key')
+            fs.writeFileSync(this.appPath+'/fileStorage/swarm.key',base58.decode(value))
+        }
     }
 
     save(data){
