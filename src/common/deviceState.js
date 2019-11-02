@@ -107,7 +107,7 @@ class DeviceState{
 
     stageUp(stageName){
         debug('Stage up to '+stageName)
-        this.mainStage+=stage[stageName]
+        this.mainStage=stage[stageName]
     }
 
     isModuleReady(){
