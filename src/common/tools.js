@@ -335,7 +335,7 @@ module.exports = {
             return
         }
     
-        path = path.replace('\\','/')
+        path = path.replace(/\\/g,'/')
         var sp = path.split('/')
         if(sp == null){
             return 
