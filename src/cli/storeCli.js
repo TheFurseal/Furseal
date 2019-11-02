@@ -138,8 +138,8 @@ class StoreCli{
         })
 
         postData.apps.validator.name = Tools.getAppName(info.apps.validator.path)
-        postData.apps.validator.path = appRepo+'/'+postData.apps.validator.name
-        Tools.copyFile(info.apps.validator.path,appRepo+'/'+postData.apps.validator.name)
+        postData.apps.validator.path = Tools.fixPath(appRepo+'/'+postData.apps.validator.name)
+        Tools.copyFile(info.apps.validator.path,Tools.fixPath(appRepo+'/'+postData.apps.validator.name))
 
         var inBufferDiv = fs.readFileSync(Tools.fixPath(info.apps.dividor.path))
         inBufferDiv = Tools.compressionBuffer(inBufferDiv)
@@ -166,8 +166,8 @@ class StoreCli{
         })
 
         postData.apps.dividor.name = Tools.getAppName(info.apps.dividor.path)
-        postData.apps.dividor.path = appRepo+'/'+postData.apps.dividor.name
-        Tools.copyFile(info.apps.dividor.path,appRepo+'/'+postData.apps.dividor.name)
+        postData.apps.dividor.path = Tools.fixPath(appRepo+'/'+postData.apps.dividor.name)
+        Tools.copyFile(info.apps.dividor.path,Tools.fixPath(appRepo+'/'+postData.apps.dividor.name))
 
         var inBufferAss = fs.readFileSync(Tools.fixPath(info.apps.assimilator.path))
         inBufferAss = Tools.compressionBuffer(inBufferAss)
@@ -194,8 +194,8 @@ class StoreCli{
         })
 
         postData.apps.assimilator.name = Tools.getAppName(info.apps.assimilator.path)
-        postData.apps.assimilator.path = appRepo+'/'+postData.apps.assimilator.name
-        Tools.copyFile(info.apps.assimilator.path,appRepo+'/'+postData.apps.assimilator.name)
+        postData.apps.assimilator.path = Tools.fixPath(appRepo+'/'+postData.apps.assimilator.name)
+        Tools.copyFile(info.apps.assimilator.path,Tools.fixPath(appRepo+'/'+postData.apps.assimilator.name))
 
         debug('dapp number ',info.apps.dapp)
         debug('dapp number '+info.apps.dapp.length)
@@ -230,7 +230,7 @@ class StoreCli{
                     item.path =  appRepo+'/'+item.name
                     item.target = pathArry.apps.dapp[countReg].target
                     resArry.push(item)
-                    Tools.copyFile(pathArry.apps.dapp[countReg].path,appRepo+'/'+item.name)
+                    Tools.copyFile(pathArry.apps.dapp[countReg].path,Tools.fixPath(appRepo+'/'+item.name))
                     count++
     
                     addMulti(pathArry,countReg+1,resArry)
