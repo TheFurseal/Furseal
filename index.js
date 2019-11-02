@@ -83,6 +83,11 @@ optAuth.hostname = urlBase
 optAuth.path = '/dealRequest'
 optAuth.method = 'POST'
 
+var optFS = {}
+optFS.port = 7335
+optFS.hostname = urlBase
+optFS.method = 'POST'
+
 const httpClinet = new client()
 var ipcManager = new IPCManager()
 
@@ -831,6 +836,15 @@ class Furseal{
                                     retBk.protected = enBuf.toString()
                                     delete retBk.enKey
                                     eventManager.emit('finishCompute',retBk)
+                                    var postPair = {}
+                                    postPair.workName = ret.workName
+                                    postPair.key = res2.hash
+                                    optFS.path = '/uploadFile'
+                                    httpClinet.access(JSON.stringify(postPair),optFS,(rest) => {
+                                        if(rest.error){
+                                            console.error(rest.error)
+                                        }
+                                    })
                                 })
                             })
                         }

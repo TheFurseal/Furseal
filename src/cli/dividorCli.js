@@ -14,13 +14,19 @@ var workDB;
 var workInRegister = {}
 var configure
 
-const httpClinet = new client()
 var urlBase = 'peer1.cotnetwork.com';
+const httpClinet = new client()
+var urlBase = urlBase
 var optAuth = {};
 optAuth.port = 7333;
 optAuth.hostname = urlBase;
 optAuth.path = '/registerBlock';
 optAuth.method = 'POST';
+
+var optFS = {}
+optFS.port = 7335
+optFS.hostname = urlBase
+optFS.method = 'POST'
 
 
 class DividorCli{
@@ -153,6 +159,15 @@ class DividorCli{
                                     debug('reset value for '+urlTmp)
                                 }
                                 gcMrg.register(resInfo.hash,workInfo.workName+'_close')
+                                var postPair = {}
+                                postPair.workName = workInfo.workName
+                                postPair.key = resInfo.hash
+                                optFS.path = '/uploadFile'
+                                httpClinet.access(JSON.stringify(postPair),optFS,(rest) => {
+                                    if(rest.error){
+                                        console.error(rest.error)
+                                    }
+                                })
                             }
                         })
                     }

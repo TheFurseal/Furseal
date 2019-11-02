@@ -17,10 +17,9 @@ const SECIO = require('libp2p-secio')
 
 const bootstrapers = [
   
-    '/dns4/peer1.cotnetwork.com/tcp/4001/ipfs/QmUoL3udUypkWjGzap46sw3AqxnBN6496xHS3YZ8NbnsLN',
-    "/ip4/101.206.123.159/tcp/4001/ipfs/QmUs7k1kLkB3zSiWUQGEXDZD8RyRHu9JDeYJhQmBxfnyD1",
-    "/dns4/peer3.cotnetwork.com/tcp/4001/ipfs/Qmeb33yPmGG2dv39gNZguA4GZEhCLfPrRpvbX9HsiXWHfm",
-    "/dns4/peer4.cotnetwork.com/tcp/4004/ipfs/QmTDMZ3gfB5JSSK5QYvZbBo5xrz5J3Ay4HFXqn3Mck998C"
+    "/dns4/peer1.cotnetwork.com/tcp/4001/ipfs/Qmaft14Cc6WHjcFd3Pqxa9MZFcTm9xbiG81FogBtE6ZVPA",
+    "/dns4/peer4.cotnetwork.com/tcp/4001/ipfs/QmTDMZ3gfB5JSSK5QYvZbBo5xrz5J3Ay4HFXqn3Mck998C",
+    "/dns4/peer3.cotnetwork.com/tcp/4003/ipfs/Qmeb33yPmGG2dv39gNZguA4GZEhCLfPrRpvbX9HsiXWHfm"
   ]
 
 module.exports.createP2PNode = async (home) => {

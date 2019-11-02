@@ -5,12 +5,18 @@ const fs = require('fs')
 const debug = require('debug')('cli:storeCli')
 const pull = require('pull-stream')
 
+var urlBase = 'peer1.cotnetwork.com';
 const httpClinet = new Http()
 var optStroe = {};
 optStroe.port = 7334;
-optStroe.hostname = 'peer1.cotnetwork.com';
+optStroe.hostname = urlBase
 optStroe.path = '/setAppSetInfo';
 optStroe.method = 'POST';
+
+var optFS = {}
+optFS.port = 7335
+optFS.hostname = urlBase
+optFS.method = 'POST'
 
 
 var appRepo
@@ -120,6 +126,15 @@ class StoreCli{
             postData.apps.validator.url = res.hash
             postData.apps.validator.size = inBufferVali.length
             count++
+            var postPair = {}
+            postPair.workName = info.setName
+            postPair.key = res.hash
+            optFS.path = '/uploadFile'
+            httpClinet.access(JSON.stringify(postPair),optFS,(rest) => {
+                if(rest.error){
+                    console.error(rest.error)
+                }
+            })
         })
 
         postData.apps.validator.name = Tools.getAppName(info.apps.validator.path)
@@ -133,8 +148,16 @@ class StoreCli{
                 console.error(err)
                 return
             }
-            debug(res)
             res = res[0]
+            var postPair = {}
+            postPair.workName = info.setName
+            postPair.key = res.hash
+            optFS.path = '/uploadFile'
+            httpClinet.access(JSON.stringify(postPair),optFS,(rest) => {
+                if(rest.error){
+                    console.error(rest.error)
+                }
+            })
             
             postData.apps.dividor.url = res.hash
             postData.apps.dividor.size = inBufferDiv.length
@@ -153,9 +176,17 @@ class StoreCli{
                 console.error(err)
                 return
             }
-            debug(res)
-            res = res[0]
             
+            res = res[0]
+            var postPair = {}
+            postPair.workName = info.setName
+            postPair.key = res.hash
+            optFS.path = '/uploadFile'
+            httpClinet.access(JSON.stringify(postPair),optFS,(rest) => {
+                if(rest.error){
+                    console.error(rest.error)
+                }
+            })
             postData.apps.assimilator.url = res.hash
             postData.apps.assimilator.size = inBufferAss.length
             
@@ -183,7 +214,15 @@ class StoreCli{
                     }
                    
                     res = res[0]
-                    debug(res)
+                    var postPair = {}
+                    postPair.workName = pathArry.setName
+                    postPair.key = res.hash
+                    optFS.path = '/uploadFile'
+                    httpClinet.access(JSON.stringify(postPair),optFS,(rest) => {
+                        if(rest.error){
+                            console.error(rest.error)
+                        }
+                    })
                     var item = {}
                     item.name = pathArry.apps.dapp[countReg].name
                     item.url = res.hash
