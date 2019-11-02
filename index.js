@@ -375,7 +375,9 @@ class Furseal{
             }
 
             function updateDividStat(dataTmp,value){
+                console.log('update divid')
                 if(!devStat.isModuleReady()){
+                        console.log('module not ready')
                         setTimeout(() => {
                             updateDividStat(dataTmp,value)
                         }, 5000);   
@@ -412,22 +414,27 @@ class Furseal{
         })
 
         ipcManager.addServerListenner('updateActiveDividor',(data,socket) => {
-            debug('Do update active dividors')
+            
             dbA.getAllValue((value) => {
                 var retTmp = []
-                for(var i=0;i<value.length;i++){
-                    var ret = {}
-                    var element = value[i]
-                    if(element == null || element.apps == null || element.apps.dividor == null){
-                        return
+                var count = 0
+                value.forEach(element => {
+                    console.log(element)
+                    if(element.apps == null || element.apps.dividor == null){
+                        console.log('not have dividor')
+                    }else{
+                        
+                        var ret = {}
+                        ret.setName = element.setName
+                        ret.dividorName = element.apps.dividor.name
+                        ret.status = element.status
+                        retTmp.push(ret)
                     }
-                    ret.setName = element.setName
-                    ret.dividorName = element.apps.dividor.name
-                    ret.status = element.status
-                    retTmp.push(ret)
-                }
-                ipcManager.serverEmit('updateActiveDividor',retTmp)
-            
+                    if(++count == value.length){
+                        console.log('Update ',retTmp)
+                        ipcManager.serverEmit('updateActiveDividor',retTmp)
+                    }
+                })
             })
         })
 

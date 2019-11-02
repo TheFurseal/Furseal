@@ -138,7 +138,13 @@ module.exports = {
             
             }   
         }else if(Process.platform == 'win32'){
-    
+            var arg = []
+            arg.push(key)
+            arg.push(value)
+            var cmd = Spawn('setx',arg)
+            cmd.stdout.on('data',(data) => {
+                console.log(data.toString())
+            })
         }else if(Process.platform == 'linux'){
     
         }else{
@@ -435,11 +441,11 @@ module.exports = {
         if(Process.platform == 'win32'){
 
             var cmd
-            if(option.env != null){
-                cmd = Spawn(option.env+' | '+option.path,option.args)
-            }else{
-                cmd = Spawn(option.path,option.args)
-            }
+            var opt = {}
+            opt.env = process.env
+            console.log(process.env.COT_DATA_PATH)
+            cmd = Spawn(option.path,option.args,opt)
+            
 
             callback(null,cmd.pid)
 
@@ -461,11 +467,9 @@ module.exports = {
         }else if(Process.platform == 'darwin'){
             
             var cmd
-            if(option.env != null){
-                cmd = Spawn(option.env+' | '+option.path,option.args)
-            }else{
-                cmd = Spawn(option.path,option.args)
-            }
+            var opt = {}
+            opt.env = process.env
+            cmd = Spawn(option.path,option.args,opt)
 
             callback(null,cmd.pid)
 

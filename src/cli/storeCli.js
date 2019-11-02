@@ -139,6 +139,7 @@ class StoreCli{
 
         postData.apps.validator.name = Tools.getAppName(info.apps.validator.path)
         postData.apps.validator.path = Tools.fixPath(appRepo+'/'+postData.apps.validator.name)
+        debug('test ++++'+ Tools.fixPath(appRepo+'/'+postData.apps.validator.name))
         Tools.copyFile(info.apps.validator.path,Tools.fixPath(appRepo+'/'+postData.apps.validator.name))
 
         var inBufferDiv = fs.readFileSync(Tools.fixPath(info.apps.dividor.path))
@@ -246,7 +247,6 @@ class StoreCli{
 
         var handle = setInterval(() => {
                 if(count == total){
-                    debug(postData)
                     optStroe.path = '/setAppSetInfo'
                     httpClinet.access(JSON.stringify(postData),optStroe,function(res){
                         debug(res)
@@ -260,6 +260,7 @@ class StoreCli{
                             if(err){
                                 console.error(err)
                             }
+                            debug('record appset info to db')
                         })
 
                     })
