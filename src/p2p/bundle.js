@@ -19,10 +19,10 @@ const bootstrapers = [
   
     "/dns4/peer1.cotnetwork.com/tcp/4001/ipfs/Qmaft14Cc6WHjcFd3Pqxa9MZFcTm9xbiG81FogBtE6ZVPA",
     "/dns4/peer4.cotnetwork.com/tcp/4001/ipfs/QmTDMZ3gfB5JSSK5QYvZbBo5xrz5J3Ay4HFXqn3Mck998C",
-    "/dns4/peer3.cotnetwork.com/tcp/4003/ipfs/Qmeb33yPmGG2dv39gNZguA4GZEhCLfPrRpvbX9HsiXWHfm"
+    "/dns4/peer3.cotnetwork.com/tcp/4001/ipfs/Qmeb33yPmGG2dv39gNZguA4GZEhCLfPrRpvbX9HsiXWHfm"
   ]
 
-module.exports.createP2PNode = async (home) => {
+module.exports.createP2PNode = async (home,swarmKeyBuffer) => {
   // const webrtcStar = new WebrtcStar({ wrtc: wrtc })
   const webrtcStar = new WebrtcStar({ wrtc: testrtc })
   const wss = new WSS()
@@ -31,7 +31,6 @@ module.exports.createP2PNode = async (home) => {
     }else{
       home = './fileStorage'
     }
-    var swarmKeyBuffer = fs.readFileSync(home+'/swarm.key')
     return await IPFS.create({
         repo: home,
         config: {

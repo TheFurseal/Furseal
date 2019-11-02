@@ -373,6 +373,23 @@ class Furseal{
             if(typeof(data) == 'string'){
                 data = JSON.parse(data)
             }
+
+            function updateDividStat(dataTmp,value){
+                if(!devStat.isModuleReady()){
+                        setTimeout(() => {
+                            updateDividStat(dataTmp,value)
+                        }, 5000);   
+                }else{
+                    if(dataTmp.status == 'active'){
+                        appManager.launchDividor(value.setName,(res) => {
+                            eventManager.emit('blockIn',res)
+                        })
+                    }else{
+                        appManager.killDividor(value.setName)
+                    }
+                }
+            }
+
             dbA.get(data.setName,(err,value) => {
                 if(err){
                     console.error(err)
@@ -388,15 +405,8 @@ class Furseal{
                             console.error(err)
                         }
                     })
+                    updateDividStat(data,value)
                     //kill process or launch process
-                    if(data.status == 'active'){
-                        appManager.launchDividor(value.setName,(res) => {
-                            eventManager.emit('blockIn',res)
-                        })
-                    }else{
-                        appManager.killDividor(value.setName)
-                    }
-
                 }
             })
         })
@@ -448,10 +458,6 @@ class Furseal{
             })
         })
 
-        ipcManager.addServerListenner('resetDividorStatus',(data,socket) => {
-            
-        })
-
         ipcManager.serve()
 
         downloadManager = new DownloadManager({
@@ -461,6 +467,7 @@ class Furseal{
     }
 
     async init(){
+
         debug('Watting login ...')
         if(!devStat.isLogin()){
             setTimeout(() => {
@@ -470,7 +477,7 @@ class Furseal{
         }
         debug('Device login successfully!')
         if(p2pNode == null){
-            p2pNode = await P2PBundle.createP2PNode(this.homePath)
+            p2pNode = await P2PBundle.createP2PNode(this.homePath,base58.decode(configure.config.swarm))
             debug('P2P node created')
             gcManager = new GCManager({
                 GCRecordDB:dbG,
@@ -496,6 +503,7 @@ class Furseal{
           
             devStat.stageUp('moduleReady')
         }
+
         //REST block status and load indexes
         dbW.getAllValue((data) => {
             for(var i=0; i<data.length; i++){
@@ -1172,16 +1180,10 @@ class Furseal{
 
     login(dataTmp){
         function doLogin(data){
-            if(!devStat.isModuleReady()){
-                setTimeout(() => {
-                    doLogin(data)
-                }, 1000)
-                return
-            }
             debug('start login')
             optAuth.path = '/userLogin'
             optAuth.method = 'POST'
-            data.device = p2pNode._peerInfo.id.toB58String()
+            data.device = configure.config.id
             httpClinet.access(JSON.stringify(data),optAuth,function(res){ 
                 res = JSON.parse(res)
                 if(res.status == 'YES'){

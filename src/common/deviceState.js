@@ -12,8 +12,8 @@ const stateType = [
 
 const stage = {
     'init':0x0,
-    'moduleReady':0x1,
-    'login':0x2
+    'login':0x1,
+    'moduleReady':0x2
 }
 
 class DeviceState{
@@ -43,7 +43,7 @@ class DeviceState{
     }
 
     isLogin(){
-        if(this.mainStage > 1){
+        if(this.mainStage > 0){
             return true
         }else{
             return false
@@ -104,7 +104,7 @@ class DeviceState{
     }
 
     isModuleReady(){
-        if(this.mainStage > 0){
+        if(this.mainStage > 1){
             return true
         }else{
             return false
