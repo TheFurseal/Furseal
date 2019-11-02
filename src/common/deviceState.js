@@ -10,6 +10,8 @@ const stateType = [
     'ready' //login
 ]
 
+var powerSwitch
+
 const stage = {
     'init':0,
     'login':1,
@@ -21,21 +23,21 @@ class DeviceState{
         SupplyCallback:cb,
         Configure:conf
     }){
-        this.mainStatus = 'disable'
+        this.mainStatus = 'init'
         this.mainStage = stage['init']
         this.freeFrom = NaN
         this.configure = conf
         if(conf.config.powerSharing){
-            this.mainStatus = 'enable'
+            powerSwitch = 'enable'
         }else{
-            this.mainStatus = 'disable'
+            powerSwitch = 'disable'
         }
         //free for long time (blocked for some reason)
         // in this case send a supply message to every node in peerBook to make sure 
         // nodes unblock this device hardly
         var pa = this
         setInterval(() => {
-            if(pa.mainStatus == 'standby' && !isNaN(pa.freeFrom)){
+            if(powerSwitch == 'enable' && pa.mainStatus == 'standby' && !isNaN(pa.freeFrom)){
                 var date = new Date()
                 if(date.valueOf() - pa.freeFrom > 60000){
                     debug('Device may blocked by other node, send a supply message')
@@ -56,12 +58,12 @@ class DeviceState{
     }
 
     disableSharing(){
-        this.mainStatus = 'disable'
+        powerSwitch = 'disable'
         this.configure.update('powerSharing',false)
     }
 
     enableSharing(){
-        this.mainStatus = 'enable'
+        powerSwitch = 'enable'
         this.configure.update('powerSharing',true)
     }
 
@@ -72,12 +74,11 @@ class DeviceState{
         }else{
             return 0
         }
-        
     }
 
     avaliable(){
         // if it was disabled by user self
-        if(this.mainStatus == 'disable'){
+        if(powerSwitch == 'disable'){
             return false
         }
         // if it was disabled by progress
@@ -93,6 +94,7 @@ class DeviceState{
             debug('invalid state string'+'['+stat+']')
             return
         }
+       
         this.mainStatus = stat
         if(stat == 'standby'){
             var date = new Date()
