@@ -461,6 +461,14 @@ class Furseal{
     }
 
     async init(){
+        debug('Watting login ...')
+        if(!devStat.isLogin()){
+            setTimeout(() => {
+                this.init()
+            }, 1000)
+            return
+        }
+        debug('Device login successfully!')
         if(p2pNode == null){
             p2pNode = await P2PBundle.createP2PNode(this.homePath)
             debug('P2P node created')
@@ -488,14 +496,6 @@ class Furseal{
           
             devStat.stageUp('moduleReady')
         }
-        debug('Watting login ...')
-        if(!devStat.isLogin()){
-            setTimeout(() => {
-                this.init()
-            }, 1000)
-            return
-        }
-        debug('Device login successfully!')
         //REST block status and load indexes
         dbW.getAllValue((data) => {
             for(var i=0; i<data.length; i++){
