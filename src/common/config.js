@@ -45,6 +45,7 @@ class Config{
                 keys.publicKey = base58.encode(Buffer.from(keys.publicKey));
                 this.config.keys = keys;
                 this.config.id = id;
+                this.powerSharing = true
                 var jStr = JSON.stringify(this.config,null,'\t');
                 fs.writeFile(appPath+'/config.json', jStr, 'utf8', function (err) {
                     if (err) {

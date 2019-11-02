@@ -567,6 +567,15 @@ class Furseal{
                                 }
                                 ipcManager.serverEmit('notification',notif)
                                 globalGC(value.workName)
+                                var postPair = {}
+                                postPair.workName = value.workName
+                                postPair.key = ''
+                                optFS.path = '/gc'
+                                httpClinet.access(JSON.stringify(postPair),optFS,(rest) => {
+                                    if(rest.error){
+                                        console.error(rest.error)
+                                    }
+                                })
                                 dbW.put(value.workName,value,(err) => {
                                     if(err){
                                         console.error(err)

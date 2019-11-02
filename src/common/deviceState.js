@@ -11,9 +11,9 @@ const stateType = [
 ]
 
 const stage = {
-    'init':0x0,
-    'login':0x1,
-    'moduleReady':0x2
+    'init':0,
+    'login':1,
+    'moduleReady':2
 }
 
 class DeviceState{
@@ -21,16 +21,21 @@ class DeviceState{
         SupplyCallback:cb,
         Configure:conf
     }){
-        this.mainState = 'init'
+        this.mainStatus = 'disable'
         this.mainStage = stage['init']
         this.freeFrom = NaN
         this.configure = conf
+        if(conf.config.powerSharing){
+            this.mainStatus = 'enable'
+        }else{
+            this.mainStatus = 'disable'
+        }
         //free for long time (blocked for some reason)
         // in this case send a supply message to every node in peerBook to make sure 
         // nodes unblock this device hardly
         var pa = this
         setInterval(() => {
-            if(pa.mainStage == 'standby' && !isNaN(pa.freeFrom)){
+            if(pa.mainStatus == 'standby' && !isNaN(pa.freeFrom)){
                 var date = new Date()
                 if(date.valueOf() - pa.freeFrom > 60000){
                     debug('Device may blocked by other node, send a supply message')
@@ -51,18 +56,18 @@ class DeviceState{
     }
 
     disableSharing(){
-        this.mainStage = 'disable'
+        this.mainStatus = 'disable'
         this.configure.update('powerSharing',false)
     }
 
     enableSharing(){
-        this.mainStage = 'enable'
+        this.mainStatus = 'enable'
         this.configure.update('powerSharing',true)
     }
 
     timeFreed(){
         var date = new Date()
-        if(this.mainStage == 'standby' && !isNaN(this.freeFrom)){
+        if(this.mainStatus == 'standby' && !isNaN(this.freeFrom)){
             return date.valueOf() - this.freeFrom
         }else{
             return 0
@@ -72,11 +77,11 @@ class DeviceState{
 
     avaliable(){
         // if it was disabled by user self
-        if(this.mainStage == 'disable'){
+        if(this.mainStatus == 'disable'){
             return false
         }
         // if it was disabled by progress
-        if(this.mainState == 'standby' || this.mainState == 'reporting'){
+        if(this.mainStatus == 'standby' || this.mainStatus == 'reporting'){
             return true
         }else{
             return false
@@ -88,7 +93,7 @@ class DeviceState{
             debug('invalid state string'+'['+stat+']')
             return
         }
-        this.mainState = stat
+        this.mainStatus = stat
         if(stat == 'standby'){
             var date = new Date()
             this.freeFrom = date.valueOf()
