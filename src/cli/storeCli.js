@@ -304,8 +304,11 @@ class StoreCli{
                 pull.through(dataIn => {
                     totalBytesDapp += dataIn.length
                     var status = {}
-                    status.Total = res.apps.dapp[0].size
+                    status.total = res.apps.dapp[0].size
                     status.recived = totalBytesDapp
+                    var date = new Date()
+                    status.timeStamp = date.valueOf()
+                    status.fileName = res.apps.dapp[0].name
                     downloadManager.update(status)
                 }),
                 pull.collect((err,buf) => {
@@ -377,8 +380,11 @@ class StoreCli{
                     pull.through(dataIn => {
                         totalBytesAs += dataIn.length
                         var status = {}
-                        status.Total = res.apps.assimilator.size
+                        status.total = res.apps.assimilator.size
                         status.recived = totalBytesAs
+                        var date = new Date()
+                        status.timeStamp = date.valueOf()
+                        status.fileName = res.apps.assimilator.name
                         downloadManager.update(status)
                     }),
                     pull.collect((err,buf) => {
@@ -413,8 +419,11 @@ class StoreCli{
                     pull.through(dataIn => {
                         totalBytesVa += dataIn.length
                         var status = {}
-                        status.Total = res.apps.validator.size
+                        status.total = res.apps.validator.size
                         status.recived = totalBytesVa
+                        var date = new Date()
+                        status.timeStamp = date.valueOf()
+                        status.fileName = res.apps.validator.name
                         downloadManager.update(status)
                     }),
                     pull.collect((err, buf) => {
@@ -447,8 +456,11 @@ class StoreCli{
                     pull.through(dataIn => {
                         totalBytesDi += dataIn.length
                         var status = {}
-                        status.Total = res.apps.dividor.size
+                        status.total = res.apps.dividor.size
                         status.recived = totalBytesDi
+                        var date = new Date()
+                        status.timeStamp = date.valueOf()
+                        status.fileName = res.apps.dividor.name
                         downloadManager.update(status)
                     }),
                     pull.collect((err,buf) => {
@@ -502,8 +514,11 @@ class StoreCli{
                         pull.through(dataIn => {
                             totalBytesDA += dataIn.length
                             var status = {}
-                            status.Total = size
+                            status.total = size
                             status.recived = totalBytesDA
+                            var date = new Date()
+                            status.timeStamp = date.valueOf()
+                            status.fileName = name
                             downloadManager.update(status)
                         }),
                         pull.collect((err,buf) => {
