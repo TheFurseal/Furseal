@@ -237,7 +237,7 @@ class Furseal{
             dbW.getAll(function(data){
                 dataWrap.workList = data;
                 dataWrap.nodeNumber = '50';
-                dataWrap.taskNumber = '50000';
+                dataWrap.speed = '0';
                 dataWrap.avgTime = '180';
                 dataWrap.balanceCNC = '12,000';
                 dataWrap.balanceRNB = '1.2';
@@ -690,8 +690,11 @@ class Furseal{
                         pull.through(dataIn => {
                           totalBytes += dataIn.length
                           var status = {}
-                          status.Total = data.protected.outputFiles[0].size
+                          status.fileName = data.protected.outputFiles[0].fileName
+                          status.total = data.protected.outputFiles[0].size
                           status.recived = totalBytes
+                          var date = new Date()
+                          status.timeStamp = date.valueOf()
                           downloadManager.update(status)
                         }),
                         pull.collect((err,buf) => {
