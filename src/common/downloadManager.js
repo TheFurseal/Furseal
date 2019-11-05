@@ -27,7 +27,7 @@ class DownloadManager{
             var pa = this
             var gSpeed = 0
             keys.forEach(key => {
-                gSpeed+=pa.element[key]
+                gSpeed+=pa.element[key].speed
             })
 
             var report = {}
