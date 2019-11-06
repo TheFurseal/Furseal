@@ -248,7 +248,7 @@ class Furseal{
                 dataWrap.powerSharing = configure.config.powerSharing
                 if(configure.config.powerSharing){
                     devStat.enableSharing()
-                    if(devStat.avaliable() && devStat.needSupply()) {
+                    if(devStat.avaliable() && devStat.needSupply() && p2pNode != null) {
                         devStat.noMoreSupply()
                         supplyMessage()
                     }
