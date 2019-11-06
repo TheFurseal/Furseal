@@ -201,7 +201,6 @@ class Furseal{
         dbR = new DBManager(homePath+'/data/result')
         configure = new Configure(homePath)
         devStat = new DeviceState({
-            SupplyCallback:this.supplyMessage,
             Configure:configure
         })
         this.devStat = devStat
@@ -249,7 +248,8 @@ class Furseal{
                 dataWrap.powerSharing = configure.config.powerSharing
                 if(configure.config.powerSharing){
                     devStat.enableSharing()
-                    if(devStat.avaliable()) {
+                    if(devStat.avaliable() && devStat.needSupply()) {
+                        devStat.noMoreSupply()
                         supplyMessage()
                     }
                 }else{

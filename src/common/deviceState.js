@@ -20,7 +20,6 @@ const stage = {
 
 class DeviceState{
     constructor({
-        SupplyCallback:cb,
         Configure:conf
     }){
         this.mainStatus = 'init'
@@ -32,7 +31,8 @@ class DeviceState{
         }else{
             powerSwitch = 'disable'
         }
-        this.supply = cb
+    
+        this.shouldDoSupply = true
         //free for long time (blocked for some reason)
         // in this case send a supply message to every node in peerBook to make sure 
         // nodes unblock this device hardly
@@ -42,7 +42,7 @@ class DeviceState{
                 var date = new Date()
                 if(date.valueOf() - pa.freeFrom > 60000){
                     debug('Device may blocked by other node, send a supply message')
-                    pa.supply()
+                    this.shouldDoSupply = true
                 }else{
 
                 }
@@ -75,6 +75,14 @@ class DeviceState{
         }else{
             return 0
         }
+    }
+
+    needSupply(){
+        return this.shouldDoSupply
+    }
+
+    noMoreSupply(){
+        this.shouldDoSupply = false
     }
 
     avaliable(){
