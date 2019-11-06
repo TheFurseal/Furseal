@@ -166,6 +166,7 @@ function supplyMessage(){
 
 class Furseal{
     constructor(homePath){
+        this.supplyMessage = supplyMessage
         this.homePath = homePath
         // init data directories
         inputFileTmp = homePath+'/inputs'
@@ -200,7 +201,7 @@ class Furseal{
         dbR = new DBManager(homePath+'/data/result')
         configure = new Configure(homePath)
         devStat = new DeviceState({
-            SupplyCallback:supplyMessage,
+            SupplyCallback:this.supplyMessage,
             Configure:configure
         })
         this.devStat = devStat
@@ -248,6 +249,9 @@ class Furseal{
                 dataWrap.powerSharing = configure.config.powerSharing
                 if(configure.config.powerSharing){
                     devStat.enableSharing()
+                    if(devStat.avaliable()) {
+                        supplyMessage()
+                    }
                 }else{
                     devStat.disableSharing()
                 }
@@ -1138,6 +1142,10 @@ class Furseal{
                 }
             })
         })
+
+       if(devStat.avaliable()) {
+            supplyMessage()
+       }
     }
 
     process(){
@@ -1147,7 +1155,6 @@ class Furseal{
             devStat.update('standby')
         }
         //tell other node that we are free
-        supplyMessage()
         setInterval(() => {
             if(Object.keys(bIndexes).length){
                 var peers = p2pNode._peerInfoBook.getAllArray()
