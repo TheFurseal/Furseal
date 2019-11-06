@@ -156,6 +156,7 @@ function globalGC(workName){
 function supplyMessage(){
     var peers = p2pNode._peerInfoBook.getAllArray()
     peers.forEach(peer => {
+        debug('send supply message to '+peer.id.toB58String())
         p2pNode.libp2p.dialProtocol(peer,'/cot/worksupply/1.0.0',(err,conn) => {
 
         })
@@ -874,6 +875,7 @@ class Furseal{
                             localPM.register(data.unprotected.blockName,data.unprotected.expectTime)
                             appManager.launchDapp(data.unprotected.appSet,null,data,(ret) => {
                                 //compressing buffer
+                                localPM.register(data.unprotected.blockName,1)
                                 gcManager.clearByEvent(ret.unprotected.blockName+'_close')
                                 gcManager.register(ret.protected.outputFiles[0].path,ret.unprotected.blockName+'_uploaded')
                                 setTimeout(() => {
@@ -955,6 +957,7 @@ class Furseal{
                 nodeManager.hardBlock(pIDStr)
                 var tmp = Object.keys(bIndexes)[0]
                 if(tmp == null){
+                    debug('no key to send')
                     return
                 }
                 debug('send block to '+pIDStr)
@@ -965,6 +968,7 @@ class Furseal{
                         nodeManager.hardUnBlock(pIDStr)
                     }else{
                         if(val.unprotected.status != 'init'){
+                            debug('invalid block status, not send')
                             return
                         }
                         p2pNode.libp2p.dialProtocol(peerID,'/cot/workrequest/1.0.0',(err,conn) => {
@@ -1027,6 +1031,8 @@ class Furseal{
                     }
                 })
                
+            }else{
+                debug(pIDStr+' blocked ?????')
             }
         })
 
@@ -1154,10 +1160,12 @@ class Furseal{
                 if(err){
 
                 }else{
-                    debug('Peer '+info.id.toB58String()+' supply message coming')
-                    nodeManager.hardUnBlock(info.id.toB58String())
+                    var id = info.id.toB58String()
+                    debug('Peer '+id+' supply message coming')
+                    nodeManager.hardUnBlock(id)
+                    debug('Hard unblock '+id)
                     //resend processing blocks who's slave is this node
-                    resender.resendBySlaveID(info.id.toB58String())
+                    resender.resendBySlaveID(id)
                 }
             })
         })
@@ -1181,6 +1189,9 @@ class Furseal{
                     var id = element.id.toB58String()
                     if(nodeManager.isBlock(id) || id == p2pNode._peerInfo.id.toB58String()){
                         // already have job or it's node self
+                        if(nodeManager.isBlock(id)){
+                            debug(id+' was blocked')
+                        }
                     }else{
                         eventManager.emit('demand',element)
                     }
