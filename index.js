@@ -247,12 +247,6 @@ class Furseal{
             dataWrap.balanceRNB = '1.2';
             if(configure.config.powerSharing){
                 devStat.enableSharing()
-                if(devStat.avaliable() && devStat.needSupply() && p2pNode != null) {
-                    devStat.noMoreSupply()
-                    supplyMessage()
-                }else{
-                
-                }
             }else{
                 devStat.disableSharing()
             }
@@ -614,6 +608,15 @@ class Furseal{
         //test code
         p2pNode.libp2p.on('peer:connect',(peer) => {
             console.log(peer.id.toB58String())
+            if(configure.config.powerSharing){
+                if(devStat.avaliable() && devStat.needSupply() && p2pNode != null) {
+                    devStat.noMoreSupply()
+                    supplyMessage()
+                }else{
+                
+                }
+            }else{
+            }
         })
 
         eventManager.registEvent('finishCompute',(dataIn) => {
@@ -957,7 +960,7 @@ class Furseal{
                     debug('no key to send')
                     return
                 }
-                debug('send block to '+pIDStr)
+                
                 removeElement(bIndexes,tmp)
                 dbB.get(tmp,(err,val) => {
                     if(err){
@@ -981,6 +984,7 @@ class Furseal{
                                     }),
                                     pull.drain(function(data){
                                         if(data == 'idel'){
+                                            debug('send block to '+pIDStr)
                                             // start data record
                                             val.unprotected.status = 'processing';
                                             val.unprotected.slave = peerID.id.toB58String()
@@ -1190,10 +1194,12 @@ class Furseal{
                             debug(id+' was blocked')
                         }
                     }else{
+                        debug('try demand to '+id)
                         eventManager.emit('demand',element)
                     }
                 })
             }else{
+                debug('bIndex is empty')
             }
             dbW.getAllValue((val) => {
                 val.forEach(elem => {
@@ -1248,7 +1254,7 @@ class Furseal{
                     }
                 })
             })
-        }, 3000);
+        }, 5000);
     }
 
     register(data){
