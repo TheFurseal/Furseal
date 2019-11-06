@@ -10,7 +10,7 @@ const msgLength = 500
 
 class Config{
      constructor(appPath){
-        this.config = {};
+         // init with default value
         if(appPath == null){
             appPath = __dirname;
         }

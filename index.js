@@ -199,6 +199,11 @@ class Furseal{
         dbG = new DBManager(homePath+'/data/gc')
         dbR = new DBManager(homePath+'/data/result')
         configure = new Configure(homePath)
+        devStat = new DeviceState({
+            SupplyCallback:supplyMessage,
+            Configure:configure
+        })
+        this.devStat = devStat
         eventManager = new EventsManager()
         Tools.setEnv('COT_DATA_PATH',homePath)
         nodeManager = new NodeManager()
@@ -241,6 +246,13 @@ class Furseal{
                 dataWrap.balanceCNC = '12,000';
                 dataWrap.balanceRNB = '1.2';
                 dataWrap.powerSharing = configure.config.powerSharing
+                if(configure.config.powerSharing){
+                    devStat.enableSharing()
+                }else{
+                    devStat.disableSharing()
+                }
+
+
                 step++
             })
             var peersList = {}
@@ -465,12 +477,6 @@ class Furseal{
         })
 
         ipcManager.serve()
-
-        devStat = new DeviceState({
-            SupplyCallback:supplyMessage,
-            Configure:configure
-        })
-        this.devStat = devStat
 
         localPM = new LocalPM()
 
