@@ -1146,6 +1146,8 @@ class Furseal{
         }else{
             devStat.update('standby')
         }
+        //tell other node that we are free
+        supplyMessage()
         setInterval(() => {
             if(Object.keys(bIndexes).length){
                 var peers = p2pNode._peerInfoBook.getAllArray()
