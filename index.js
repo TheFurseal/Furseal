@@ -251,8 +251,7 @@ class Furseal{
                     devStat.noMoreSupply()
                     supplyMessage()
                 }else{
-                    debug(devStat.avaliable())
-                    debug(devStat.needSupply())
+                
                 }
             }else{
                 devStat.disableSharing()
