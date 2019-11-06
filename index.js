@@ -118,7 +118,7 @@ function addElement(obj,elem){
         console.error('Element is empty')
         return
     }
-    obj[elem] = 1
+    obj[elem] = {}
 }
 
 // tool function 
