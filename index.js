@@ -1227,7 +1227,7 @@ class Furseal{
             })
             dbB.getAllValue((val) => {
                 val.forEach(elem => {
-                    if(wIndexes[elem.workName]  == 1 && elem.unprotected.status == 'init'){
+                    if(wIndexes[elem.workName]  != null && elem.unprotected.status == 'init'){
                         addElement(bIndexes,elem.unprotected.blockName)
                         dbB.put(elem.unprotected.blockName,elem,(err) => {
                             if(err){
