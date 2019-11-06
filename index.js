@@ -239,25 +239,26 @@ class Furseal{
         ipcManager.addServerListenner('mainUpdate',(data,socket) => {
             var step = 0
             var dataWrap = {};
+            dataWrap.nodeNumber = '0';
+            dataWrap.speed = downloadManager.getGlobalReport().speed;
+            dataWrap.localProgresses = localPM.getAllLocalProgress()
+            dataWrap.powerSharing = configure.config.powerSharing
+            dataWrap.balanceCNC = '12,000';
+            dataWrap.balanceRNB = '1.2';
+            if(configure.config.powerSharing){
+                devStat.enableSharing()
+                if(devStat.avaliable() && devStat.needSupply() && p2pNode != null) {
+                    devStat.noMoreSupply()
+                    supplyMessage()
+                }else{
+                    debug(devStat.avaliable())
+                    debug(devStat.needSupply())
+                }
+            }else{
+                devStat.disableSharing()
+            }
             dbW.getAll(function(data){
                 dataWrap.workList = data;
-                dataWrap.nodeNumber = '50';
-                dataWrap.speed = downloadManager.getGlobalReport().speed;
-                dataWrap.localProgresses = localPM.getAllLocalProgress()
-                dataWrap.balanceCNC = '12,000';
-                dataWrap.balanceRNB = '1.2';
-                dataWrap.powerSharing = configure.config.powerSharing
-                if(configure.config.powerSharing){
-                    devStat.enableSharing()
-                    if(devStat.avaliable() && devStat.needSupply() && p2pNode != null) {
-                        devStat.noMoreSupply()
-                        supplyMessage()
-                    }
-                }else{
-                    devStat.disableSharing()
-                }
-
-
                 step++
             })
             var peersList = {}
@@ -282,10 +283,7 @@ class Furseal{
                     clearInterval(handle)
                     ipcManager.serverEmit('mainUpdate',dataWrap)
                 }
-            }, 200);
-            
-           
-            
+            }, 200);  
         })
 
         ipcManager.addServerListenner('releaseSet',(data,socket) => {
