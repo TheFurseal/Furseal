@@ -1143,7 +1143,7 @@ class Furseal{
             })
         })
 
-       if(devStat.avaliable()) {
+       if(devStat.avaliable() && p2pNode != null) {
             supplyMessage()
        }
     }
