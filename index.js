@@ -691,7 +691,15 @@ class Furseal{
             var postPair = {};
             postPair.blockName = data.unprotected.blockName;
             postPair.workName = data.workName;
-            postPair.resolveKey = configure.decrypto(data.resolveKey)
+            try{
+                postPair.resolveKey = configure.decrypto(data.resolveKey)
+            }catch(e){
+                console.error(e)
+                resender.resendByBlockName(data.unprotected.blockName)
+                return
+            }
+           
+           
             httpClinet.access(JSON.stringify(postPair),optAuth,function(res){
                 if(typeof(res) == 'string'){
                     res = JSON.parse(res);
@@ -702,7 +710,16 @@ class Furseal{
                     var keyBack = base58.decode(res.key)
                     keyBack = keyBack.toString()
                     var dataBuffer = base58.decode(data.protected);
-                    var protectedTmp =  Tools.privateDecrypt(keyBack,dataBuffer)
+                    var protectedTmp
+                    try{
+                        protectedTmp  =  Tools.privateDecrypt(keyBack,dataBuffer)
+                    }catch(e){
+                        console.error(e)
+                    }
+                    if(protectedTmp == null){
+                        resender.resendByBlockName(data.unprotected.blockName)
+                        return
+                    }
                     protectedTmp = protectedTmp.toString()
                     debug('reported result:'+postPair.blockName);
                     //update work progress
@@ -940,6 +957,7 @@ class Furseal{
                 if(tmp == null){
                     return
                 }
+                debug('send block to '+pIDStr)
                 removeElement(bIndexes,tmp)
                 dbB.get(tmp,(err,val) => {
                     if(err){
@@ -996,6 +1014,7 @@ class Furseal{
                                             // })
                                             addElement(bIndexes,val.unprotected.blockName)
                                             nodeManager.hardBlock(pIDStr)
+                                            debug(pIDStr+' is busy')
                                         }
                                         // one comunication complated, unblock node whatever blocked count is
                                         nodeManager.unblock(pIDStr)
