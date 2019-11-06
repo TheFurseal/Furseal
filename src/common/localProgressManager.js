@@ -20,7 +20,13 @@ class LocalProgressManager{
     }
 
     update(name,progress){
+        if(name == null || progress == null){
+            return
+        }
         if(this.localProcessRegister[name] != null){
+            this.localProcessRegister[name].progress = progress
+        }else{
+            this.localProcessRegister[name] = {}
             this.localProcessRegister[name].progress = progress
         }
     }
