@@ -843,7 +843,7 @@ class Furseal{
                            // gcManager.register(data.protected.inputFiles[0].hash,data.workName+'_close')
                             data.protected.inputFiles[0].path = targetPath
                             debug('download finish')
-                            localPM.register(data.blockName,data.unprotected.expectTime)
+                            localPM.register(data.unprotected.blockName,data.unprotected.expectTime)
                             appManager.launchDapp(data.unprotected.appSet,null,data,(ret) => {
                                 //compressing buffer
                                 gcManager.clearByEvent(ret.unprotected.blockName+'_close')

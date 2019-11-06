@@ -79,12 +79,14 @@ class DeviceState{
     avaliable(){
         // if it was disabled by user self
         if(powerSwitch == 'disable'){
+            debug("power switch disabled")
             return false
         }
         // if it was disabled by progress
         if(this.mainStatus == 'standby' || this.mainStatus == 'reporting'){
             return true
         }else{
+            debug('Not avaliable because '+this.mainStatus)
             return false
         }
     }
