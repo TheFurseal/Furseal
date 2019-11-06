@@ -6,7 +6,7 @@ class LocalProgressManager{
     }
 
     register(name,expectTimeCost){
-        if(blockName == null){
+        if(name == null){
             console.error('can not register local process because process name is empty')
         }
         var date = new Date()
