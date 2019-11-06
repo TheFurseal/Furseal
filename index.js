@@ -995,7 +995,7 @@ class Furseal{
                                             //     debug(data)
                                             // })
                                             addElement(bIndexes,val.unprotected.blockName)
-                                            nodeManager.hardUnBlock(pIDStr)
+                                            nodeManager.hardBlock(pIDStr)
                                         }
                                         // one comunication complated, unblock node whatever blocked count is
                                         nodeManager.unblock(pIDStr)
@@ -1198,7 +1198,7 @@ class Furseal{
                         })
                     }else if(elem.unprotected.status == 'preDone'){
                         debug('Found preDone block')
-                        if(wIndexes[elem.workName]  == 1  ){
+                        if(wIndexes[elem.workName]  != null  ){
                             dbR.get(elem.unprotected.blockName,(err,value) => {
                                 if(err){
                                     console.error(err)
@@ -1213,6 +1213,8 @@ class Furseal{
                                     eventManager.emit('startValidate',value)
                                 }
                             })
+                        }else{
+                            debug('bad block!!!')
                         }
                     }else{
 
