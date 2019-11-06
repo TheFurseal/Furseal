@@ -22,6 +22,7 @@ const NodeManager = require('./src/common/nodeManager.js')
 const DownloadManager = require('./src/common/downloadManager.js')
 const Reporter = require('./src/common/reporter.js')
 const Resender = require('./src/common/resender.js')
+const LocalPM = require('./src/common/localProgressManager.js')
 
 // data base handlers
 var dbW     //work
@@ -40,6 +41,9 @@ var eventManager
 
 //download manager
 var downloadManager
+
+//local progress manager
+var localPM
 
 //reporter
 var reporter
@@ -238,7 +242,7 @@ class Furseal{
                 dataWrap.workList = data;
                 dataWrap.nodeNumber = '50';
                 dataWrap.speed = downloadManager.getGlobalReport().speed;
-                dataWrap.avgTime = '180';
+                dataWrap.localProgresses = localPM.getAllLocalProgress()
                 dataWrap.balanceCNC = '12,000';
                 dataWrap.balanceRNB = '1.2';
                 dataWrap.powerSharing = configure.config.powerSharing
@@ -467,8 +471,11 @@ class Furseal{
 
         ipcManager.serve()
 
+        localPM = new LocalPM()
+
         downloadManager = new DownloadManager({
-            IPCManager:ipcManager
+            IPCManager:ipcManager,
+            ProgressManager:localPM
         })
         
     }
@@ -644,6 +651,12 @@ class Furseal{
                     infoTmp.index = data.unprotected.block.index
                     infoTmp.startTime = data.unprotected.info.startTime
                     infoTmp.timeCost = data.unprotected.info.timeCost
+                    if(wIndexes[data.workName].expectTime == null){
+                        wIndexes[data.workName].expectTime = data.unprotected.info.timeCost
+                    }else{
+                        wIndexes[data.workName].expectTime += data.unprotected.info.timeCost
+                        wIndexes[data.workName].expectTime /= 2
+                    }
                     infoTmp.status = 'preDone'
                     infos.push(infoTmp)
                     ipcManager.serverEmit('updateBlockStatus',infos)
@@ -830,6 +843,7 @@ class Furseal{
                            // gcManager.register(data.protected.inputFiles[0].hash,data.workName+'_close')
                             data.protected.inputFiles[0].path = targetPath
                             debug('download finish')
+                            localPM.register(data.blockName,data.unprotected.expectTime)
                             appManager.launchDapp(data.unprotected.appSet,null,data,(ret) => {
                                 //compressing buffer
                                 gcManager.clearByEvent(ret.unprotected.blockName+'_close')
@@ -942,6 +956,10 @@ class Furseal{
                                             val.unprotected.slave = peerID.id.toB58String()
                                             var date = new Date()
                                             val.unprotected.info.startTime = date.valueOf()
+                                            if(wIndexes[val.workName].expectTime == null){
+                                                wIndexes[val.workName].expectTime = 1800
+                                            }
+                                            val.unprotected.expectTime = wIndexes[val.workName].expectTime
                                             var p = Pushable();
                                             pull(p,conn);
                                             p.push(JSON.stringify(val))
