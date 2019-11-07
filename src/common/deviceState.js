@@ -18,6 +18,8 @@ const stage = {
     'moduleReady':2
 }
 
+var unlockKey
+
 class DeviceState{
     constructor({
         Configure:conf
@@ -100,19 +102,31 @@ class DeviceState{
         }
     }
 
-    update(stat){
-        if(stat == null || stateType.indexOf(stat) < 0){
+    update(stat,key){
+        if(key == null || stat == null || stateType.indexOf(stat) < 0){
             debug('invalid state string'+'['+stat+']')
             return
         }
        
-        this.mainStatus = stat
         if(stat == 'standby'){
+            if(unlockKey != null){
+                return
+            }
+            if(unlockKey != key && key != 'golden'){
+                return
+            }
             var date = new Date()
             this.freeFrom = date.valueOf()
+            unlockKey = null
         }else if(stat == 'busy'){
+            if(unlockKey != null){
+                return
+            }
+            unlockKey = key
             this.freeFrom = NaN
         }
+
+        this.mainStatus = stat
         debug('Device update to '+stat)
     }
 

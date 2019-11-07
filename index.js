@@ -247,7 +247,6 @@ class Furseal{
         ipcManager.addServerListenner('mainUpdate',(data,socket) => {
             var step = 0
             var dataWrap = {};
-            dataWrap.nodeNumber = '0';
             dataWrap.speed = downloadManager.getGlobalReport().speed;
             dataWrap.localProgresses = localPM.getAllLocalProgress()
             dataWrap.powerSharing = configure.config.powerSharing
@@ -641,15 +640,15 @@ class Furseal{
                             debug('resend result ----------------------------------------------------------------')
                             eventManager.emit('finishCompute',data)
                         }, 15000)
+                        return
                     }else{
-                        devStat.update('standby')
                     }
                 }else{
                     var p = Pushable()
                     pull(p,conn)
                     p.push(JSON.stringify(data))
                     p.end()
-                    devStat.update('standby')
+                    devStat.update('standby',data.unprotected.blockName)
                 }
             })
         })
@@ -1046,7 +1045,7 @@ class Furseal{
                                             //     debug(data)
                                             // })
                                             addElement(bIndexes,val.unprotected.blockName)
-                                            nodeManager.hardBlock(pIDStr)
+                                            //nodeManager.block(pIDStr)
                                             debug(pIDStr+' is busy')
                                         }
                                         // one comunication complated, unblock node whatever blocked count is
@@ -1081,8 +1080,8 @@ class Furseal{
                     return data.toString('utf8').replace('\n', '')
                 }),
                 pull.drain((data) => {
-                    devStat.update('busy')
                     var tmpRecive = JSON.parse(data)
+                    devStat.update('busy',data.unprotected.blockName)
                     debug('handle',tmpRecive.unprotected.blockName)
                     p.push('recived')
                     p.end()
@@ -1102,7 +1101,7 @@ class Furseal{
                                         }else{
                                           
                                         }
-                                        devStat.update('standby')
+                                        devStat.update('standby',data.unprotected.blockName)
                                     })
                                 }
                                 
@@ -1214,12 +1213,22 @@ class Furseal{
         if(Object.keys(bIndexes).length){
 
         }else{
-            devStat.update('standby')
+            devStat.update('standby','golden')
         }
         //tell other node that we are free
+        var locker = false
+        var locker2 = false
+        var locker3 = false
         setInterval(() => {
+            if(!((!locker) && (!locker2) && (!locker3))){
+                return
+            }
+            locker = true
+            locker2 = true
+            locker3 = true
             if(Object.keys(bIndexes).length){
                 var peers = p2pNode._peerInfoBook.getAllArray()
+                var count = 0
                 peers.forEach((element) => {
                     var id = element.id.toB58String()
                     if(nodeManager.isBlock(id) || id == p2pNode._peerInfo.id.toB58String()){
@@ -1231,11 +1240,16 @@ class Furseal{
                         debug('try demand to '+id)
                         eventManager.emit('demand',element)
                     }
+                    if(++count == peers.length){
+                        locker = false
+                    }
                 })
+               
             }else{
                 debug('bIndex is empty')
             }
             dbW.getAllValue((val) => {
+                var count = 0
                 val.forEach(elem => {
                     if(elem.unprotected.status == 'init'){
                         addElement(wIndexes,elem.workName)
@@ -1253,9 +1267,14 @@ class Furseal{
                     }else{
 
                     }
+                    if(++count == val.length){
+                        locker2 = false
+                    }
                 })
+                
             })
             dbB.getAllValue((val) => {
+                var count = 0
                 val.forEach(elem => {
                     if(wIndexes[elem.workName]  != null && elem.unprotected.status == 'init'){
                         addElement(bIndexes,elem.unprotected.blockName)
@@ -1287,7 +1306,11 @@ class Furseal{
                     }else{
 
                     }
+                    if(++count == val.length){
+                        locker3 = false
+                    }
                 })
+                
             })
         }, 5000);
     }
