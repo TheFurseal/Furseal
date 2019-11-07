@@ -391,24 +391,22 @@ class StoreCli{
                         if(err){
                             console.error(err)
                         }else{
-                            files.forEach((file) => {
-                                var targetPath = appRepoTmp+'/'+res.apps.assimilator.name
-                                var inBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
-                                fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
-                                    // throws an error, you could also catch it here
+                            var targetPath = appRepoTmp+'/'+res.apps.assimilator.name
+                            var inBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
+                            fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
+                                // throws an error, you could also catch it here
+                                if(err){
+                                    console.error(err)
+                                }else{
+                                    debug('Download '+res.apps.assimilator.url+' to '+targetPath)
+                                    steps++
+                                }
+                                p2pNode.pin.add(res.apps.assimilator.url, (err) => {
                                     if(err){
                                         console.error(err)
-                                    }else{
-                                        debug('Download '+res.apps.assimilator.url+' to '+targetPath)
-                                        steps++
                                     }
-                                    p2pNode.pin.add(res.apps.assimilator.url, (err) => {
-                                        if(err){
-                                            console.error(err)
-                                        }
-                                    })
                                 })
-                            })  
+                            })
                         }
                     })
                 )
