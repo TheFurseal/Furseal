@@ -1063,7 +1063,7 @@ class Furseal{
                 }),
                 pull.drain((data) => {
                     var tmpRecive = JSON.parse(data)
-                    devStat.update('busy',data.unprotected.blockName)
+                    devStat.update('busy',tmpRecive.unprotected.blockName)
                     debug('handle',tmpRecive.unprotected.blockName)
                     p.push('recived')
                     p.end()
