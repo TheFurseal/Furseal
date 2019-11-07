@@ -839,6 +839,7 @@ class Furseal{
                 res = JSON.parse(res);
                 if(res == null || res.key == null){
                     debug('Confirm block failed')
+                    devStat.update('standby',data.unprotected.blockName)
                     return
                 }
                 data.enKey = res.key
@@ -861,6 +862,7 @@ class Furseal{
                     pull.collect((err,buf) => {
                         if(err){
                             console.error(err)
+                            devStat.update('standby',data.unprotected.blockName)
                         }else{
                             var outBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
                             fs.writeFileSync(targetPath,outBuffer)
@@ -892,6 +894,7 @@ class Furseal{
                                 if(resultBuffer == null){
                                     retBk.unprotected.status = 'failed'
                                     eventManager.emit('finishCompute',retBk)
+                                    
                                     return
                                 }
                                 
@@ -902,8 +905,9 @@ class Furseal{
                                         console.error(err)
                                         retBk.unprotected.status = 'failed'
                                         eventManager.emit('finishCompute',retBk)
+                                       
                                         return
-                                        return
+                                        
                                     }
                                     res2 = res2[0]
                                     gcManager.clearByEvent(ret.unprotected.blockName+'_uploaded')
