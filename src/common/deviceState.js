@@ -110,6 +110,7 @@ class DeviceState{
        
         if(stat == 'standby'){
             if(unlockKey != key && key != 'golden'){
+                debug('Unlock with wrong key '+key+' and excepted '+unlockKey)
                 return
             }
             var date = new Date()
@@ -117,6 +118,7 @@ class DeviceState{
             unlockKey = null
         }else if(stat == 'busy'){
             if(unlockKey != null){
+                debug('Already locked with key '+unlockKey)
                 return
             }
             unlockKey = key

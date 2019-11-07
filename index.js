@@ -1288,7 +1288,7 @@ class Furseal{
                 })
                 
             })
-        }, 5000);
+        }, 15000);
     }
 
     register(data){
