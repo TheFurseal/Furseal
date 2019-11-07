@@ -1020,7 +1020,7 @@ class Furseal{
                                             var date = new Date()
                                             val.unprotected.info.startTime = date.valueOf()
                                             if(wIndexes[val.workName].expectTime == null){
-                                                wIndexes[val.workName].expectTime = 1800
+                                                wIndexes[val.workName].expectTime = 1800000
                                             }
                                             val.unprotected.expectTime = wIndexes[val.workName].expectTime
                                             var p = Pushable();

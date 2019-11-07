@@ -206,6 +206,7 @@ class DividorCli{
              if(isFirst == null){
                  isFirst = false
              }
+             workInfo.userID = configure.config.id
              httpClinet.access(JSON.stringify(workInfo),optAuth,function(res){
                  if(res == null){
                      return ;
