@@ -615,6 +615,7 @@ class Furseal{
             debug('Report result to owner '+data.unprotected.owner)
             var pID = PeerID.createFromB58String(data.unprotected.owner)
             p2pNode.libp2p.dialProtocol(pID,'/cot/workreport/1.0.0',(err,conn) => {
+                debug('Report result to owner '+data.unprotected.owner+' 2')
                 if(err){
                     console.error(err)
                     //retry
@@ -1078,12 +1079,12 @@ class Furseal{
                                         if(err == null){
                                             var p2 = Pushable()
                                             pull(p2,conn)
-                                            p.push(JSON.parse(data))
+                                            p.push(JSON.parse(tmpRecive))
                                             p.end()
                                         }else{
                                           
                                         }
-                                        devStat.update('standby',data.unprotected.blockName)
+                                        devStat.update('standby',tmpRecive.unprotected.blockName)
                                     })
                                 }
                                 

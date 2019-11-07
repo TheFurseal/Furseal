@@ -125,9 +125,8 @@ class DeviceState{
             unlockKey = key
             this.freeFrom = NaN
         }
-
         this.mainStatus = stat
-        debug('Device update to '+stat)
+        debug('Device update to '+stat+' with key '+key)
     }
 
     stageUp(stageName){

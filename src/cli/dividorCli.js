@@ -261,7 +261,6 @@ class DividorCli{
         this.callback = callback
         var pa = this
         this.appCommon.start((pid) => {
-            debug('set pid '+pid)
             pa.pid = pid
     
         })
