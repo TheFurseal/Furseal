@@ -153,15 +153,20 @@ function globalGC(workName){
     })
 }
 
-function supplyMessage(){
-    var peers = p2pNode._peerInfoBook.getAllArray()
-    peers.forEach(peer => {
-        debug('send supply message to '+peer.id.toB58String())
-        p2pNode.libp2p.dialProtocol(peer,'/cot/worksupply/1.0.0',(err,conn) => {
+function supplyMessage(peerIn){
+    if(peerIn!=null){
+        p2pNode.libp2p.dialProtocol(peerIn,'/cot/worksupply/1.0.0',(err,conn) => {
 
         })
-    })
-    
+    }else{
+        var peers = p2pNode._peerInfoBook.getAllArray()
+        peers.forEach(peer => {
+            debug('send supply message to '+peer.id.toB58String())
+            p2pNode.libp2p.dialProtocol(peer,'/cot/worksupply/1.0.0',(err,conn) => {
+
+            })
+        })
+    }
 }
 
 
@@ -614,9 +619,10 @@ class Furseal{
         //test code
         p2pNode.libp2p.on('peer:connect',(peer) => {
             console.log(peer.id.toB58String())
+            nodeManager.hardUnBlock(peer.id.toB58String())
             if(configure.config.powerSharing){
-                if(devStat.avaliable() && devStat.needSupply() && p2pNode != null) {
-                    supplyMessage()
+                if(devStat.avaliable()) {
+                    supplyMessage(peer)
                 }else{
                 
                 }
@@ -653,6 +659,10 @@ class Furseal{
 
         eventManager.registEvent('reportIn',(data) => {
             debug('report coming')
+            if(data.unprotected.status == 'failed'){
+                resender.resendByBlockName(data.unprotected.blockName)
+                return
+            }
             dbB.get(data.unprotected.blockName,(err,value) => {
                 if(err){
                     console.error(err)
@@ -892,12 +902,26 @@ class Furseal{
                                     }
                                 }, 30000);
                                 var retBk = ret
-                                var resultBuffer = fs.readFileSync(Tools.fixPath(retBk.protected.outputFiles[0].path))
+                                var resultBuffer
+                                try{
+                                    resultBuffer = fs.readFileSync(Tools.fixPath(retBk.protected.outputFiles[0].path))
+                                }catch(e){
+                                    console.error(e)
+                                }
+                                if(resultBuffer == null){
+                                    retBk.unprotected.status = 'failed'
+                                    eventManager.emit('finishCompute',retBk)
+                                    return
+                                }
+                                
                                 resultBuffer = Tools.compressionBuffer(resultBuffer)
                                 //upload result file
                                 p2pNode.add(resultBuffer,{ recursive: false , ignore: ['.DS_Store']},(err,res2) => {
                                     if(err){
                                         console.error(err)
+                                        retBk.unprotected.status = 'failed'
+                                        eventManager.emit('finishCompute',retBk)
+                                        return
                                         return
                                     }
                                     res2 = res2[0]
