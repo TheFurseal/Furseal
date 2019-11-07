@@ -68,6 +68,9 @@ var wIndexes = {}
 //block indexs
 var bIndexes = {}
 
+//report indexes
+var rIndexes = {}
+
 //extranal configure
 var configure
 
@@ -691,6 +694,7 @@ class Furseal{
                             console.error(err)
                         }
                     })
+                    delete rIndexes[data.unprotected.blockName]
                 }
             })
         })
@@ -1145,10 +1149,16 @@ class Furseal{
                     if(typeof(data) == 'string'){
                         data = JSON.parse(data)
                     }
-                    eventManager.emit('reportIn',data)
-                    nodeManager.unblock(data.unprotected.slave)
-                    nodeManager.hardUnBlock(data.unprotected.slave)
-                    debug('Unblock '+data.unprotected.slave+' soft & hard')
+                    if(rIndexes[data.unprotected.blockName] != null){
+                        return
+                    }else{
+                        rIndexes[data.unprotected.blockName] = data.unprotected.blockName
+                        eventManager.emit('reportIn',data)
+                        nodeManager.unblock(data.unprotected.slave)
+                        nodeManager.hardUnBlock(data.unprotected.slave)
+                        debug('Unblock '+data.unprotected.slave+' soft & hard')
+                    }
+                    
                 },function(err){
                     if(err)console.error(err)
                 })

@@ -92,7 +92,7 @@ class DeviceState{
             return false
         }
         // if it was disabled by progress
-        if(this.mainStatus == 'standby' || this.mainStatus == 'reporting'){
+        if(this.mainStatus == 'standby'){
             return true
         }else{
             debug('Not avaliable because '+this.mainStatus)
