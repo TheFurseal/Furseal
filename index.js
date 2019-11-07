@@ -68,9 +68,6 @@ var wIndexes = {}
 //block indexs
 var bIndexes = {}
 
-//report indexes
-var rIndexes = {}
-
 //extranal configure
 var configure
 
@@ -247,6 +244,7 @@ class Furseal{
         ipcManager.addServerListenner('mainUpdate',(data,socket) => {
             var step = 0
             var dataWrap = {};
+            dataWrap.nodeNumber = 0
             dataWrap.speed = downloadManager.getGlobalReport().speed;
             dataWrap.localProgresses = localPM.getAllLocalProgress()
             dataWrap.powerSharing = configure.config.powerSharing
@@ -341,21 +339,6 @@ class Furseal{
                 }else{
                     ipcManager.serverEmit('gotBlockInfo',value)
                 }
-            })
-        })
-
-        ipcManager.addServerListenner('updateServicingNodeNumber',(data,socket) => {
-            var peersList = {}
-            dbB.getAllValue((value) => {
-                var count = 0
-                value.forEach(elem => {
-                    if(elem.unprotected.status == 'processing'){
-                        peersList[elem.unprotected.slave] = 1
-                    }
-                    if(++count == value.length){
-                        ipcManager.serverEmit('updateServicingNodeNumber',Object.keys(peersList).length)
-                    }
-                })
             })
         })
 
@@ -693,7 +676,6 @@ class Furseal{
                             console.error(err)
                         }
                     })
-                    delete rIndexes[data.unprotected.blockName]
                 }
             })
         })
@@ -1149,15 +1131,11 @@ class Furseal{
                     if(typeof(data) == 'string'){
                         data = JSON.parse(data)
                     }
-                    if(rIndexes[data.unprotected.blockName] != null){
-                        return
-                    }else{
-                        rIndexes[data.unprotected.blockName] = data.unprotected.blockName
-                        eventManager.emit('reportIn',data)
-                        nodeManager.unblock(data.unprotected.slave)
-                        nodeManager.hardUnBlock(data.unprotected.slave)
-                        debug('Unblock '+data.unprotected.slave+' soft & hard')
-                    }
+                    
+                    nodeManager.unblock(data.unprotected.slave)
+                    nodeManager.hardUnBlock(data.unprotected.slave)
+                    debug('Unblock '+data.unprotected.slave+' soft & hard')
+                    
                     
                 },function(err){
                     if(err)console.error(err)
