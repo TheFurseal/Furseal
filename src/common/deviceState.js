@@ -109,9 +109,6 @@ class DeviceState{
         }
        
         if(stat == 'standby'){
-            if(unlockKey != null){
-                return
-            }
             if(unlockKey != key && key != 'golden'){
                 return
             }
