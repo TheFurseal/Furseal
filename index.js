@@ -626,6 +626,7 @@ class Furseal{
                         return
                     }else{
                     }
+                    devStat.update('standby',data.unprotected.blockName)
                 }else{
                     var p = Pushable()
                     pull(p,conn)
@@ -974,7 +975,7 @@ class Furseal{
                 dbB.get(tmp,(err,val) => {
                     if(err){
                         console.error(err)
-                        nodeManager.hardUnBlock(pIDStr)
+                        nodeManager.check(pIDStr)
                     }else{
                         if(val.unprotected.status != 'init'){
                             debug('invalid block status, not send')
@@ -983,7 +984,6 @@ class Furseal{
                         p2pNode.libp2p.dialProtocol(peerID,'/cot/workrequest/1.0.0',(err,conn) => {
                             if(err){
                                 //console.warn(err)
-                                nodeManager.hardUnBlock(pIDStr)
                                 nodeManager.check(pIDStr)
                             }else{
                                 pull(
@@ -1022,12 +1022,8 @@ class Furseal{
                                                 }
                                             })
                                         }else{
-                                            // p2pNode.libp2p.hangUp(peerID,(err) => {
-                                            //     debug('close connection to '+peerID.id.toB58String())
-                                            //     debug(data)
-                                            // })
+                                           
                                             addElement(bIndexes,val.unprotected.blockName)
-                                            //nodeManager.block(pIDStr)
                                             debug(pIDStr+' is busy')
                                         }
                                         // one comunication complated, unblock node whatever blocked count is
@@ -1211,9 +1207,6 @@ class Furseal{
                     var id = element.id.toB58String()
                     if(nodeManager.isBlock(id) || id == p2pNode._peerInfo.id.toB58String()){
                         // already have job or it's node self
-                        if(nodeManager.isBlock(id)){
-                            debug(id+' was blocked')
-                        }
                     }else{
                         debug('try demand to '+id)
                         eventManager.emit('demand',element)
