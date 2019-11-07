@@ -1133,6 +1133,7 @@ class Furseal{
                         data = JSON.parse(data)
                     }
                     
+                    eventManager.emit('reportIn',data)
                     nodeManager.unblock(data.unprotected.slave)
                     nodeManager.hardUnBlock(data.unprotected.slave)
                     debug('Unblock '+data.unprotected.slave+' soft & hard')
