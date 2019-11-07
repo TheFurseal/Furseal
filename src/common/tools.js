@@ -495,7 +495,12 @@ module.exports = {
 
     },
     killProcess: function(pid){
-        Process.kill(pid)
+        try{
+            Process.kill(pid)
+        }catch(e){
+            console.error(e)
+        }
+        
     }
     
 }
