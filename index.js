@@ -252,12 +252,6 @@ class Furseal{
             dataWrap.balanceRNB = '1.2';
             if(configure.config.powerSharing){
                 devStat.enableSharing()
-                if(devStat.avaliable() && devStat.needSupply() && p2pNode != null) {
-                    devStat.noMoreSupply()
-                    supplyMessage()
-                }else{
-                
-                }
             }else{
                 devStat.disableSharing()
             }
