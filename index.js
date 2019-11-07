@@ -640,7 +640,7 @@ class Furseal{
                         setTimeout(() => {
                             debug('resend result ----------------------------------------------------------------')
                             eventManager.emit('finishCompute',data)
-                        }, 5000)
+                        }, 15000)
                     }else{
                         devStat.update('standby')
                     }
@@ -810,6 +810,7 @@ class Furseal{
                                                             debug('work '+wVal.workName+'\'s progress come to '+wVal.unprotected.info.progress)
                                                         }
                                                         wVal.unprotected.progress = pm.mProgress;
+                                                        wVal.unprotected.expectTime = wIndexes[wVal.workName].expectTime
                                                         dbW.put(wVal.workName,wVal,(err) => {
                                                             if(err){
                                                                 console.error('ERROR: ',err);
@@ -1238,6 +1239,7 @@ class Furseal{
                 val.forEach(elem => {
                     if(elem.unprotected.status == 'init'){
                         addElement(wIndexes,elem.workName)
+                        wIndexes[elem.workName] = elem.unprotected.expectTime
                         elem.unprotected.status = 'processing'
                         dbW.put(elem.workName,elem,(err) => {
                             if(err){
