@@ -51,7 +51,12 @@ class AppCommon{
         var pa = this
         var resetFunc = this.resetStatus
         var dbTmp = this.db
+        var locker = false
         this.hadler = setInterval(() => {
+            if(locker){
+                return
+            }
+            locker = true
             dbTmp.get(paramTmp.setName,(err,value) => {
                 if(err || value == null){
                     console.error(err,paramTmp.setName)
@@ -86,6 +91,7 @@ class AppCommon{
                                     }
                                 })
                             }
+                            locker = false
                         })
                     }else{
                         debug('app path is empty')
