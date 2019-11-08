@@ -21,6 +21,7 @@ class DAppCli{
             if(typeof(data) == 'string'){
                 data = JSON.parse(data)
             }
+            debug('DApp result comming !')
             if(pa.callback != null){
                 pa.callback(data)
                 debug('callback excuted')

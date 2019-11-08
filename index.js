@@ -236,6 +236,7 @@ class Furseal{
                 appManager.killAllDapp()
             }else if(obj.status == 'start'){
                 devStat.enableSharing()
+                
             }else{
 
             }
@@ -252,6 +253,9 @@ class Furseal{
             dataWrap.balanceRNB = '1.2';
             if(configure.config.powerSharing){
                 devStat.enableSharing()
+                if(devStat.avaliable()) {
+                    supplyMessage()
+                }
             }else{
                 devStat.disableSharing()
             }
@@ -984,7 +988,8 @@ class Furseal{
                         nodeManager.check(pIDStr)
                     }else{
                         if(val.unprotected.status != 'init'){
-                            debug('invalid block status, not send')
+                            debug('invalid block status, not send '+val.unprotected.status)
+                            nodeManager.hardUnBlock(pIDStr)
                             return
                         }
                         p2pNode.libp2p.dialProtocol(peerID,'/cot/workrequest/1.0.0',(err,conn) => {
