@@ -25,6 +25,9 @@ class LocalProgressManager{
             return
         }
         if(this.localProcessRegister[name] != null){
+            if(this.localProcessRegister[name].expectTimeCost != null){
+                delete this.localProcessRegister[name].expectTimeCost
+            }
             this.localProcessRegister[name].progress = progress
         }else{
             this.localProcessRegister[name] = {}
