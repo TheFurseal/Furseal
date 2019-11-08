@@ -28,6 +28,7 @@ class DAppCli{
             }else{
                 console.error('No callback for '+data.unprotected.blockName)
             }
+            pa.ipcManager.clientEmit('feedback',data.unprotected.blockName)
         })
         this.param = param
     }
