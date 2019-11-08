@@ -46,7 +46,7 @@ class GCManager{
                                 if(err){
                                     console.error(err)
                                 }else{
-                                    debug('remove pinset '+pinset)
+                                    debug('remove pinset '+JSON.stringify(pinset))
                                 }
                             })
                             hashCount++

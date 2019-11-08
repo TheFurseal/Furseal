@@ -1,4 +1,5 @@
 const debug = require('debug')('common:downloadManager')
+var gSpeed = 0
 
 class DownloadManager{
     constructor({
@@ -8,31 +9,45 @@ class DownloadManager{
         this.ipc = ipc
         this.element = {}
         this.pm = pm
+        var pa = this
+        var date = new Date()
+        this.startTime = date.valueOf()
+        setInterval(() => {
+            gSpeed = 0
+            var keys = Object.keys(pa.element)
+            for(var i=0;i<keys.length;i++){
+                if(pa.element[keys[i]].deltaT  == 0){
+     
+                }else{
+                    gSpeed+=pa.element[keys[i]].deltaD / pa.element[keys[i]].deltaT
+                    pa.element[keys[i]].recived = 0
+                    pa.element[keys[i]].deltaD = 0
+                    pa.element[keys[i]].deltaT = 1
+                }
+            }
+        }, 3000);
     }
 
     update(obj){
         if(obj == null){
             return
         }
+        var date = new Date()
         debug(JSON.stringify(obj))
         if(this.element[obj.fileName] == null){
             this.element[obj.fileName] = {}
             this.element[obj.fileName].recived = obj.recived
-            this.element[obj.fileName].timeStamp = obj.timeStamp
+            this.element[obj.fileName].timeStamp = date.valueOf()
             this.element[obj.fileName].deltaD = 0
             this.element[obj.fileName].deltaT = 1
-            this.element[obj.fileName].speed = 0
+            // this.element[obj.fileName].speed = 0
             this.pm.register(obj.fileName)
         }else{
-            var deltaTtmp = (obj.timeStamp - this.element[obj.fileName].timeStamp)/1000
-            if(deltaTtmp == 0){
-                return
-            }
-            this.element[obj.fileName].deltaD = obj.recived - this.element[obj.fileName].recived
+            this.element[obj.fileName].deltaD += obj.recived - this.element[obj.fileName].recived
             this.element[obj.fileName].recived = obj.recived
-            this.element[obj.fileName].deltaT = deltaTtmp
+            this.element[obj.fileName].deltaT += ((obj.timeStamp - this.element[obj.fileName].timeStamp) / 1000)
             this.element[obj.fileName].timeStamp = obj.timeStamp
-            this.element[obj.fileName].speed = this.element[obj.fileName].deltaD / this.element[obj.fileName].deltaT
+            // this.element[obj.fileName].speed = this.element[obj.fileName].deltaD / this.element[obj.fileName].deltaT
             this.pm.update(obj.fileName,obj.recived/obj.total)
             if(obj.recived == obj.total){
                 debug('Delete element '+obj.fileName)
@@ -45,12 +60,6 @@ class DownloadManager{
 
     getGlobalReport(){
         //report global speed
-        var keys = Object.keys(this.element)
-        var pa = this
-        var gSpeed = 0
-        for(var i=0;i<keys.length;i++){
-            gSpeed+=pa.element[keys[i]].speed
-        }
         var report = {}
         report.speed = gSpeed
         return report

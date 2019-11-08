@@ -8,12 +8,9 @@ class NodeManager{
         setTimeout(() => {
             var keys = Object.keys(pa.pBlockList)
             keys.forEach(element => {
-                pa.pBlockList[element]--
-                if(pa.pBlockList[element] <= 0){
-                    delete pa.pBlockList[element]
-                }
+                delete pa.pBlockList[element]
             });
-        }, 60000);
+        }, 300000);
     }
 
     check(id){

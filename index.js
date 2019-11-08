@@ -1289,7 +1289,7 @@ class Furseal{
                 })
                 
             })
-        }, 15000);
+        }, 5000);
     }
 
     register(data){
