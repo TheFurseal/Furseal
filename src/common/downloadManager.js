@@ -20,12 +20,11 @@ class DownloadManager{
      
                 }else{
                     gSpeed+=pa.element[keys[i]].deltaD / pa.element[keys[i]].deltaT
-                    pa.element[keys[i]].recived = 0
                     pa.element[keys[i]].deltaD = 0
-                    pa.element[keys[i]].deltaT = 1
+                    pa.element[keys[i]].deltaT = 0
                 }
             }
-        }, 3000);
+        }, 1000);
     }
 
     update(obj){
@@ -37,14 +36,14 @@ class DownloadManager{
             this.element[obj.fileName] = {}
             this.element[obj.fileName].recived = obj.recived
             this.element[obj.fileName].timeStamp = obj.timeStamp
-            this.element[obj.fileName].deltaD = obj.recived
-            this.element[obj.fileName].deltaT = 1
+            this.element[obj.fileName].deltaD = 0
+            this.element[obj.fileName].deltaT = 0
             // this.element[obj.fileName].speed = 0
             this.pm.register(obj.fileName)
         }else{
             this.element[obj.fileName].deltaD += obj.recived - this.element[obj.fileName].recived
             this.element[obj.fileName].recived = obj.recived
-            this.element[obj.fileName].deltaT += ((obj.timeStamp - this.element[obj.fileName].timeStamp) / 1000)
+            this.element[obj.fileName].deltaT += (obj.timeStamp - this.element[obj.fileName].timeStamp) / 1000
             this.element[obj.fileName].timeStamp = obj.timeStamp
             // this.element[obj.fileName].speed = this.element[obj.fileName].deltaD / this.element[obj.fileName].deltaT
             this.pm.update(obj.fileName,obj.recived/obj.total)

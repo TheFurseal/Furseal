@@ -372,9 +372,9 @@ class Furseal{
             }
 
             function updateDividStat(dataTmp,value){
-                console.log('update divid')
+               
                 if(!devStat.isModuleReady()){
-                        console.log('module not ready')
+                        debug('module not ready')
                         setTimeout(() => {
                             updateDividStat(dataTmp,value)
                         }, 5000);   
@@ -416,9 +416,8 @@ class Furseal{
                 var retTmp = []
                 var count = 0
                 value.forEach(element => {
-                    console.log(element)
                     if(element.apps == null || element.apps.dividor == null){
-                        console.log('not have dividor')
+                        debug('not have dividor')
                     }else{
                         
                         var ret = {}
@@ -428,7 +427,6 @@ class Furseal{
                         retTmp.push(ret)
                     }
                     if(++count == value.length){
-                        console.log('Update ',retTmp)
                         ipcManager.serverEmit('updateActiveDividor',retTmp)
                     }
                 })
@@ -597,7 +595,7 @@ class Furseal{
 
         //test code
         p2pNode.libp2p.on('peer:connect',(peer) => {
-            console.log(peer.id.toB58String())
+            debug(peer.id.toB58String())
             nodeManager.hardUnBlock(peer.id.toB58String())
             if(configure.config.powerSharing){
                 if(devStat.avaliable()) {
@@ -874,7 +872,7 @@ class Furseal{
                             localPM.register(data.unprotected.blockName,data.unprotected.expectTime)
                             appManager.launchDapp(data.unprotected.appSet,null,data,(ret) => {
                                 //compressing buffer
-                                localPM.register(data.unprotected.blockName,1)
+                                localPM.update(data.unprotected.blockName,1)
                                 gcManager.clearByEvent(ret.unprotected.blockName+'_close')
                                 gcManager.register(ret.protected.outputFiles[0].path,ret.unprotected.blockName+'_uploaded')
                                 setTimeout(() => {

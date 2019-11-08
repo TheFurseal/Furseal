@@ -59,14 +59,18 @@ class LocalProgressManager{
             var tmp = {}
             tmp.name = keys[i]
             if(this.localProcessRegister[keys[i]].expectTimeCost != null){
-                tmp.progress = (date.valueOf() - this.localProcessRegister[keys[i]].timeStart) / (this.localProcessRegister[keys[i]].expectTimeCost)
+                var cost = (date.valueOf() - this.localProcessRegister[keys[i]].timeStart)
+                var expectTmp = (this.localProcessRegister[keys[i]].expectTimeCost)
+                if(cost >=  expectTimeCost){
+                    this.localProcessRegister[keys[i]].expectTimeCost = null
+                    return
+                }
+                tmp.progress = cost / expectTmp
             }else{
                 tmp.progress = this.localProcessRegister[keys[i]].progress
             }
             
-            if(tmp.progress > 1){
-                tmp.progress = 1
-            }
+           
             ret.push(tmp)
             if( tmp.progress == 1){
                 delete this.localProcessRegister[keys[i]]
