@@ -114,7 +114,7 @@ class AssimilatorCli{
         var pa = this
         debug('Assimilator cli start')
         this.appCommon.start((pid) => {
-            debug('set pid '+pid)
+            // debug('set pid '+pid)
             pa.pid = pid
 
         })

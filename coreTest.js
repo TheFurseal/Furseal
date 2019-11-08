@@ -26,6 +26,7 @@ var homePath = appData+'/CoTNetwork'
 
 var core = new Core(homePath)
 core.init()
+core.process()
 
 function login(){
 

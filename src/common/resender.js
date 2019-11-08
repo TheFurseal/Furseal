@@ -178,7 +178,7 @@ class Resender{
     resendBySlaveID(sID){
         dbB.getAllValue(value => {
             value.forEach(element => {
-                if(workIndexs[element.workName] != null && (element.unprotected.status == 'processing' || element.unprotected.status == 'validating') && element.unprotected.slave == sID){
+                if(workIndexs[element.workName] != null && (element.unprotected.status == 'processing') && element.unprotected.slave == sID){
                     element.unprotected.status = 'init'
                     dbB.put(element.unprotected.blockName,element,(err) => {
                         if(err){
