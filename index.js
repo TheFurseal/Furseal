@@ -1326,6 +1326,11 @@ class Furseal{
         }
         doLogin(dataTmp)
     }
+
+    async shutdown(){
+        ipcManager.serverDisconnect()
+        return await p2pNode.stop()
+    }
 }
 
 
