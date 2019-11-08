@@ -32,13 +32,12 @@ class DownloadManager{
         if(obj == null){
             return
         }
-        var date = new Date()
         debug(JSON.stringify(obj))
         if(this.element[obj.fileName] == null){
             this.element[obj.fileName] = {}
             this.element[obj.fileName].recived = obj.recived
-            this.element[obj.fileName].timeStamp = date.valueOf()
-            this.element[obj.fileName].deltaD = 0
+            this.element[obj.fileName].timeStamp = obj.timeStamp
+            this.element[obj.fileName].deltaD = obj.recived
             this.element[obj.fileName].deltaT = 1
             // this.element[obj.fileName].speed = 0
             this.pm.register(obj.fileName)
