@@ -61,7 +61,7 @@ class LocalProgressManager{
             if(this.localProcessRegister[keys[i]].expectTimeCost != null){
                 var cost = (date.valueOf() - this.localProcessRegister[keys[i]].timeStart)
                 var expectTmp = (this.localProcessRegister[keys[i]].expectTimeCost)
-                if(cost >=  expectTimeCost){
+                if(cost >=  expectTmp){
                     this.localProcessRegister[keys[i]].expectTimeCost = null
                     return
                 }
