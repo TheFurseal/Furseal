@@ -66,6 +66,7 @@ class LocalProgressManager{
                 var expectTmp = (this.localProcessRegister[keys[i]].expectTimeCost)
                 if(cost >=  expectTmp){
                     this.localProcessRegister[keys[i]].expectTimeCost = null
+                    this.localProcessRegister[keys[i]].progress = 0.9999
                     return
                 }
                 tmp.progress = cost / expectTmp

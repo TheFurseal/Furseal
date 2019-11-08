@@ -739,6 +739,9 @@ class Furseal{
                                 resender.stepBack(data.unprotected.blockName)
                                 return
                             }else{
+                                nodeManager.unblock(data.unprotected.slave)
+                                nodeManager.hardUnBlock(data.unprotected.slave)
+                                debug('Unblock '+data.unprotected.slave+' soft & hard')
                                 var targetPath = resultFileTmp+'/'+data.protected.outputFiles[0].fileName
                                 data.protected.outputFiles[0].path = targetPath
                                 var inBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
@@ -1132,11 +1135,6 @@ class Furseal{
                     }
                     
                     eventManager.emit('reportIn',data)
-                    nodeManager.unblock(data.unprotected.slave)
-                    nodeManager.hardUnBlock(data.unprotected.slave)
-                    debug('Unblock '+data.unprotected.slave+' soft & hard')
-                    
-                    
                 },function(err){
                     if(err)console.error(err)
                 })

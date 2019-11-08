@@ -31,7 +31,6 @@ class DownloadManager{
         if(obj == null){
             return
         }
-        debug(JSON.stringify(obj))
         if(this.element[obj.fileName] == null){
             this.element[obj.fileName] = {}
             this.element[obj.fileName].recived = obj.recived
