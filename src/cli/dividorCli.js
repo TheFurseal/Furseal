@@ -84,6 +84,10 @@ class DividorCli{
         this.ipcManager.createClient({})
         this.ipcManager.addClientListenner('request',(data,socket) => {
             debug('revice request',data)
+            if(typeof(data) == 'string'){
+                data = JSON.parse(data)
+            }
+            pa.ipcManager.clientEmit('feedback',data.unprotected.blockName)
             doDivide(data,p2pNodeTmp)
         })
 

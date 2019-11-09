@@ -175,7 +175,7 @@ class Resender{
         })
     }
 
-    resendBySlaveID(sID){
+    resendBySlaveID(sID,callback){
         dbB.getAllValue(value => {
             value.forEach(element => {
                 if(workIndexs[element.workName] != null && (element.unprotected.status == 'processing') && element.unprotected.slave == sID){
@@ -205,6 +205,9 @@ class Resender{
                             dbW.put(value2.workName,value2,(err) => {
                                 if(err){
                                     console.error('ERROR: ',err);
+                                }
+                                if(callback != null){
+                                    callback()
                                 }
                             })
                         }
