@@ -154,6 +154,9 @@ function globalGC(workName){
 }
 
 function supplyMessage(peerIn){
+    if(p2pNode == null){
+        return
+    }
     if(peerIn!=null){
         p2pNode.libp2p.dialProtocol(peerIn,'/cot/worksupply/1.0.0',(err,conn) => {
 
