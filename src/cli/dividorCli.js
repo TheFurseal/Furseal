@@ -127,11 +127,23 @@ class DividorCli{
                         }
                         
                         //
-                        currentFileNumber++
+                       
                         workInfo.protected.inputFiles[index].url = pubValue.value
                         workInfo.protected.inputFiles[index].key = pubValue.value
                         workInfo.protected.inputFiles[index].hash = pubValue.value
                         workInfo.protected.inputFiles[index].size = pubValue.size
+                        if(++currentFileNumber == totalFileNumber){
+                            if(workInRegister[workInfo.workName].current == 0){
+                                debug('register work')
+                                workInfo.unprotected.owner = owner
+                                registerBlock(workInfo,true)
+                            }else{
+                                workInfo.unprotected.owner = owner
+                                debug('register block')
+                                registerBlock(workInfo)
+                            }
+                            workInRegister[workInfo.workName].current++
+                        }
 
                     }else{
                         var buf = fs.readFileSync(Tools.fixPath(element.url))
@@ -153,7 +165,7 @@ class DividorCli{
                                 workInfo.protected.inputFiles[index].hash = resInfo.hash
                                 workInfo.protected.inputFiles[index].key =  resInfo.hash
                                 workInfo.protected.inputFiles[index].size = buf.length
-                                currentFileNumber++
+                                
                                 if(element.type == 'public'){
                                     //update key-value
                                     var tmpKV = {}
@@ -172,26 +184,21 @@ class DividorCli{
                                         console.error(rest.error)
                                     }
                                 })
+                                if(++currentFileNumber == totalFileNumber){
+                                    if(workInRegister[workInfo.workName].current == 0){
+                                        debug('register work')
+                                        workInfo.unprotected.owner = owner
+                                        registerBlock(workInfo,true)
+                                    }else{
+                                        workInfo.unprotected.owner = owner
+                                        debug('register block')
+                                        registerBlock(workInfo)
+                                    }
+                                    workInRegister[workInfo.workName].current++
+                                }
                             }
                         })
                     }
-                    //waitting
-                    var handler = setInterval(() => {
-                        if(totalFileNumber == currentFileNumber){
-                            clearInterval(handler)
-                            if(workInRegister[workInfo.workName].current == 0){
-                                debug('register work')
-                                workInfo.unprotected.owner = owner
-                                registerBlock(workInfo,true)
-                            }else{
-                                workInfo.unprotected.owner = owner
-                                debug('register block')
-                                registerBlock(workInfo)
-                            }
-                            workInRegister[workInfo.workName].current++
-                            //register work(block)
-                        }
-                    }, 100);
                 }
             })
         }
