@@ -1006,35 +1006,34 @@ class Furseal{
                                     }),
                                     pull.drain(function(data){
                                         if(data == 'idel'){
-                                            resender.resendBySlaveID(pIDStr,() => {
-                                                debug('send block to '+pIDStr)
-                                                // start data record
-                                                val.unprotected.status = 'processing';
-                                                val.unprotected.slave = peerID.id.toB58String()
-                                                var date = new Date()
-                                                val.unprotected.info.startTime = date.valueOf()
-                                                if(wIndexes[val.workName].expectTime == null){
-                                                    wIndexes[val.workName].expectTime = 1800000
+                                            resender.resendBySlaveID(pIDStr,val.unprotected.blockName)
+                                            debug('send block to '+pIDStr)
+                                            // start data record
+                                            val.unprotected.status = 'processing';
+                                            val.unprotected.slave = peerID.id.toB58String()
+                                            var date = new Date()
+                                            val.unprotected.info.startTime = date.valueOf()
+                                            if(wIndexes[val.workName].expectTime == null){
+                                                wIndexes[val.workName].expectTime = 1800000
+                                            }
+                                            val.unprotected.expectTime = wIndexes[val.workName].expectTime
+                                            var p = Pushable();
+                                            pull(p,conn);
+                                            p.push(JSON.stringify(val))
+                                            p.end() 
+                                            dbB.update(val.unprotected.blockName,val,(err) => {
+                                                if(err){
+                                                    console.error(err);
+                                                }else{
+                                                    //send a message to UI
+                                                    var blockStatus = {}
+                                                    blockStatus.workName = val.workName
+                                                    blockStatus.index = val.unprotected.block.index
+                                                    blockStatus.status = 'processing'
+                                                    var infos = []
+                                                    infos.push(blockStatus)
+                                                    ipcManager.serverEmit('updateBlockStatus',infos)
                                                 }
-                                                val.unprotected.expectTime = wIndexes[val.workName].expectTime
-                                                var p = Pushable();
-                                                pull(p,conn);
-                                                p.push(JSON.stringify(val))
-                                                p.end() 
-                                                dbB.update(val.unprotected.blockName,val,(err) => {
-                                                    if(err){
-                                                        console.error(err);
-                                                    }else{
-                                                        //send a message to UI
-                                                        var blockStatus = {}
-                                                        blockStatus.workName = val.workName
-                                                        blockStatus.index = val.unprotected.block.index
-                                                        blockStatus.status = 'processing'
-                                                        var infos = []
-                                                        infos.push(blockStatus)
-                                                        ipcManager.serverEmit('updateBlockStatus',infos)
-                                                    }
-                                                })
                                             })
                                             
                                         }else{
@@ -1188,10 +1187,6 @@ class Furseal{
                 }
             })
         })
-
-       if(devStat.avaliable() && p2pNode != null) {
-            supplyMessage()
-       }
     }
 
     process(){
@@ -1219,7 +1214,6 @@ class Furseal{
                     if(nodeManager.isBlock(id) || id == p2pNode._peerInfo.id.toB58String()){
                         // already have job or it's node self
                     }else{
-                        debug('try demand to '+id)
                         eventManager.emit('demand',element)
                     }
                     if(++count == peers.length){
