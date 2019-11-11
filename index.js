@@ -263,13 +263,17 @@ class Furseal{
             }
             dbW.getAll(function(data){
                 dataWrap.workList = data;
-                step++
+                if(++step == 2){
+                    ipcManager.serverEmit('mainUpdate',dataWrap)
+                }
             })
             var peersList = {}
             dbB.getAllValue((value) => {
                 var count = 0
                 if(value.length == 0){
-                    step++
+                    if(++step == 2){
+                        ipcManager.serverEmit('mainUpdate',dataWrap)
+                    }
                 }
                 value.forEach(elem => {
                     if(elem.unprotected.status == 'processing'){
@@ -277,17 +281,12 @@ class Furseal{
                     }
                     if(++count == value.length){
                         dataWrap.nodeNumber = Object.keys(peersList).length.toString()
-                        step++
+                        if(++step == 2){
+                            ipcManager.serverEmit('mainUpdate',dataWrap)
+                        }
                     }
                 })
             })
-
-            var handle = setInterval(() => {
-                if(step == 2){
-                    clearInterval(handle)
-                    ipcManager.serverEmit('mainUpdate',dataWrap)
-                }
-            }, 200);  
         })
 
         ipcManager.addServerListenner('releaseSet',(data,socket) => {
