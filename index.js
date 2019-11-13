@@ -1147,6 +1147,10 @@ class Furseal{
 
 
         function mainUpdate(){
+            // UI not show
+            if(!ipcManager.clientConnected){
+                return
+            }
             var step = 0
             var dataWrap = {};
             dataWrap.nodeNumber = 0
@@ -1192,6 +1196,9 @@ class Furseal{
         var locker = false
         var locker2 = false
         var locker3 = false
+        setInterval(() => {
+            mainUpdate()
+        }, 1000);
         setInterval(() => {
             if(!((!locker) && (!locker2) && (!locker3))){
                 return
@@ -1283,7 +1290,6 @@ class Furseal{
                 })
                 
             })
-            mainUpdate()
         }, 5000);
     }
 
