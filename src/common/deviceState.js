@@ -45,6 +45,7 @@ class DeviceState{
                 if(date.valueOf() - pa.freeFrom > 60000){
                     debug('Device may blocked by other node, send a supply message')
                     this.shouldDoSupply = true
+                    pa.freeFrom = date.valueOf()
                 }else{
 
                 }

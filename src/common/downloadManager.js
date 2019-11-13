@@ -24,7 +24,7 @@ class DownloadManager{
                     pa.element[keys[i]].deltaT = 0
                 }
             }
-        }, 1000);
+        }, 2000);
     }
 
     update(obj){

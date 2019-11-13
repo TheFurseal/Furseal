@@ -158,15 +158,26 @@ function supplyMessage(peerIn){
         return
     }
     if(peerIn!=null){
+        var id = peerIn.id.toB58String()
+        if(nodeManager.isBlock(id)){
+            return
+        }
+        nodeManager.hardBlock(id)
         p2pNode.libp2p.dialProtocol(peerIn,'/cot/worksupply/1.0.0',(err,conn) => {
-
+            nodeManager.hardUnBlock(id)
         })
     }else{
         var peers = p2pNode._peerInfoBook.getAllArray()
         peers.forEach(peer => {
+            
+            var id = peer.id.toB58String()
+            if(nodeManager.isBlock(id)){
+                return
+            }
+            nodeManager.hardBlock(id)
             debug('send supply message to '+peer.id.toB58String())
             p2pNode.libp2p.dialProtocol(peer,'/cot/worksupply/1.0.0',(err,conn) => {
-
+                nodeManager.hardUnBlock(id)
             })
         })
     }
@@ -175,7 +186,6 @@ function supplyMessage(peerIn){
 
 class Furseal{
     constructor(homePath){
-        this.supplyMessage = supplyMessage
         this.homePath = homePath
         // init data directories
         inputFileTmp = homePath+'/inputs'
@@ -511,6 +521,7 @@ class Furseal{
         })
 
         eventManager.registEvent('startAssimilate',(val) => {
+            debug('startAssimilate')
             var data = JSON.parse(JSON.stringify(val))
             dbW.get(data.workName,(err,value) => {
                 if(err){
@@ -527,6 +538,12 @@ class Furseal{
                         appManager.launchAssimilator(value.unprotected.appSet,value,(err,res) => {
                             if(err){
                                 console.error(err)
+                                value.unprotected.status = 'processing'
+                                dbW.put(value.workName,value,(err) => {
+                                    if(err){
+                                        console.error(err)
+                                    }
+                                })
                             }else{
                                 value.unprotected.status = 'finish'
                                 var notif = {
@@ -551,6 +568,9 @@ class Furseal{
                                 })
                             }
                         })
+                    }else{
+                        debug("start assimilate failed 1")
+                        debug(value.unprotected.status)
                     }
                 }
             })
