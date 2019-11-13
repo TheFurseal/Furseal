@@ -883,14 +883,6 @@ class Furseal{
                                 localPM.update(data.unprotected.blockName,1)
                                 gcManager.clearByEvent(ret.unprotected.blockName+'_close')
                                 gcManager.register(ret.protected.outputFiles[0].path,ret.unprotected.blockName+'_uploaded')
-                                setTimeout(() => {
-                                    if(devStat.timeFreed() > 20000){
-                                        appManager.killDapp(data.unprotected.appSet)
-                                    }else{
-                                        debug('Not kill dapp beacourse is used')
-                                        debug(devStat.timeFreed())
-                                    }
-                                }, 30000);
                                 var retBk = ret
                                 var resultBuffer
                                 try{
