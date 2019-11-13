@@ -192,6 +192,7 @@ class AppManager{
             return
         }
         this.setsRegister[setName].dividor.stop()
+        delete this.setsRegister[setName].dividor
     }
 
     killAssimilator(setName){
@@ -200,6 +201,7 @@ class AppManager{
             return
         }
         this.setsRegister[setName].assimilator.stop()
+        delete this.setsRegister[setName].assimilator
     }
 
     killValidator(setName){
@@ -208,6 +210,7 @@ class AppManager{
             return
         }
         this.setsRegister[setName].validator.stop()
+        delete this.setsRegister[setName].validator
     }
 
     killDapp(setName){
@@ -216,6 +219,7 @@ class AppManager{
             return
         }
         this.setsRegister[setName].dapp.stop()
+        delete this.setsRegister[setName].dapp
     }
 
     killAllDapp(){
