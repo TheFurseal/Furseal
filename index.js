@@ -247,48 +247,6 @@ class Furseal{
             }
         })
 
-        ipcManager.addServerListenner('mainUpdate',(data,socket) => {
-            var step = 0
-            var dataWrap = {};
-            dataWrap.nodeNumber = 0
-            dataWrap.speed = downloadManager.getGlobalReport().speed;
-            dataWrap.localProgresses = localPM.getAllLocalProgress()
-            dataWrap.powerSharing = configure.config.powerSharing
-            dataWrap.balanceCNC = '12,000';
-            dataWrap.balanceRNB = '1.2';
-            if(configure.config.powerSharing){
-                devStat.enableSharing()
-            }else{
-                devStat.disableSharing()
-            }
-            dbW.getAll(function(data){
-                dataWrap.workList = data;
-                if(++step == 2){
-                    ipcManager.serverEmit('mainUpdate',dataWrap)
-                }
-            })
-            var peersList = {}
-            dbB.getAllValue((value) => {
-                var count = 0
-                if(value.length == 0){
-                    if(++step == 2){
-                        ipcManager.serverEmit('mainUpdate',dataWrap)
-                    }
-                }
-                value.forEach(elem => {
-                    if(elem.unprotected.status == 'processing'){
-                        peersList[elem.unprotected.slave] = 1
-                    }
-                    if(++count == value.length){
-                        dataWrap.nodeNumber = Object.keys(peersList).length.toString()
-                        if(++step == 2){
-                            ipcManager.serverEmit('mainUpdate',dataWrap)
-                        }
-                    }
-                })
-            })
-        })
-
         ipcManager.addServerListenner('releaseSet',(data,socket) => {
             var obj = data
             if(typeof(obj) == 'string'){
@@ -1194,6 +1152,50 @@ class Furseal{
         }else{
             devStat.update('standby','golden')
         }
+
+
+        function mainUpdate(){
+            var step = 0
+            var dataWrap = {};
+            dataWrap.nodeNumber = 0
+            dataWrap.speed = downloadManager.getGlobalReport().speed;
+            dataWrap.localProgresses = localPM.getAllLocalProgress()
+            dataWrap.powerSharing = configure.config.powerSharing
+            dataWrap.balanceCNC = '12,000';
+            dataWrap.balanceRNB = '1.2';
+            if(configure.config.powerSharing){
+                devStat.enableSharing()
+            }else{
+                devStat.disableSharing()
+            }
+            dbW.getAll(function(data){
+                dataWrap.workList = data;
+                if(++step == 2){
+                    ipcManager.serverEmit('mainUpdate',dataWrap)
+                }
+            })
+            var peersList = {}
+            dbB.getAllValue((value) => {
+                var count = 0
+                if(value.length == 0){
+                    if(++step == 2){
+                        ipcManager.serverEmit('mainUpdate',dataWrap)
+                    }
+                }
+                value.forEach(elem => {
+                    if(elem.unprotected.status == 'processing'){
+                        peersList[elem.unprotected.slave] = 1
+                    }
+                    if(++count == value.length){
+                        dataWrap.nodeNumber = Object.keys(peersList).length.toString()
+                        if(++step == 2){
+                            ipcManager.serverEmit('mainUpdate',dataWrap)
+                        }
+                    }
+                })
+            })
+        }
+
         //tell other node that we are free
         var locker = false
         var locker2 = false
@@ -1289,6 +1291,7 @@ class Furseal{
                 })
                 
             })
+            mainUpdate()
         }, 5000);
     }
 
