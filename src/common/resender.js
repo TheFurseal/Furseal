@@ -108,7 +108,7 @@ class Resender{
             if(err){
                 console.error(err)
             }else{
-                if(workIndexs[value.workName] != null && value.unprotected.status != 'validated'){ // processing work
+                if(workIndexs[value.workName] != null && value.unprotected.status == 'processing'){ // processing work
                     value.unprotected.status = 'init'
                     dbB.put(value.unprotected.blockName,value,(err) => {
                         if(err){

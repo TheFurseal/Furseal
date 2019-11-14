@@ -798,7 +798,12 @@ class Furseal{
                                         })
                                     }else{
                                         debug('result invalid, start to resend')
-                                        resender.resendByBlockName(ret.unprotected.blockName)
+                                        ret.unprotected.status = 'invalid'
+                                        dbB.put(ret.unprotected.blockName,ret,(err) => {
+                                            if(err){
+                                                console.error(err)
+                                            }
+                                        })
                                     }
                                 })
                             }
@@ -1276,11 +1281,7 @@ class Furseal{
                 val.forEach(elem => {
                     if(wIndexes[elem.workName]  != null && elem.unprotected.status == 'init'){
                         addElement(bIndexes,elem.unprotected.blockName)
-                        dbB.put(elem.unprotected.blockName,elem,(err) => {
-                            if(err){
-                                console.log(err)
-                            }
-                        })
+                       
                     }else if(elem.unprotected.status == 'preDone'){
                         debug('Found preDone block')
                         if(wIndexes[elem.workName]  != null  ){
@@ -1301,6 +1302,14 @@ class Furseal{
                         }else{
                             debug('bad block!!!')
                         }
+                    }else if(wIndexes[elem.workName]  != null && elem.unprotected.status == 'invalid'){
+                        elem.unprotected.blockName = 'init'
+                        dbB.put(elem.unprotected.blockName,elem,(err) => {
+                            if(err){
+                                console.log(err)
+                            }
+                        })
+                        addElement(bIndexes,elem.unprotected.blockName)
                     }else{
 
                     }
