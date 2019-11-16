@@ -68,6 +68,9 @@ var wIndexes = {}
 //block indexs
 var bIndexes = {}
 
+//preDone indexs
+var pDIndexes = {}
+
 //extranal configure
 var configure
 
@@ -233,7 +236,8 @@ class Furseal{
         })
         
         resender = new Resender({
-            WorkIndexs:wIndexes,
+            WorkIndexes:wIndexes,
+            BlockIndexes:bIndexes,
             WorkDatabase:dbW,
             BlockDatabase:dbB,
             IPCManager:ipcManager
@@ -505,16 +509,21 @@ class Furseal{
             dbB.getAllValue((data2) => {
                 data2.forEach(element => {
                     if(element.unprotected.status == 'init'){
+                        resender.registResend(element.unprotected.blockName)
                         addElement(bIndexes,element.unprotected.blockName)
                     }else if(element.unprotected.status == 'validating'){
                         element.unprotected.status = 'preDone'
+                        addElement(pDIndexes,element.unprotected.blockName)
                         dbB.update(element.unprotected.blockName,element,(err) => {
                             if(err){
                                 console.error(err)
                             }
                         })
+                    }else if(element.unprotected.status == 'processing'){
+                        resender.registResend(element.unprotected.blockName)
+                        nodeManager.addWorkingNodes(element.unprotected.slave)
                     }else{
-
+                        
                     }
                 });
             })
@@ -658,7 +667,9 @@ class Furseal{
                         if(err){
                             console.error(err)
                         }
+                        addElement(pDIndexes,data.unprotected.blockName)
                     })
+
                 }
             })
         })
@@ -798,12 +809,13 @@ class Furseal{
                                         })
                                     }else{
                                         debug('result invalid, start to resend')
-                                        ret.unprotected.status = 'invalid'
+                                        ret.unprotected.status = 'init'
                                         dbB.put(ret.unprotected.blockName,ret,(err) => {
                                             if(err){
                                                 console.error(err)
                                             }
                                         })
+                                        addElement(bIndexes,ret.unprotected.blockName)
                                     }
                                 })
                             }
@@ -1007,6 +1019,8 @@ class Furseal{
                                                     var infos = []
                                                     infos.push(blockStatus)
                                                     ipcManager.serverEmit('updateBlockStatus',infos)
+                                                    resender.registResend(val.unprotected.blockName)
+                                                    nodeManager.addWorkingNodes(pIDStr)
                                                 }
                                             })
                                             
@@ -1118,6 +1132,8 @@ class Furseal{
                     }
                     
                     eventManager.emit('reportIn',data)
+                    resender.unregistResend(data.unprotected.blockName)
+                    nodeManager.removeWorkingNodes(data.unprotected.slave)
                 },function(err){
                     if(err)console.error(err)
                 })
@@ -1164,6 +1180,7 @@ class Furseal{
     }
 
     process(){
+        debug('Main process start')
         if(Object.keys(bIndexes).length){
 
         }else{
@@ -1174,6 +1191,7 @@ class Furseal{
         function mainUpdate(){
             // UI not show
             if(!ipcManager.clientConnected){
+                updating = false
                 return
             }
             var step = 0
@@ -1184,6 +1202,7 @@ class Furseal{
             dataWrap.powerSharing = configure.config.powerSharing
             dataWrap.balanceCNC = '12,000';
             dataWrap.balanceRNB = '1.2';
+            dataWrap.nodeNumber = nodeManager.getWorkingNodesNumber()
             if(configure.config.powerSharing){
                 devStat.enableSharing()
             }else{
@@ -1191,45 +1210,29 @@ class Furseal{
             }
             dbW.getAll(function(data){
                 dataWrap.workList = data;
-                if(++step == 2){
-                    ipcManager.serverEmit('mainUpdate',dataWrap)
-                }
-            })
-            var peersList = {}
-            dbB.getAllValue((value) => {
-                var count = 0
-                if(value.length == 0){
-                    if(++step == 2){
-                        ipcManager.serverEmit('mainUpdate',dataWrap)
-                    }
-                }
-                value.forEach(elem => {
-                    if(elem.unprotected.status == 'processing'){
-                        peersList[elem.unprotected.slave] = 1
-                    }
-                    if(++count == value.length){
-                        dataWrap.nodeNumber = Object.keys(peersList).length.toString()
-                        if(++step == 2){
-                            ipcManager.serverEmit('mainUpdate',dataWrap)
-                        }
-                    }
-                })
+                ipcManager.serverEmit('mainUpdate',dataWrap)
+                updating = false
             })
         }
 
         //tell other node that we are free
         var locker = false
-        var locker2 = false
         var locker3 = false
+
+        var updating = false
+
         setInterval(() => {
-            mainUpdate()
-        }, 1000);
+            if(!updating){
+                updating = true
+                mainUpdate()
+            }
+        }, 1000)
+
         setInterval(() => {
-            if(!((!locker) && (!locker2) && (!locker3))){
+            if(!((!locker) && (!locker3))){
                 return
             }
             locker = true
-            locker2 = true
             locker3 = true
             if(Object.keys(bIndexes).length){
                 var peers = p2pNode._peerInfoBook.getAllArray()
@@ -1249,76 +1252,42 @@ class Furseal{
             }else{
                 debug('bIndex is empty')
             }
-            dbW.getAllValue((val) => {
-                var count = 0
-                val.forEach(elem => {
-                    if(elem.unprotected.status == 'init'){
-                        addElement(wIndexes,elem.workName)
-                        wIndexes[elem.workName] = elem.unprotected.expectTime
-                        elem.unprotected.status = 'processing'
-                        dbW.put(elem.workName,elem,(err) => {
+
+            var pDKeys = Object.keys(pDIndexes)
+            if(pDKeys.length == 0){
+                locker3 = false
+            }
+            var pDKeysCount = 0
+            pDKeys.forEach(key => {
+                debug('Found preDone block')
+
+                dbB.get(key,(err,value) => {
+                    if(err){
+                        console.error(err)
+                    }else{
+                        value.unprotected.status = 'validating'
+                        dbB.put(key,value,(err) => {
                             if(err){
                                 console.error(err)
                             }
                         })
-                    }else if(elem.unprotected.status == 'processing'){
-                        if(elem.unprotected.info.progress == 1){
-                            eventManager.emit('startAssimilate',elem)
-                        }else{
-                
-                        }
+                    } 
+                })
+               
+                dbR.get(key,(err,value) => {
+                    if(err){
+                        console.error(err)
                     }else{
-
-                    }
-                    if(++count == val.length){
-                        locker2 = false
+                        debug('Start validate')
+                        eventManager.emit('startValidate',value)
+                        removeElement(pDIndexes,key)
                     }
                 })
-                
+               if(++pDKeysCount == pDKeys.length){
+                   locker3 = false
+               }
             })
-            dbB.getAllValue((val) => {
-                var count = 0
-                val.forEach(elem => {
-                    if(wIndexes[elem.workName]  != null && elem.unprotected.status == 'init'){
-                        addElement(bIndexes,elem.unprotected.blockName)
-                       
-                    }else if(elem.unprotected.status == 'preDone'){
-                        debug('Found preDone block')
-                        if(wIndexes[elem.workName]  != null  ){
-                            dbR.get(elem.unprotected.blockName,(err,value) => {
-                                if(err){
-                                    console.error(err)
-                                }else{
-                                    elem.unprotected.status = 'validating'
-                                    dbB.put(elem.unprotected.blockName,elem,(err) => {
-                                        if(err){
-                                            console.error(err)
-                                        }
-                                    })
-                                    debug('Start validate')
-                                    eventManager.emit('startValidate',value)
-                                }
-                            })
-                        }else{
-                            debug('bad block!!!')
-                        }
-                    }else if(wIndexes[elem.workName]  != null && elem.unprotected.status == 'invalid'){
-                        elem.unprotected.blockName = 'init'
-                        dbB.put(elem.unprotected.blockName,elem,(err) => {
-                            if(err){
-                                console.log(err)
-                            }
-                        })
-                        addElement(bIndexes,elem.unprotected.blockName)
-                    }else{
 
-                    }
-                    if(++count == val.length){
-                        locker3 = false
-                    }
-                })
-                
-            })
         }, 5000);
     }
 

@@ -32,6 +32,7 @@ module.exports.createP2PNode = async (home,swarmKeyBuffer) => {
       home = './fileStorage'
     }
     return await IPFS.create({
+        silent:true,
         repo: home,
         config: {
             Addresses: {
@@ -103,13 +104,12 @@ module.exports.createP2PNode = async (home,swarmKeyBuffer) => {
                    active: true 
                 } 
               }
-            },
-            connectionManager: {
-              minPeers: 5,
-              maxPeers: 50
             }
-          }
-      
+        },
+        connectionManager: {
+          minPeers: 1,
+          maxPeers: 50
+        }
     })
 }
 

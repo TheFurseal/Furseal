@@ -50,8 +50,21 @@ function getNeighbor(blockName,db,callback){
 
 var dbB
 var dbW
-var workIndexs
+var workIndexes
+var blockIndexes
 var ipcManager
+
+function addElement(obj,elem){
+    if(obj == null){
+        console.error('Arrary is empty')
+        return
+    }
+    if(elem == null){
+        console.error('Element is empty')
+        return
+    }
+    obj[elem] = {}
+}
 
 function checkNeighbor(blockName,array,startTime,callback){
     if(array.length == 0){
@@ -73,9 +86,12 @@ function checkNeighbor(blockName,array,startTime,callback){
     }
 }
 
+var bIndexOnProcessing = {}
+
 class Resender{
     constructor({
-        WorkIndexs:wIndexs,
+        WorkIndexes:wIndexes,
+        BlockIndexes:bIndexes,
         BlockDatabase:dbBlock,
         WorkDatabase:dbWwork,
         IPCManager:ipc
@@ -83,24 +99,39 @@ class Resender{
         debug('Create a new resender')
         dbB = dbBlock
         dbW = dbWwork
-        workIndexs = wIndexs
+        workIndexes = wIndexes
+        blockIndexes = bIndexes
         ipcManager = ipc
         var pa = this
         //resent check loop
         setInterval(() => {
-            dbB.getAllValue(value => {
-                value.forEach(elem => {
-                    if(workIndexs[elem.workName] != null && elem.unprotected.status == 'processing'){ // processing work
-                        getNeighbor(elem.unprotected.blockName,dbB,(arry) => {
-                            //debug(arry)
-                            checkNeighbor(elem.unprotected.blockName,arry,elem.unprotected.info.startTime,pa.resendByBlockName)
-                        })
-                     }else{
-     
-                     }
-                })
+            var keys = Object.keys(bIndexOnProcessing)
+            keys.forEach(key => {
+                if(workIndexes[keys] != null){
+                    getNeighbor(key,dbB,(arry) => {
+                        //debug(arry)
+                        checkNeighbor(key,arry,bIndexOnProcessing[key],pa.resendByBlockName)
+                    })
+                }else{
+                    delete bIndexOnProcessing[key]
+                }
             })
         }, 20000);
+    }
+
+    registResend(blockName){
+        if(blockName == null){
+            return
+        }
+        var date = new Date()
+        bIndexOnProcessing[blockName] = date.valueOf()
+    }
+
+    unregistResend(blockName){
+        if(blockName == null){
+            return
+        }
+        delete bIndexOnProcessing[blockName]
     }
 
     resendByBlockName(blockName){
@@ -108,7 +139,7 @@ class Resender{
             if(err){
                 console.error(err)
             }else{
-                if(workIndexs[value.workName] != null && value.unprotected.status == 'processing'){ // processing work
+                if(workIndexes[value.workName] != null && value.unprotected.status == 'processing'){ // processing work
                     value.unprotected.status = 'init'
                     dbB.put(value.unprotected.blockName,value,(err) => {
                         if(err){
@@ -146,6 +177,8 @@ class Resender{
                             })
                         }
                     })
+                    addElement(blockIndexes,blockName)
+                    
                 }else{
 
                 }
@@ -178,13 +211,21 @@ class Resender{
     resendBySlaveID(sID,except){
         dbB.getAllValue(value => {
             value.forEach(element => {
-                if(workIndexs[element.workName] != null && (element.unprotected.status == 'processing') && element.unprotected.slave == sID && element.unprotected.blockName != except){
+                if(workIndexes[element.workName] != null && (element.unprotected.status == 'processing') && element.unprotected.slave == sID && element.unprotected.blockName != except){
                     element.unprotected.status = 'init'
                     dbB.put(element.unprotected.blockName,element,(err) => {
                         if(err){
                             console.error(err)
                         }
                         debug('resend block '+element.unprotected.blockName)
+                        var blockStatus = {}
+                        blockStatus.workName = element.workName
+                        blockStatus.index = element.unprotected.block.index
+                        blockStatus.status = 'init'
+                        var infos = []
+                        infos.push(blockStatus)
+                        ipcManager.serverEmit('updateBlockStatus',infos)
+                        addElement(blockIndexes,element.unprotected.blockName)
                     })
                     var blockDim = element.unprotected.block.indexs;
                     var indexs = blockDim.split('_');

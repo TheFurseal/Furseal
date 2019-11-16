@@ -2,7 +2,8 @@ var Core = require('./index.js')
 var fs = require('fs')
 var base58 = require('bs58')
 var process = require('process')
-
+ const monitor = require("easy-monitor")
+ monitor('FursealCore')
 
 console.log('start')
 //for auto login
@@ -24,10 +25,6 @@ if(appData == null){
 
 var homePath = appData+'/CoTNetwork'
 
-var core = new Core(homePath)
-core.init()
-core.process()
-
 function login(){
 
     var data = fs.readFileSync(homePath+'/pass')
@@ -35,11 +32,14 @@ function login(){
     core.login(dataDecode)
 }
 
-setTimeout(() => {
-    console.log('start login')
-    login()
-    setTimeout(() => {
-        console.log('start main process')
-        core.process()
-    }, 1000);
-}, 3000);
+var core = new Core(homePath)
+login()
+core.init()
+core.process()
+
+
+// setInterval(() => {
+//     heapdump.writeSnapshot((err, filename) => {
+//     console.log("Heap dump written to", filename);
+//     });
+// }, 120000);

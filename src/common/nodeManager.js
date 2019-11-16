@@ -11,6 +11,7 @@ class NodeManager{
                 delete pa.pBlockList[element]
             });
         }, 300000);
+        this.workingNodes = {}
     }
 
     check(id){
@@ -76,6 +77,24 @@ class NodeManager{
         if(this.pHardBlockList[id] != null){
             delete this.pHardBlockList[id]
         }
+    }
+
+    addWorkingNodes(id){
+        if(id == null){
+            return
+        }
+        this.workingNodes[id] = id
+    }
+    removeWorkingNodes(id){
+        if(id == null){
+            return 
+        }
+        delete this.workingNodes[id]
+    }
+
+    getWorkingNodesNumber(){
+        var keys = Object.keys(this.workingNodes)
+        return keys.length
     }
 }
 
