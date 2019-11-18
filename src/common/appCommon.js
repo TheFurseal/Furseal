@@ -1,8 +1,31 @@
 
 const Tool = require('./tools.js')
 const fs = require('fs')
-const Http = require('./httpClient.js')
+const process = require('process')
 const debug = require('debug')('common:appCommon')
+
+function getMainIntry(application){
+    if(application == null){
+        debug('application is empty')
+        return null
+    }
+    
+    for(var i=0;i<application.main.length;i++){
+        for(var j=0;j<application.files.length;j++){
+            if(application.main[i].name == application.files[j].name && application.main[i].target == application.files[j].target){
+                var sp = application.files[j].target.split('-')
+                debug(sp)
+                if(Tool.matchOS(process.platform,sp[0]) && Tool.matchArch(process.arch,sp[1])){
+                    return application.files[j]
+                }else{
+
+                }
+                
+            }
+        }
+    }
+    return null
+}
 
 
 class AppCommon{
@@ -52,53 +75,59 @@ class AppCommon{
         var resetFunc = this.resetStatus
         var dbTmp = this.db
         var locker = false
-        this.hadler = setInterval(() => {
-            if(locker){
-                return
-            }
-            locker = true
-            dbTmp.get(paramTmp.setName,(err,value) => {
-                if(err || value == null){
-                    console.error(err,paramTmp.setName)
+      
+        dbTmp.get(paramTmp.setName,(err,value) => {
+            if(err || value == null){
+                console.error(err,paramTmp.setName)
+            }else{
+                var tmp = value
+                if(typeof(tmp) == 'string'){
+                    tmp = JSON.parse(tmp)
+                }
+                var infoObj = tmp.applications[paramTmp.type]
+                var toRun = getMainIntry(infoObj)
+                if(toRun == null){
+                    debug('Not found main intry')
                 }else{
-                    var tmp = value
-                    if(typeof(tmp) == 'string'){
-                        tmp = JSON.parse(tmp)
-                    }
-                    var infoObj = tmp.apps[paramTmp.type]
-                    if(paramTmp.type == 'dapp'){
-                        infoObj = infoObj[0]
-                    }
-                    if(infoObj.path != null && infoObj.path != ''){
-                        Tool.getPIDByName(infoObj.name,(pid) => {
-                            if(pid > 0){
-                                resetFunc(true,pa)
-                                callback(pid)
-                                pa.pid = pid
-                            }else{
-                                paramTmp.option.path = infoObj.path
-                                paramTmp.option.tempPath = paramTmp.tempPath
-                                Tool.createProcess(paramTmp.option,(err,value) => {
-                                    if(err){
-                                        console.error(err)
-                                    }else{
-                                        pa.pid = value
-                                        resetFunc(true,pa)
-                                        debug(infoObj.name,'  launched!!')
-                                        if(callback != null){
-                                            callback(value)
-                                        }
-                                    }
-                                })
+                    debug('Found intry ')
+                    debug(toRun)
+                    if(toRun.path != null && toRun.path != ''){
+                        pa.hadler = setInterval(() => {
+                            if(locker){
+                                return
                             }
-                            locker = false
-                        })
+                            locker = true
+                            Tool.getPIDByName(toRun.name,(pid) => {
+                                if(pid > 0){
+                                    resetFunc(true,pa)
+                                    callback(pid)
+                                    pa.pid = pid
+                                }else{
+                                    paramTmp.option.path = toRun.path
+                                    paramTmp.option.tempPath = paramTmp.tempPath
+                                    Tool.createProcess(paramTmp.option,(err,value) => {
+                                        if(err){
+                                            console.error(err)
+                                        }else{
+                                            pa.pid = value
+                                            resetFunc(true,pa)
+                                            debug(toRun.name,'  launched!!')
+                                            if(callback != null){
+                                                callback(value)
+                                            }
+                                        }
+                                    })
+                                }
+                                locker = false
+                            })
+                        }, 15000);  
                     }else{
                         debug('app path is empty')
                     }
                 }
-            })
-        }, 10000);        
+            }
+        })
+            
     }
 
     stop(){

@@ -2,8 +2,6 @@ var Core = require('./index.js')
 var fs = require('fs')
 var base58 = require('bs58')
 var process = require('process')
- const monitor = require("easy-monitor")
- monitor('FursealCore')
 
 console.log('start')
 //for auto login
@@ -36,10 +34,4 @@ var core = new Core(homePath)
 login()
 core.init()
 core.process()
-
-
-// setInterval(() => {
-//     heapdump.writeSnapshot((err, filename) => {
-//     console.log("Heap dump written to", filename);
-//     });
-// }, 120000);
+core.peerDebug()

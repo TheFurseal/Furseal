@@ -262,12 +262,12 @@ class Furseal{
         })
 
         ipcManager.addServerListenner('releaseSet',(data,socket) => {
-            var obj = data
-            if(typeof(obj) == 'string'){
-                obj = JSON.parse(obj)
+            if(data != null){
+                var buf = fs.readFileSync(data)
+                var obj = JSON.parse(buf)
+                appManager.setsRegister.storeCli.upload(obj)
             }
-            obj.repoPath = appRepository
-            appManager.setsRegister.storeCli.upload(obj)
+           
         })
 
         ipcManager.addServerListenner('getAllSet',(data,socket) => {
@@ -393,13 +393,13 @@ class Furseal{
                 var retTmp = []
                 var count = 0
                 value.forEach(element => {
-                    if(element.apps == null || element.apps.dividor == null){
+                    if(element.applications == null || element.applications.dividor == null){
                         debug('not have dividor')
                     }else{
                         
                         var ret = {}
                         ret.setName = element.setName
-                        ret.dividorName = element.apps.dividor.name
+                        ret.dividorName = element.applications.dividor.name
                         ret.status = element.status
                         retTmp.push(ret)
                     }
@@ -511,6 +511,7 @@ class Furseal{
                     if(element.unprotected.status == 'init'){
                         resender.registResend(element.unprotected.blockName)
                         addElement(bIndexes,element.unprotected.blockName)
+                       
                     }else if(element.unprotected.status == 'validating'){
                         element.unprotected.status = 'preDone'
                         addElement(pDIndexes,element.unprotected.blockName)
@@ -522,8 +523,9 @@ class Furseal{
                     }else if(element.unprotected.status == 'processing'){
                         resender.registResend(element.unprotected.blockName)
                         nodeManager.addWorkingNodes(element.unprotected.slave)
+                    }else if(element.unprotected.status == 'preDone'){
+                        addElement(pDIndexes,element.unprotected.blockName)
                     }else{
-                        
                     }
                 });
             })
@@ -974,16 +976,19 @@ class Furseal{
                     if(err){
                         console.error(err)
                         nodeManager.check(pIDStr)
+                        addElement(bIndexes,tmp)
                     }else{
                         if(val.unprotected.status != 'init'){
                             debug('invalid block status, not send '+val.unprotected.status)
                             nodeManager.hardUnBlock(pIDStr)
+                            addElement(bIndexes,tmp)
                             return
                         }
                         p2pNode.libp2p.dialProtocol(peerID,'/cot/workrequest/1.0.0',(err,conn) => {
                             if(err){
                                 //console.warn(err)
                                 nodeManager.check(pIDStr)
+                                addElement(bIndexes,tmp)
                             }else{
                                 pull(
                                     conn,
@@ -1033,6 +1038,7 @@ class Furseal{
                                         nodeManager.unblock(pIDStr)
                                     },function (err){
                                         if(err)console.error(err)
+                                        addElement(bIndexes,tmp)
                                     })
                                 ) 
                             }
@@ -1230,6 +1236,7 @@ class Furseal{
 
         setInterval(() => {
             if(!((!locker) && (!locker3))){
+                debug('wait locker')
                 return
             }
             locker = true
@@ -1250,6 +1257,7 @@ class Furseal{
                 })
                
             }else{
+                locker = false
                 debug('bIndex is empty')
             }
 
@@ -1328,6 +1336,19 @@ class Furseal{
     async shutdown(){
         ipcManager.serverDisconnect()
         return await p2pNode.stop()
+    }
+
+    peerDebug(){
+        setInterval(() => {
+            p2pNode.swarm.peers((err,value) => {
+                if(err){
+                    console.error(err)
+                }else{
+                    debug('Swarm peers number: '+value.length)
+                }
+                
+            })
+        }, 10000);
     }
 }
 

@@ -197,7 +197,7 @@ class AppManager{
 
     killAssimilator(setName){
         if(this.setsRegister[setName] == null){
-            debug('Dividor not running ')
+            debug('Assimilator not running ')
             return
         }
         this.setsRegister[setName].assimilator.stop()
@@ -206,7 +206,7 @@ class AppManager{
 
     killValidator(setName){
         if(this.setsRegister[setName] == null){
-            debug('Dividor not running ')
+            debug('Validator not running ')
             return
         }
         this.setsRegister[setName].validator.stop()
@@ -215,7 +215,7 @@ class AppManager{
 
     killDapp(setName){
         if(this.setsRegister[setName] == null){
-            debug('Dividor not running ')
+            debug('DApp not running ')
             return
         }
         this.setsRegister[setName].dapp.stop()
