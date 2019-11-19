@@ -17,12 +17,25 @@
                     "md5":"",
                     "ziped":false,
                     "target":"darwin-x64"
+                },
+                {
+                    "name":"mayaDividor",
+                    "path":"/Users/john/Documents/GitHub/appSetExample/exampleDi.exe",
+                    "url":"",
+                    "size":0,
+                    "md5":"",
+                    "ziped":false,
+                    "target":"windows-x64"
                 }
             ],
             "main":[
                 {
                     "name":"mayaDividor",
                     "target":"darwin-x64"
+                },
+                {
+                    "name":"mayaDividor",
+                    "target":"windows-x64"
                 }
             ]
         },
@@ -36,12 +49,25 @@
                     "md5":"",
                     "ziped":false,
                     "target":"darwin-x64"
+                },
+                {
+                    "name":"mayaValidator",
+                    "path":"/Users/john/Documents/GitHub/appSetExample/exampleVa.exe",
+                    "url":"",
+                    "size":0,
+                    "md5":"",
+                    "ziped":false,
+                    "target":"windows-x64"
                 }
             ],
             "main":[
                 {
                     "name":"mayaValidator",
                     "target":"darwin-x64"
+                },
+                {
+                    "name":"mayaValidator",
+                    "target":"windows-x64"
                 }
             ]
         },
@@ -89,6 +115,15 @@
                     "target":"darwin-x64"
                 },
                 {
+                    "name":"mayaAssimilator",
+                    "path":"/Users/john/Documents/GitHub/appSetExample/exampleAs.exe",
+                    "url":"",
+                    "size":0,
+                    "md5":"",
+                    "ziped":false,
+                    "target":"windows-x64"
+                },
+                {
                     "name":"ffmpeg",
                     "path":"/Users/john/Documents/GitHub/appSetExample/ffmpeg.exe",
                     "url":"",
@@ -102,6 +137,10 @@
                 {
                     "name":"mayaAssimilator",
                     "target":"darwin-x64"
+                },
+                {
+                    "name":"mayaAssimilator",
+                    "target":"windows-x64"
                 }
             ]
         }

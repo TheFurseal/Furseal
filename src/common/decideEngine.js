@@ -51,7 +51,7 @@ class DecideEngine{
             if(err){//don't have
                 //callback(false)
                 debug('no appset '+ setName +' record in db')
-                cliTemp.getDapp(setName,(info) => {
+                cliTemp.getDApp(setName,(info) => {
                     if(info.error == null){  
                         callback(true,info,true)
                     }else{
@@ -107,7 +107,7 @@ class DecideEngine{
         var setName = infoIn.unprotected.appSet 
         this.db.get(setName,(err,value) => {
             if(err){//don't have
-                cliTemp.getDapp(setName,(err,info) => {
+                cliTemp.getDApp(setName,(err,info) => {
                     if(err){  
                         callback(err,infoIn)
                     }else{

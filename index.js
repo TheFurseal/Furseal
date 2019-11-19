@@ -399,7 +399,7 @@ class Furseal{
                         
                         var ret = {}
                         ret.setName = element.setName
-                        ret.dividorName = element.applications.dividor.name
+                        ret.dividorName = element.applications.dividor.main[0].name
                         ret.status = element.status
                         retTmp.push(ret)
                     }
@@ -941,23 +941,11 @@ class Furseal{
         eventManager.registEvent('blockIn',(dataIn) => {
             var data = JSON.parse(JSON.stringify(dataIn))
             data.unprotected.status = 'init'
-            dbB.get(data.unprotected.blockName,(err,value) => {
-                if(err){
-                    dbB.put(data.unprotected.blockName,data)
-                    if(wIndexes[data.workName] == null){
-                        addElement(wIndexes,data.workName)
-                        debug('One work detected '+data.workName)
-                        dbW.put(data.workName,data,(err) => {
-                            if(err){
-                                console.error(err)
-                            }
-                        })
-                    }
-                    addElement(bIndexes,data.unprotected.blockName)
-                }else{
-                    //debug('block info already exist '+data.unprotected.blockName)
-                }
-            })
+            if(wIndexes[data.workName] == null){
+                addElement(wIndexes,data.workName)
+                debug('One work detected '+data.workName)
+            }
+            addElement(bIndexes,data.unprotected.blockName)
         })
 
         //controll events
