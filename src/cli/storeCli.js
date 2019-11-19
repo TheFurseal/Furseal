@@ -250,12 +250,11 @@ class StoreCli{
         optStroe.path = '/getAppSetInfo';
         var dbTmp = this.db
         httpClinet.access(null,optStroe,function(res){
-            console.log(res)
+            debug(res)
             if(typeof(res) == 'string'){
                 res = JSON.parse(res)
             }
-            console.log(res)
-            dbTmp.getAll((value) => {
+            dbTmp.getAllValue((value) => {
                 if(typeof(value) == 'string'){
                     value = JSON.parse(value)
                 }
