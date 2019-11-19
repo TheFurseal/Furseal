@@ -261,9 +261,11 @@ class StoreCli{
                 }
                 var localKeyList = []
                 for(var i = 0; i < value.length; i++){
-                    localKeyList.push(value[i].key)
+                    if(value[i].applications.dividor != null){
+                        localKeyList.push(value[i].key)
+                    }
+                    
                 }
-
                 for(var i=0; i< res.length; i++){
                    // debug(res[i])
                    if(localKeyList.indexOf(res[i].key) >= 0){
