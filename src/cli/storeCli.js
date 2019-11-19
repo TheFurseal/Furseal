@@ -101,6 +101,9 @@ class StoreCli{
                     
                     if(Tools.matchOS(sp1[0],process.platform) && Tools.matchArch(sp1[1],process.arch)){
                         var targetPath = appRepo+'/'+elem.name+'_'+date.valueOf()
+                        if(process.platform == 'win32'){
+                            targetPath = targetPath+'.exe'
+                        }
                         fs.copyFile(elem.path,targetPath,(err) => {
                             if(err){
                                 console.error(err)
@@ -183,7 +186,7 @@ class StoreCli{
                 res = JSON.parse(res)
             }
             if(res.error != null){
-                cb(err)
+                cb(res.error)
                 return
             }
             //download dapp
@@ -207,6 +210,9 @@ class StoreCli{
                         }else{
                             var date = new Date()
                             var targetPath = appRepo+'/'+elem.name+'_'+date.valueOf()
+                            if(process.platform == 'win32'){
+                                targetPath = targetPath+'.exe'
+                            }
                             var inBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
                             fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
                                 // throws an error, you could also catch it here
@@ -331,6 +337,9 @@ class StoreCli{
                                     }else{
                                         var date = new Date()
                                         var targetPath = appRepo+'/'+elem.name+'_'+date.valueOf()
+                                        if(process.platform == 'win32'){
+                                            targetPath = targetPath+'.exe'
+                                        }
                                         var inBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
                                         fs.writeFile(targetPath, inBuffer,{mode:0o766}, (err) => {
                                             // throws an error, you could also catch it here

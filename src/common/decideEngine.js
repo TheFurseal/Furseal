@@ -51,8 +51,8 @@ class DecideEngine{
             if(err){//don't have
                 //callback(false)
                 debug('no appset '+ setName +' record in db')
-                cliTemp.getDApp(setName,(info) => {
-                    if(info.error == null){  
+                cliTemp.getDApp(setName,(err,info) => {
+                    if(err == null){  
                         callback(true,info,true)
                     }else{
                         debug('do not have app set in store')
