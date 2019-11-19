@@ -322,24 +322,23 @@ class Furseal{
         ipcManager.addServerListenner('deleteTask',(data,socket) => {
             debug('deleteTask envet emited......')
             globalGC(data)
+            removeElement(wIndexes,data)
             dbW.del(data,(err) => {
                 if(err){
                     console.error(err);
                 }
             })
-
             dbB.getAllValue((data2) => {
-                for(var i=0;i<data2.length;i++){
-                    var tmp = data2[i];
-                    if(tmp.workName == data){
-                    
-                        dbB.del(tmp.unprotected.blockName,(err) => {
+                data2.forEach(elem => {
+                    if(elem.workName == data){
+                        dbB.del(elem.unprotected.blockName,(err) => {
                             if(err){
                                 console.error(err);
                             }
                         })
+                        removeElement(bIndexes,elem.unprotected.blockName)
                     }
-                }
+                })
             })
         })
 
@@ -538,7 +537,7 @@ class Furseal{
                 if(err){
                     console.error(err)
                 }else{
-                    if(value.unprotected.info.progress == 1 &&  value.unprotected.status == 'processing'){
+                    if(value.unprotected.info.progress == 1 && wIndexes[value.workName] != null){
                         value.unprotected.status = 'assimilating'
                         dbW.put(value.workName,value,(err) => {
                             if(err){
@@ -969,7 +968,7 @@ class Furseal{
                         if(val.unprotected.status != 'init'){
                             debug('invalid block status, not send '+val.unprotected.status)
                             nodeManager.hardUnBlock(pIDStr)
-                            addElement(bIndexes,tmp)
+                            removeElement(bIndexes,tmp)
                             return
                         }
                         p2pNode.libp2p.dialProtocol(peerID,'/cot/workrequest/1.0.0',(err,conn) => {
