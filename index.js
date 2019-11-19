@@ -1060,7 +1060,7 @@ class Furseal{
                     debug('handle',tmpRecive.unprotected.blockName)
                     p.push('recived')
                     p.end()
-                    decideEngine.enviromentValidation(tmpRecive,(err,infoOut) => {
+                    decideEngine.checkEvironmentRequirement(tmpRecive,(err,infoOut) => {
                         if(err){
                             console.error(err)
                             conn.getPeerInfo((err,info) => {
