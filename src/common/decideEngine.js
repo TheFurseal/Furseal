@@ -68,28 +68,25 @@ class DecideEngine{
 
                 var arc = Tools.getArchInfo()
                 var platform = Tools.getPlatformInfo()
-                for(var i = 0;i<value.apps.dapp.length;i++){
-                    var sp = value.apps.dapp[i].target.split('-')
+               
+                var sp = value.applications.dapp.main[0].target.split('-')
 
-                    if(Tools.matchOS(sp[0],platform) && Tools.matchArch(sp[1],arc)){
-                        
-                        var bascInfo = convertRequirement(value)
-                        detector.match3rdPartyRequest(bascInfo).then(ret => {
-                            if(ret){
-                                var valueTmp = value.apps.dapp[i]
-                                value.apps.dapp = []
-                                value.apps.dapp.push(valueTmp)
-                                callback(true,value,false)
-                            }else{
-                                console.error('3rd Party requrement check failed')
-                                callback(false,null,true)
-                            }
-                        })
-                        return
-                    }
+                if(Tools.matchOS(sp[0],platform) && Tools.matchArch(sp[1],arc)){
+                    
+                    var bascInfo = convertRequirement(value)
+                    detector.match3rdPartyRequest(bascInfo).then(ret => {
+                        if(ret){
+                            callback(true,value,false)
+                        }else{
+                            console.error('3rd Party requrement check failed')
+                            callback(false,null,true)
+                        }
+                    })
+                    return
+                }else{
+                    debug('no dapp for current platform')
+                    callback(false,null,true)
                 }
-                debug('no dapp for current platform')
-                callback(false,null,true)
             }
         })
     }
@@ -117,26 +114,21 @@ class DecideEngine{
             }else{// have
                 var arc = Tools.getArchInfo()
                 var platform = Tools.getPlatformInfo()
-                for(var i = 0;i<value.apps.dapp.length;i++){
-                    var sp = value.apps.dapp[i].target.split('-')
-                    if(Tools.matchOS(sp[0],platform) && Tools.matchArch(sp[1],arc)){
-                        var bascInfo = convertRequirement(value)
-                        detector.match3rdPartyRequest(bascInfo).then(ret => {
-                            if(ret){
-                                var valueTmp = value.apps.dapp[i]
-                                value.apps.dapp = []
-                                value.apps.dapp.push(valueTmp)
-                                //enviroment check passed, preper input files
-                                
-                                callback(null,infoIn)
-                            }else{
-                                callback(new Error('3rd Party requrement check failed'),infoIn)
-                            }
-                        })
-                        return
-                    }
+               
+                var sp = value.applications.dapp.main[0].target.split('-')
+                if(Tools.matchOS(sp[0],platform) && Tools.matchArch(sp[1],arc)){
+                    var bascInfo = convertRequirement(value)
+                    detector.match3rdPartyRequest(bascInfo).then(ret => {
+                        if(ret){
+                            callback(null,infoIn)
+                        }else{
+                            callback(new Error('3rd Party requrement check failed'),infoIn)
+                        }
+                    })
+                    return
+                }else{
+                    callback(new Error('no dapp for current platform'),infoIn)
                 }
-                callback(new Error('no dapp for current platform'),infoIn)
             }
         })
     }
