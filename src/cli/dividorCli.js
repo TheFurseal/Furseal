@@ -114,6 +114,11 @@ class DividorCli{
                                 blockCounts[workInfo.workName].publicFiles[element.name] = {}
                                 blockCounts[workInfo.workName].publicFiles[element.name].url = resInfo.hash
                                 blockCounts[workInfo.workName].publicFiles[element.name].size = buf.length
+
+                                workInfo.protected.inputFiles[index].url = blockCounts[workInfo.workName].publicFiles[element.name].url
+                                workInfo.protected.inputFiles[index].hash = blockCounts[workInfo.workName].publicFiles[element.name].url
+                                workInfo.protected.inputFiles[index].path = null
+                                workInfo.protected.inputFiles[index].size = blockCounts[workInfo.workName].publicFiles[element.name].size
                                 
                                 gcMrg.register(resInfo.hash,workInfo.workName+'_close')
                                 var postPair = {}

@@ -14,6 +14,7 @@ const crypto = require('crypto')
 const keyLeng = 1024
 const msgPDLength = 128
 const msgLength = 110
+const pull = require('pull-stream')
 
 
 
@@ -450,15 +451,21 @@ module.exports = {
             callback(null,cmd.pid)
 
             cmd.stdout.on('data', function (data) {
-                debug(data.toString())
+                data = data.toString().replace('\n','')
+                if(data!=''){
+                    debug(data)
+                }
             });
             
             // 捕获标准错误输出并将其打印到控制台
             cmd.stderr.on('data', function (data) {
-                debug(data.toString())
+                data = data.toString().replace('\n','')
+                if(data!=''){
+                    debug(data)
+                }
                
             });
-            
+
             // 注册子进程关闭事件
             cmd.on('exit', function (code, signal) {
                 //callback(null,-1)
@@ -474,12 +481,18 @@ module.exports = {
             callback(null,cmd.pid)
 
             cmd.stdout.on('data', function (data) {
-                debug(data.toString())
+                data = data.toString().replace('\n','')
+                if(data!=''){
+                    debug(data)
+                }
             });
             
             // // 捕获标准错误输出并将其打印到控制台
             cmd.stderr.on('data', function (data) {
-                debug(data.toString())
+                data = data.toString().replace('\n','')
+                if(data!=''){
+                    debug(data)
+                }
             });
             
             // // 注册子进程关闭事件

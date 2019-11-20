@@ -780,16 +780,17 @@ class Furseal{
                                                         var pm = new ProgressManager(parseInt(indexs[0]),total,wVal.unprotected.progress)
                                                         pm.updateProgressWithIndex(parseInt(index[1]),parseInt(index[0]),true)
                                                         wVal.unprotected.info.progress = pm.getProgress();
-                                                        if(wVal.unprotected.info.progress == 1){
-                                                            eventManager.emit('startAssimilate',wVal)
-                                                        }else{
-                                                            debug('work '+wVal.workName+'\'s progress come to '+wVal.unprotected.info.progress)
-                                                        }
+                                                       
                                                         wVal.unprotected.progress = pm.mProgress;
                                                         wVal.unprotected.expectTime = wIndexes[wVal.workName].expectTime
                                                         dbW.put(wVal.workName,wVal,(err) => {
                                                             if(err){
                                                                 console.error('ERROR: ',err);
+                                                            }
+                                                            if(wVal.unprotected.info.progress == 1){
+                                                                eventManager.emit('startAssimilate',wVal)
+                                                            }else{
+                                                                debug('work '+wVal.workName+'\'s progress come to '+wVal.unprotected.info.progress)
                                                             }
                                                         })
                                                         // update blockinfo

@@ -2,9 +2,9 @@ const DBManager = require('../src/common/db.js')
 
 
 
-var dbB = new DBManager('/Users/john/Library/Application\ Support/CoTNetwork/data/work')
+var dbB = new DBManager('/Users/john/Library/Application\ Support/CoTNetwork/data/block')
 
-dbB.get('1571841491126',(err,value) => {
+dbB.get('1574223397968_0_0',(err,value) => {
    
     console.log(value)
    
