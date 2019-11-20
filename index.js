@@ -411,22 +411,19 @@ class Furseal{
 
         ipcManager.addServerListenner('getAppSet',(data,socket) => {
             appManager.getAppSet(data,(value) => {
-                dbA.getAll((value2) => {
+                dbA.getAllValue((value2) => {
                     var retTmp = []
                     value2.forEach(element => {
-                        var obj
+                       
                         if(typeof(element) == 'string'){
-                            obj = JSON.parse(element)
-                        }else{
-                            obj = element
+                            element = JSON.parse(element)
                         }
                         var ret = {}
-                        var vObj = JSON.parse(obj.value)
-                        if(vObj.apps.dividor == null){
+                        if(element.applications.dividor == null){
                             return
                         }
                         ret.setName = vObj.setName
-                        ret.dividorName = vObj.apps.dividor.name
+                        ret.dividorName = element.applications.dividor.main[0].name
                         ret.status = 'active'
                         retTmp.push(ret)
                     })

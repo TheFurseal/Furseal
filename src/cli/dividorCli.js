@@ -1,7 +1,4 @@
-var maxDim = 3
-
 const client = require('../common/httpClient.js')
-var base58 = require('bs58')
 const ProgressManager = require('../common/progressManager.js')
 const AppCommon = require('../common/appCommon.js')
 const IPCManager = require('../common/IPCManager.js')
@@ -11,8 +8,9 @@ const Tools = require('../common/tools.js')
 
 var blockDB;
 var workDB;
-var workInRegister = {}
 var configure
+var blockCounts = {}
+var owner
 
 var urlBase = 'peer1.cotnetwork.com';
 const httpClinet = new client()
@@ -80,100 +78,43 @@ class DividorCli{
         param.type = 'dividor'
         this.param = param
         this.appCommon = new AppCommon(param,appDB)
-        var p2pNodeTmp = this.p2pNode
         this.ipcManager.createClient({})
         this.ipcManager.addClientListenner('request',(data,socket) => {
-            debug('revice request',data)
+           
             if(typeof(data) == 'string'){
                 data = JSON.parse(data)
             }
             pa.ipcManager.clientEmit('feedback',data.unprotected.blockName)
-            doDivide(data,p2pNodeTmp)
+            if(blockCounts[data.workName] == null){
+                blockCounts[data.workName] = {}
+                blockCounts[data.workName].total = data.unprotected.block.number
+            }
+            uploadInputFiles(data)
         })
 
-        function doDivide(workInfo,node){
-            dealWithInputs(workInfo,node)
-        }
+      
 
-        function dealWithInputs(workInfo,node){
-            if(typeof(workInfo) == 'string'){
-                workInfo = JSON.parse(workInfo)
-            }
-
-            var owner = node._peerInfo.id.toB58String()
-
-            if(workInRegister[workInfo.workName] == null){
-                var wrapper = {}
-                wrapper.total = workInfo.unprotected.block.number
-                wrapper.current = 0
-                wrapper.publicFiles = {}
-                workInRegister[workInfo.workName] = wrapper
-            }
-
-            var totalFileNumber = workInfo.protected.inputFiles.length
-            var currentFileNumber = 0
-           
+        function uploadInputFiles(workInfo){
+            var globalCount = workInfo.protected.inputFiles.length
             workInfo.protected.inputFiles.forEach((element,index) => {
-                if(element.url != null){
-                    var pubValue = findPublic(workInfo.workName,element.url)
-                    if(element.type == 'public' && pubValue != null){
-
-                        if(pubValue.value == 'x'){
-                            setTimeout(() => {
-                                debug('add not ready for '+element.url+', retry!!!!!')
-                                dealWithInputs(workInfo,node)
-                            }, 5000);
-                            return
-                        }
+                if(element.type == 'public'){
+                    if(blockCounts[workInfo.workName].publicFiles == null){
+                        blockCounts[workInfo.workName].publicFiles = {}
                         
-                        //
-                       
-                        workInfo.protected.inputFiles[index].url = pubValue.value
-                        workInfo.protected.inputFiles[index].key = pubValue.value
-                        workInfo.protected.inputFiles[index].hash = pubValue.value
-                        workInfo.protected.inputFiles[index].size = pubValue.size
-                        if(++currentFileNumber == totalFileNumber){
-                            if(workInRegister[workInfo.workName].current == 0){
-                                debug('register work')
-                                workInfo.unprotected.owner = owner
-                                registerBlock(workInfo,true)
-                            }else{
-                                workInfo.unprotected.owner = owner
-                                debug('register block')
-                                registerBlock(workInfo)
-                            }
-                            workInRegister[workInfo.workName].current++
-                        }
-
-                    }else{
-                        var buf = fs.readFileSync(Tools.fixPath(element.url))
-                        debug('start to compression buffer '+element.url)
+                        var filePath = element.path ? element.path : element.url
+                        var buf = fs.readFileSync(Tools.fixPath(filePath))
+                        debug('start to compression buffer '+filePath)
                         buf = Tools.compressionBuffer(buf)
                         debug('compression buffer done')
-
-                        //make a templary value
-                        workInRegister[workInfo.workName].publicFiles[element.url] = {}
-                        workInRegister[workInfo.workName].publicFiles[element.url].value = 'x'
-                        
-                        node.add(buf,{ recursive: false , ignore: ['.DS_Store']},(err,resInfo) => {
+                        pa.p2pNode.add(buf,{ recursive: false , ignore: ['.DS_Store']},(err,resInfo) => {
                             if(err){
-                               console.error(err)
+                            console.error(err)
                             }else{
                                 resInfo = resInfo[0]
-                                var urlTmp = element.url
-                                workInfo.protected.inputFiles[index].url =  resInfo.hash
-                                workInfo.protected.inputFiles[index].hash = resInfo.hash
-                                workInfo.protected.inputFiles[index].key =  resInfo.hash
-                                workInfo.protected.inputFiles[index].size = buf.length
+                                blockCounts[workInfo.workName].publicFiles[element.name] = {}
+                                blockCounts[workInfo.workName].publicFiles[element.name].url = resInfo.hash
+                                blockCounts[workInfo.workName].publicFiles[element.name].size = buf.length
                                 
-                                if(element.type == 'public'){
-                                    //update key-value
-                                    var tmpKV = {}
-                                    tmpKV.value = resInfo.hash
-                                    tmpKV.size = buf.length
-                                    workInRegister[workInfo.workName].publicFiles[urlTmp] = tmpKV
-                                    debug('reset value for '+urlTmp)
-                                }
                                 gcMrg.register(resInfo.hash,workInfo.workName+'_close')
                                 var postPair = {}
                                 postPair.workName = workInfo.workName
@@ -184,86 +125,126 @@ class DividorCli{
                                         console.error(rest.error)
                                     }
                                 })
-                                if(++currentFileNumber == totalFileNumber){
-                                    if(workInRegister[workInfo.workName].current == 0){
-                                        debug('register work')
-                                        workInfo.unprotected.owner = owner
-                                        registerBlock(workInfo,true)
-                                    }else{
-                                        workInfo.unprotected.owner = owner
-                                        debug('register block')
-                                        registerBlock(workInfo)
+                                if(--globalCount == 0){
+                                    registerBlock(workInfo,true)
+                                    if(--blockCounts[workInfo.workName].total == 0){
+                                        blockCounts[workInfo.workName] = null
                                     }
-                                    workInRegister[workInfo.workName].current++
                                 }
                             }
                         })
+                    }else{
+                        var handle = setInterval(() => {
+                            if(blockCounts[workInfo.workName].publicFiles != null && blockCounts[workInfo.workName].publicFiles[element.name] != null){
+                                clearInterval(handle)
+                                workInfo.protected.inputFiles[index].url = blockCounts[workInfo.workName].publicFiles[element.name].url
+                                workInfo.protected.inputFiles[index].hash = blockCounts[workInfo.workName].publicFiles[element.name].url
+                                workInfo.protected.inputFiles[index].path = null
+                                workInfo.protected.inputFiles[index].size = blockCounts[workInfo.workName].publicFiles[element.name].size
+                                if(--globalCount == 0){
+                                    registerBlock(workInfo)
+                                    if(--blockCounts[workInfo.workName].total == 0){
+                                        blockCounts[workInfo.workName] = null
+                                    }
+                                }
+                            }
+                        }, 500);
                     }
+                    
+
+                }else{
+                    var filePath = element.path ? element.path : element.url
+                    var buf = fs.readFileSync(Tools.fixPath(filePath))
+                    debug('start to compression buffer '+filePath)
+                    buf = Tools.compressionBuffer(buf)
+                    debug('compression buffer done')
+                    pa.p2pNode.add(buf,{ recursive: false , ignore: ['.DS_Store']},(err,resInfo) => {
+                        if(err){
+                        console.error(err)
+                        }else{
+                            resInfo = resInfo[0]
+                            var urlTmp = element.url
+                            workInfo.protected.inputFiles[index].hash =  resInfo.hash
+                            workInfo.protected.inputFiles[index].url =  resInfo.hash
+                            workInfo.protected.inputFiles[index].path =  resInfo.hash
+                            workInfo.protected.inputFiles[index].size = buf.length
+                            
+                            gcMrg.register(resInfo.hash,workInfo.workName+'_close')
+                            var postPair = {}
+                            postPair.workName = workInfo.workName
+                            postPair.key = resInfo.hash
+                            optFS.path = '/uploadFile'
+                            httpClinet.access(JSON.stringify(postPair),optFS,(rest) => {
+                                if(rest.error){
+                                    console.error(rest.error)
+                                }
+                            })
+                            if(--globalCount == 0){
+                                registerBlock(workInfo)
+                                if(--blockCounts[workInfo.workName].total == 0){
+                                    blockCounts[workInfo.workName] = null
+                                }
+                            }
+                        }
+                    })
                 }
             })
         }
-
-        function findPublic(workName,key){
-            if(workInRegister[workName].publicFiles[key] != null){
-                return workInRegister[workName].publicFiles[key]
-            }else{
-                return null
-            }
- 
-         }
  
  
          function registerBlock(workInfo,isFirst){
-             if(isFirst == null){
-                 isFirst = false
-             }
-             workInfo.userID = configure.config.id
-             httpClinet.access(JSON.stringify(workInfo),optAuth,function(res){
-                 if(res == null){
-                     return ;
-                 }
-                 var resObj = JSON.parse(res);
-                 if(resObj.status == 'unregisted'){
-                     console.error('Unregisted account!!!!')
-                     return;
-                 }else{
-                     
-                     if(resObj.unprotected.owner == null){
-                         debug('UN_REGISTED_ACCOUNT!');
-                         return;
-                     }
-                     resObj.unprotected.status = 'init';
-         
-                     //calculate total number
-                     var indexTmp = resObj.unprotected.block.indexs
-                     var sp = indexTmp.split('_');
-                     var total = 1;
-                     for(var i=0;i<sp.length;i++){
-                         total*= parseInt(sp[i])
-                     }
+            if(owner == null){
+                owner = pa.p2pNode._peerInfo.id.toB58String()
+            }
+            workInfo.unprotected.owner = owner
+            workInfo.userID = configure.config.id
  
-                     resObj.resolveKey = configure.encrypto(resObj.resolveKey)
- 
-                     if(isFirst){
-                         var pm = new ProgressManager(parseInt(sp[0]),total);
-                         resObj.unprotected.progress = pm.mProgress;
-                         workDB.put(resObj.workName,resObj,function(err){
-                             if(err){
-                                 console.error('ERROR: ',err);
-                             }
-                         })
-                     }
- 
-                     blockDB.put(resObj.unprotected.blockName,resObj,function(err){
-                         if(err){
-                             console.error('ERROR: ',err);
-                         }else{
-                             pa.callback(resObj)
-                         }
-                     })
-                     debug('register work done');
-                 }
-             });
+            httpClinet.access(JSON.stringify(workInfo),optAuth,function(res){
+                if(res == null){
+                    return ;
+                }
+                var resObj = JSON.parse(res);
+                if(resObj.status == 'unregisted'){
+                    console.error('Unregisted account!!!!')
+                    return;
+                }else{
+                    
+                    if(resObj.unprotected.owner == null){
+                        debug('UN_REGISTED_ACCOUNT!');
+                        return;
+                    }
+                    resObj.unprotected.status = 'init';
+        
+                    //calculate total number
+                    var indexTmp = resObj.unprotected.block.indexs
+                    var sp = indexTmp.split('_');
+                    var total = 1;
+                    for(var i=0;i<sp.length;i++){
+                        total*= parseInt(sp[i])
+                    }
+
+                    resObj.resolveKey = configure.encrypto(resObj.resolveKey)
+
+                    if(isFirst){
+                        var pm = new ProgressManager(parseInt(sp[0]),total);
+                        resObj.unprotected.progress = pm.mProgress;
+                        workDB.put(resObj.workName,resObj,function(err){
+                            if(err){
+                                console.error('ERROR: ',err);
+                            }
+                        })
+                    }
+
+                    blockDB.put(resObj.unprotected.blockName,resObj,function(err){
+                        if(err){
+                            console.error('ERROR: ',err);
+                        }else{
+                            pa.callback(resObj)
+                        }
+                    })
+                    debug('register work done');
+                }
+            });
          }
     }
 
