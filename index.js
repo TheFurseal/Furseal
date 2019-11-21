@@ -745,6 +745,7 @@ class Furseal{
                                     }else{
                                         debug('Download '+data.protected.outputFiles[0].hash+' to '+targetPath)
                                     }
+                                    delete inBuffer
                                 })
                                 gcManager.register(targetPath,data.workName+'_close')
                                 //gcManager.register(data.protected.outputFiles[0].hash,data.workName+'_close')
@@ -754,6 +755,7 @@ class Furseal{
                                         debug('block '+ret.unprotected.blockName+' is valid')
                                         debug('result is '+ret.protected.inputFiles[0].path)
                                         ret.unprotected.status = 'validated'
+                                        removeElement(bIndexes,ret.unprotected.blockName)
                                         dbB.update(ret.unprotected.blockName,ret,(err) => {
                                             if(err){
                                                 console.error(err)
@@ -867,6 +869,7 @@ class Furseal{
                         }else{
                             var outBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
                             fs.writeFileSync(targetPath,outBuffer)
+                            delete outBuffer
                             gcManager.register(targetPath,data.unprotected.blockName+'_close')
                            // gcManager.register(data.protected.inputFiles[0].hash,data.workName+'_close')
                             data.protected.inputFiles[0].path = targetPath
@@ -926,6 +929,7 @@ class Furseal{
                                             console.error(rest.error)
                                         }
                                     })
+                                    delete resultBuffer
                                 })
                             })
                         }
@@ -1076,7 +1080,6 @@ class Furseal{
                                         devStat.update('standby',tmpRecive.unprotected.blockName)
                                     })
                                 }
-                                
                             })
                         }else{
                             eventManager.emit('startCompute',infoOut)
