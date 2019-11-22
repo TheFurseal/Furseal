@@ -745,7 +745,7 @@ class Furseal{
                                     }else{
                                         debug('Download '+data.protected.outputFiles[0].hash+' to '+targetPath)
                                     }
-                                    delete inBuffer
+                                    inBuffer = null
                                 })
                                 gcManager.register(targetPath,data.workName+'_close')
                                 //gcManager.register(data.protected.outputFiles[0].hash,data.workName+'_close')
@@ -869,7 +869,7 @@ class Furseal{
                         }else{
                             var outBuffer = Tools.decompressionBuffer(Buffer.concat(buf))
                             fs.writeFileSync(targetPath,outBuffer)
-                            delete outBuffer
+                            outBuffer = null
                             gcManager.register(targetPath,data.unprotected.blockName+'_close')
                            // gcManager.register(data.protected.inputFiles[0].hash,data.workName+'_close')
                             data.protected.inputFiles[0].path = targetPath
@@ -890,7 +890,6 @@ class Furseal{
                                 if(resultBuffer == null){
                                     retBk.unprotected.status = 'failed'
                                     eventManager.emit('finishCompute',retBk)
-                                    
                                     return
                                 }
                                 
@@ -929,7 +928,7 @@ class Furseal{
                                             console.error(rest.error)
                                         }
                                     })
-                                    delete resultBuffer
+                                    resultBuffer = null
                                 })
                             })
                         }

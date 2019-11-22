@@ -237,7 +237,7 @@ class StoreCli{
                                     })
                                     
                                 }
-                                delete inBuffer
+                                inBuffer = null
                             })
                         }
                     })
@@ -368,7 +368,7 @@ class StoreCli{
                                                     cb(null,res)
                                                 }
                                             }
-                                            delete inBuffer
+                                            inBuffer = null
                                         })
                                     }
                                 })
