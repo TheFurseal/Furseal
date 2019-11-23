@@ -1,4 +1,4 @@
-
+const debug = require('debug')('common:reporter')
 class Reporter{
     constructor(){
         this.reportKeeper = {}
@@ -13,6 +13,7 @@ class Reporter{
             this.reportKeeper[blockName]++
             return true
         }else{
+            debug('Over retry')
             return false
         }
     }
