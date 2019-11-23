@@ -1245,7 +1245,7 @@ class Furseal{
                
             }else{
                 locker = false
-                debug('bIndex is empty')
+                //debug('bIndex is empty')
             }
 
             var pDKeys = Object.keys(pDIndexes)
