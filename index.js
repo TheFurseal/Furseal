@@ -635,6 +635,9 @@ class Furseal{
             dbB.get(data.unprotected.blockName,(err,value) => {
                 if(err){
                     console.error(err)
+                    nodeManager.unblock(data.unprotected.slave)
+                    nodeManager.hardUnBlock(data.unprotected.slave)
+                    debug('Unblock '+data.unprotected.slave+' soft & hard')
                 }else{
                     var date = new Date()
                     data.unprotected.info.timeCost = date.valueOf() - value.unprotected.info.startTime

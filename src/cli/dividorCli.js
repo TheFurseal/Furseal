@@ -136,7 +136,7 @@ class DividorCli{
                                 if(--globalCount == 0){
                                     registerBlock(workInfo,true)
                                     if(--blockCounts[workInfo.workName].total == 0){
-                                        debug('Total recived block: '+blockCounts[data.workName].recived)
+                                        debug('Total recived block: '+blockCounts[workInfo.workName].recived)
                                         blockCounts[workInfo.workName] = null
                                     }
                                 }
@@ -153,7 +153,7 @@ class DividorCli{
                                 if(--globalCount == 0){
                                     registerBlock(workInfo)
                                     if(--blockCounts[workInfo.workName].total == 0){
-                                        debug('Total recived block: '+blockCounts[data.workName].recived)
+                                        debug('Total recived block: '+blockCounts[workInfo.workName].recived)
                                         blockCounts[workInfo.workName] = null
                                     }
                                 }
@@ -192,7 +192,7 @@ class DividorCli{
                             if(--globalCount == 0){
                                 registerBlock(workInfo)
                                 if(--blockCounts[workInfo.workName].total == 0){
-                                    debug('Total recived block: '+blockCounts[data.workName].recived)
+                                    debug('Total recived block: '+blockCounts[workInfo.workName].recived)
                                     blockCounts[workInfo.workName] = null
                                 }
                             }
