@@ -84,12 +84,15 @@ class DividorCli{
             if(typeof(data) == 'string'){
                 data = JSON.parse(data)
             }
+            debug(data.unprotected.blockName)
             pa.ipcManager.clientEmit('feedback',data.unprotected.blockName)
             if(blockCounts[data.workName] == null){
                 blockCounts[data.workName] = {}
                 blockCounts[data.workName].total = data.unprotected.block.number
+                blockCounts[data.workName].recived = 0
             }
             uploadInputFiles(data)
+            blockCounts[data.workName].recived++
         })
 
       
@@ -133,6 +136,7 @@ class DividorCli{
                                 if(--globalCount == 0){
                                     registerBlock(workInfo,true)
                                     if(--blockCounts[workInfo.workName].total == 0){
+                                        debug('Total recived block: '+blockCounts[data.workName].recived)
                                         blockCounts[workInfo.workName] = null
                                     }
                                 }
@@ -149,6 +153,7 @@ class DividorCli{
                                 if(--globalCount == 0){
                                     registerBlock(workInfo)
                                     if(--blockCounts[workInfo.workName].total == 0){
+                                        debug('Total recived block: '+blockCounts[data.workName].recived)
                                         blockCounts[workInfo.workName] = null
                                     }
                                 }
@@ -187,6 +192,7 @@ class DividorCli{
                             if(--globalCount == 0){
                                 registerBlock(workInfo)
                                 if(--blockCounts[workInfo.workName].total == 0){
+                                    debug('Total recived block: '+blockCounts[data.workName].recived)
                                     blockCounts[workInfo.workName] = null
                                 }
                             }
