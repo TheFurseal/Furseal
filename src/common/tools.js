@@ -104,35 +104,75 @@ module.exports = {
     fixPath: (path) => {
         return path.replace(/\\/g,'/')
     },
+    addEnv:(key,value) => {
+        if(key == null || value == null){
+            return
+        }
+
+        if(Process.platform == 'darwin'){
+            value = value.replace(/ /g,'\\ ')
+            var profilePath = Process.env['HOME']+'/.bash_profile'
+            var buf = fs.readFileSync(profilePath)
+            buf = buf.toString()
+            if(!buf.includes(' '+key+'=') && !buf.includes(' '+key+' =')){
+                buf = buf+'\nexport '+key+'=\''+value+'\''
+                fs.writeFileSync(profilePath,buf)
+                console.log('set '+key+' to '+value)
+            }else{
+                var sps = buf.split('\n')
+                var tmp = ''
+                for(var i=0;i<sps.length;i++){
+                    var elem = sps[i]
+                    if(elem.includes(' '+key+'=') || elem.includes(' '+key+' =')){
+                        tmp+=elem+':'+value+'\n'
+                    }else{
+                        tmp += sps[i]+'\n'
+                    }
+                }
+                fs.writeFileSync(profilePath,tmp)
+               
+            }
+        }else if(Process.platform == 'win32'){
+            var arg = []
+            arg.push(key)
+            arg.push('%'+key+'%;'+value)
+            var cmd = Spawn('setx',arg)
+            cmd.stdout.on('data',(data) => {
+                console.log(data.toString())
+            })
+
+
+        }else if(this.process.platform = 'linux'){
+
+        }else{
+
+        }
+    },
     setEnv:(key,value) => {
 
         //fix space
 
         if(Process.platform == 'darwin'){
+            console.log('darwin')
+            value = value.replace(/ /g,'\\ ')
             var profilePath = Process.env['HOME']+'/.bash_profile'
             var buf = fs.readFileSync(profilePath)
             buf = buf.toString()
-            if(!buf.includes(key)){
+            if(!buf.includes(' '+key+'=') && !buf.includes(' '+key+' =')){
                 Process.env[key] = value
-                    buf = buf+'\nexport '+key+'=\''+value+'\'\n'
-                    fs.writeFileSync(profilePath,buf)
+                buf = buf+'\nexport '+key+'=\''+value+'\''
+                fs.writeFileSync(profilePath,buf)
+                console.log('set '+key+' to '+value)
                 
-                }else{
+            }else{
                 Process.env[key] = value
-                var start = 0
+                var sps = buf.split('\n')
                 var tmp = ''
-                for(var i=0;i<buf.length;i++){
-    
-                    if(buf[i] == '\n'|| i == buf.length-1){
-                        var elem = buf.substring(start,i)
-                        start = i
-                        if(elem.includes(key)){
-                            var fixed = '\nexport '+key+'=\''+value+'\'\n'
-                            tmp = tmp + fixed
-                        }else{
-                            tmp = tmp+elem
-                        }
+                for(var i=0;i<sps.length;i++){
+                    if(sps[i].includes(' '+key+'=') || sps[i].includes(' '+key+' =')){
+                        tmp += 'export '+key+'='+value+'\n'
                     }else{
+                        tmp += sps[i]+'\n'
                     }
                 }
                 fs.writeFileSync(profilePath,tmp)
@@ -142,6 +182,7 @@ module.exports = {
             var arg = []
             arg.push(key)
             arg.push(value)
+            
             var cmd = Spawn('setx',arg)
             cmd.stdout.on('data',(data) => {
                 console.log(data.toString())

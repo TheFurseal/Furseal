@@ -1,6 +1,5 @@
 const debug = require('debug')('debugTest')
+const process = require('process')
 
 
-debug('hello,world')
-debug('hello,world','with param')
-debug('hello,world'+'with param2')
+debug(process.env.PATH)

@@ -33,6 +33,7 @@ class AppManager{
         this.downloadManager = dMgr
         this.gcManager = gcMrg
         this.activeMonitor = {}
+        Tools.addEnv('PATH',appRepoPath)
 
     }
 

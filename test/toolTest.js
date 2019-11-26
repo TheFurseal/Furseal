@@ -1,10 +1,7 @@
-
-var hash = 'Qmss3535dxfdkfdQm'
-
-console.log(hash.indexOf('Qm'))
+const Tools = require('../src/common/tools.js')
 
 
+for(var i=0;i<1;i++){
 
-var a = (-1 ) % 0
-
-console.log(a)
+    Tools.setEnv('John','Suu')
+}
