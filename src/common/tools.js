@@ -133,6 +133,7 @@ module.exports = {
                
             }
         }else if(Process.platform == 'win32'){
+            value = value.replace(/\\/g,'/')
             var arg = []
             arg.push(key)
             arg.push('%'+key+'%;'+value)
@@ -179,6 +180,7 @@ module.exports = {
             
             }   
         }else if(Process.platform == 'win32'){
+            value = value.replace(/\\/g,'/')
             var arg = []
             arg.push(key)
             arg.push(value)
