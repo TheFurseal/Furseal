@@ -499,6 +499,7 @@ class Furseal{
                     // TODO
                     element.unprotected.status = 'processing'
                     dbW.put(element.workName,element)
+                    eventManager.emit('startAssimilate',element)
                 }else{
                 }
             }

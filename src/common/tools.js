@@ -135,10 +135,10 @@ module.exports = {
             }
         }else if(Process.platform == 'win32'){
             value = value.replace(/\\/g,'/')
-            Process.env[key] = value
+            Process.env[key] =Process.env[key]+";"+ value
             var arg = []
-            arg.push(key)
-            arg.push('\"%'+key+'%;'+value+'\"')
+            //arg.push(key)
+            arg.push(key+' \"%'+key+'%;'+value+'\"')
             var cmd = Spawn('setx',arg)
             cmd.stdout.on('data',(data) => {
                 console.log(data.toString())
@@ -186,8 +186,8 @@ module.exports = {
             value = value.replace(/\\/g,'/')
             Process.env[key] = value
             var arg = []
-            arg.push(key)
-            arg.push(value)
+            arg.push(key+" "+value)
+            //arg.push(value)
             
             var cmd = Spawn('setx',arg)
             cmd.stdout.on('data',(data) => {

@@ -100,7 +100,7 @@ class StoreCli{
                     var sp1 = elem.target.split('-')
                     
                     if(Tools.matchOS(sp1[0],process.platform) && Tools.matchArch(sp1[1],process.arch)){
-                        var targetPath = appRepo+'/'+elem.name+'_'+date.valueOf()
+                        var targetPath = appRepo+'/'+elem.name
                         if(process.platform == 'win32'){
                             targetPath = targetPath+'.exe'
                         }
@@ -209,7 +209,7 @@ class StoreCli{
                             cb(err) 
                         }else{
                             var date = new Date()
-                            var targetPath = appRepo+'/'+elem.name+'_'+date.valueOf()
+                            var targetPath = appRepo+'/'+elem.name
                             if(process.platform == 'win32'){
                                 targetPath = targetPath+'.exe'
                             }
@@ -337,8 +337,8 @@ class StoreCli{
                                     if(err){
                                         console.error(err)
                                     }else{
-                                        var date = new Date()
-                                        var targetPath = appRepo+'/'+elem.name+'_'+date.valueOf()
+                                       
+                                        var targetPath = appRepo+'/'+elem.name
                                         if(process.platform == 'win32'){
                                             targetPath = targetPath+'.exe'
                                         }
