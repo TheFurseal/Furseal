@@ -138,7 +138,7 @@ module.exports = {
             Process.env[key] = value
             var arg = []
             arg.push(key)
-            arg.push('%'+key+'%;'+value)
+            arg.push('\"%'+key+'%;'+value+'\"')
             var cmd = Spawn('setx',arg)
             cmd.stdout.on('data',(data) => {
                 console.log(data.toString())
