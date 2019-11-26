@@ -111,6 +111,7 @@ module.exports = {
 
         if(Process.platform == 'darwin'){
             value = value.replace(/ /g,'\\ ')
+            Process.env[key] = value
             var profilePath = Process.env['HOME']+'/.bash_profile'
             var buf = fs.readFileSync(profilePath)
             buf = buf.toString()
@@ -134,6 +135,7 @@ module.exports = {
             }
         }else if(Process.platform == 'win32'){
             value = value.replace(/\\/g,'/')
+            Process.env[key] = value
             var arg = []
             arg.push(key)
             arg.push('%'+key+'%;'+value)
@@ -156,6 +158,7 @@ module.exports = {
         if(Process.platform == 'darwin'){
             console.log('darwin')
             value = value.replace(/ /g,'\\ ')
+            Process.env[key] = value
             var profilePath = Process.env['HOME']+'/.bash_profile'
             var buf = fs.readFileSync(profilePath)
             buf = buf.toString()
@@ -181,6 +184,7 @@ module.exports = {
             }   
         }else if(Process.platform == 'win32'){
             value = value.replace(/\\/g,'/')
+            Process.env[key] = value
             var arg = []
             arg.push(key)
             arg.push(value)
