@@ -107,8 +107,8 @@ module.exports.createP2PNode = async (home,swarmKeyBuffer) => {
             }
         },
         connectionManager: {
-          minPeers: 5,
-          maxPeers: 50
+          minPeers: 30,
+          maxPeers: 100
         }
     })
 }

@@ -42,6 +42,7 @@ class ValidatorCli{
             }
             validate(data)
         })
+        this.callbacks = {}
         function validate(res){
             var wInfo = res.workInfo
             if(typeof(wInfo) == 'string'){
@@ -57,7 +58,8 @@ class ValidatorCli{
             }
             debug('validate record',wInfo)
             if(pa.callback != null){
-                pa.callback(wInfo)
+                pa.callbacks[wInfo.unprotected.blockName](wInfo)
+                delete pa.callbacks[wInfo.unprotected.blockName]
             }else{
                 console.error('No callback found !!!!')
             }
@@ -65,9 +67,11 @@ class ValidatorCli{
         this.param = param
     }
 
-    start(callback){
+    start(){
         var pa = this
-        pa.callback = callback
+        if(pa.pid > 0){
+            return
+        }
         debug('Validator cli start')
         this.appCommon.start((pid) => {
             // debug('set pid '+pid)
@@ -80,8 +84,9 @@ class ValidatorCli{
         this.appCommon.stop()
         this.ipcManager.clientDisconnect()
     }
-    request(workInfo){
+    request(workInfo,callback){
         var pa = this
+        pa.callbacks[workInfo.unprotected.blockName] = callback
         if(!this.ipcManager.serverConnected){
             var handle = setInterval(() => {
                 if(pa.ipcManager.serverConnected){

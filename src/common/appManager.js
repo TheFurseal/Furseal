@@ -76,11 +76,9 @@ class AppManager{
         }else{
             if(this.setsRegister[setName].validator != null){
                 debug('Validator request 1')
-                this.setsRegister[setName].validator.start(callback)
-                this.setsRegister[setName].validator.request(workInfo) 
+                this.setsRegister[setName].validator.request(workInfo,callback) 
                 return
             }else{
-                debug('Validator request 2')
             }
         }
 
@@ -94,10 +92,10 @@ class AppManager{
             dbApp:this.appDB
         })
 
-        this.setsRegister[setName].validator.start(callback)
+        this.setsRegister[setName].validator.start()
         this.validtorCount++
         debug('Validator request 0')
-        this.setsRegister[setName].validator.request(workInfo)
+        this.setsRegister[setName].validator.request(workInfo,callback)
     }
 
     launchAssimilator(setName,workInfo,callback){

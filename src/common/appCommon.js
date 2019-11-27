@@ -135,6 +135,7 @@ class AppCommon{
         if(!isNaN(this.pid)){
             Tool.killProcess(this.pid)
             debug('Kill process '+this.pid)
+            this.pid = -1
         }
         debug('Clear interval handler')
         clearInterval(handler)

@@ -56,11 +56,11 @@ class AssimilatorCli{
             return 
         }
         this.ipcManager = new IPCManager()
-        this.globalCallback = null
 
         this.dbB = dbB
         this.dbA = dbA
         this.dbW = dbW
+        this.callbacks = {}
         var pa = this
         param.id = param.setName+'_assimilator'
         param.type = 'assimilator'
@@ -88,6 +88,8 @@ class AssimilatorCli{
             }else{
                 callback('system error',null)
             }
+
+            callback = null
         }
 
          //IPC
@@ -97,7 +99,7 @@ class AssimilatorCli{
                 data = JSON.parse(data)
             }
             debug('revice result 2',data)
-            assimilate(data,pa.globalCallback)
+            assimilate(data,pa.callbacks[data.workInfo.workName])
         })
         
         this.param = param
@@ -112,6 +114,9 @@ class AssimilatorCli{
 
     start(){
         var pa = this
+        if(pa.pid > 0){
+            return
+        }
         debug('Assimilator cli start')
         this.appCommon.start((pid) => {
             // debug('set pid '+pid)
@@ -158,9 +163,9 @@ class AssimilatorCli{
             })
         }
 
-        if(this.globalCallback == null){
-            this.globalCallback = callback
-        }
+       
+        this.callbacks[workInfo.workName] = callback
+        
         
        
         if(!this.ipcManager.serverConnected){
