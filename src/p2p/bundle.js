@@ -10,8 +10,6 @@ const Bootstrap = require('libp2p-bootstrap')
 const KadDHT = require('libp2p-kad-dht')
 const Multiplex = require('libp2p-mplex')
 const Protector = require('libp2p-pnet')
-const fs = require('fs')
-
 
 const SECIO = require('libp2p-secio')
 
@@ -41,7 +39,8 @@ module.exports.createP2PNode = async (home,swarmKeyBuffer) => {
                 "/ip4/127.0.0.1/tcp/4003/ws",
                 "/dns4/peer1.cotnetwork.com/tcp/9090/ws/p2p-webrtc-star"
               ]
-            }
+            },
+            Bootstrap:bootstrapers
           },
         libp2p:  {
             switch: {

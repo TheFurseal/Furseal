@@ -1331,18 +1331,6 @@ class Furseal{
         return await p2pNode.stop()
     }
 
-    peerDebug(){
-        setInterval(() => {
-            p2pNode.swarm.peers((err,value) => {
-                if(err){
-                    console.error(err)
-                }else{
-                    debug('Swarm peers number: '+value.length)
-                }
-                
-            })
-        }, 10000);
-    }
 }
 
 

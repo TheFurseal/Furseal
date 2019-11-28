@@ -2,11 +2,11 @@ const DBManager = require('../src/common/db.js')
 
 
 
-var dbB = new DBManager('/Users/john/Library/Application\ Support/CoTNetwork/data/block')
+var dbB = new DBManager('/Users/john/Library/Application\ Support/CoTNetwork/data/gc')
 
-dbB.get('1574223397968_0_0',(err,value) => {
+dbB.getAllValue((value) => {
    
-    console.log(value)
+    console.log(JSON.stringify(value))
    
 })
 

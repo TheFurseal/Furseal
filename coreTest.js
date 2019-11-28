@@ -3,6 +3,7 @@ var fs = require('fs')
 var base58 = require('bs58')
 var process = require('process')
 
+
 console.log('start')
 //for auto login
 function decode(data){
@@ -35,4 +36,9 @@ login()
 core.init()
 core.process()
 core.peerDebug()
+const validCID = 'QmP9GqDK3B4YaeJwZx2bBdiq5mvNvVJjqVHikfvDdZrHxi'
+setTimeout(() => {
+    core.downloadDebug(validCID)    
+}, 5000);
+
 
