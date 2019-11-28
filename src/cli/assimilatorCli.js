@@ -99,7 +99,7 @@ class AssimilatorCli{
                 data = JSON.parse(data)
             }
             debug('revice result 2',data)
-            assimilate(data,pa.callbacks[data.workInfo.workName])
+            assimilate(data,pa.callbacks[data.workName])
         })
         
         this.param = param

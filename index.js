@@ -422,7 +422,7 @@ class Furseal{
                         if(element.applications.dividor == null){
                             return
                         }
-                        ret.setName = vObj.setName
+                        ret.setName = element.setName
                         ret.dividorName = element.applications.dividor.main[0].name
                         ret.status = 'active'
                         retTmp.push(ret)
@@ -579,6 +579,8 @@ class Furseal{
                     }else{
                         debug("start assimilate failed 1")
                         debug(value.unprotected.status)
+                        debug(value.unprotected.info.progress)
+                        debug(wIndexes[value.workName])
                     }
                 }
             })

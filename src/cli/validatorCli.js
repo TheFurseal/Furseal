@@ -57,7 +57,7 @@ class ValidatorCli{
 
             }
             debug('validate record',wInfo)
-            if(pa.callback != null){
+            if(pa.callbacks[wInfo.unprotected.blockName] != null){
                 pa.callbacks[wInfo.unprotected.blockName](wInfo)
                 delete pa.callbacks[wInfo.unprotected.blockName]
             }else{

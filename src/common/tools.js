@@ -110,13 +110,13 @@ module.exports = {
         }
 
         if(Process.platform == 'darwin'){
-            value = value.replace(/ /g,'\\ ')
-            Process.env[key] = value
+            // value = value.replace(/ /g,'\\ ')
+            Process.env[key] =Process.env[key]+":"+ value
             var profilePath = Process.env['HOME']+'/.bash_profile'
             var buf = fs.readFileSync(profilePath)
             buf = buf.toString()
             if(!buf.includes(' '+key+'=') && !buf.includes(' '+key+' =')){
-                buf = buf+'\nexport '+key+'=\''+value+'\''
+                buf = buf+'\nexport '+key+'=\"'+value+'\"'
                 fs.writeFileSync(profilePath,buf)
                 console.log('set '+key+' to '+value)
             }else{
@@ -157,24 +157,24 @@ module.exports = {
 
         if(Process.platform == 'darwin'){
             console.log('darwin')
-            value = value.replace(/ /g,'\\ ')
+            // value = value.replace(/ /g,'\\ ')
             Process.env[key] = value
             var profilePath = Process.env['HOME']+'/.bash_profile'
             var buf = fs.readFileSync(profilePath)
             buf = buf.toString()
             if(!buf.includes(' '+key+'=') && !buf.includes(' '+key+' =')){
-                Process.env[key] = value
-                buf = buf+'\nexport '+key+'=\''+value+'\''
+               
+                buf = buf+'\nexport '+key+'=\"'+value+'\"'
                 fs.writeFileSync(profilePath,buf)
                 console.log('set '+key+' to '+value)
                 
             }else{
-                Process.env[key] = value
+               
                 var sps = buf.split('\n')
                 var tmp = ''
                 for(var i=0;i<sps.length;i++){
                     if(sps[i].includes(' '+key+'=') || sps[i].includes(' '+key+' =')){
-                        tmp += 'export '+key+'='+value+'\n'
+                        tmp += 'export '+key+'=\"'+value+'\"\n'
                     }else{
                         tmp += sps[i]+'\n'
                     }
@@ -400,7 +400,6 @@ module.exports = {
         name = name.toLowerCase()
         var cmd=Process.platform=='win32'?'tasklist':'ps -A';
         var exec = Child.exec;
-        
         exec(cmd, function(err, stdout, stderr) {
             if(err){ 
                 debug(err)
