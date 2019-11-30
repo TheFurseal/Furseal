@@ -14,35 +14,43 @@ var hashes = [
     'QmQZgsMwAt62QWzZ8r34ACAGkNYFnwGwTDRN16AiF58TXk'
 ]
 
+// var hashes = [
+//     'QmP9GqDK3B4YaeJwZx2bBdiq5mvNvVJjqVHikfvDdZrHxi'
+// ]
+
 
 var p2pNode 
 var key = fs.readFileSync(process.env.HOME+'/swarm.key')
 async function create(){
     p2pNode = await P2PBundle.createP2PNode('/Users/john/Library/Application\ Support/CoTNetwork',key)
-    debug('Test start')
-    var total = hashes.length
-    hashes.forEach(hash => {
-        var date = new Date()
-        var totalBytes = 0
-        pull(
-            p2pNode.catPullStream(hash),
-            pull.through(dataIn => {
-                totalBytes += dataIn.length
-            }),
-            pull.collect((err,buf) => {
-                var dateSub = new Date()
-                debug(Buffer.concat(buf).length+' bytes data have been recived!!!!!')
-                var cost = (dateSub.valueOf() -  date.valueOf())/1000.0
-                debug(hash+' cost '+cost+' s.')
-                if(--total == 0){
-                    debug('Test end.')
-                    process.exit(0)
-                }else{
-                    debug('Left '+total+' file')
-                }
-            })
-        )
-    })
+    setTimeout(() => {
+        debug('Test start')
+        var total = hashes.length
+        hashes.forEach(hash => {
+            var date = new Date()
+            var totalBytes = 0
+            pull(
+                p2pNode.catPullStream(hash),
+                pull.through(dataIn => {
+                    totalBytes += dataIn.length
+                }),
+                pull.collect((err,buf) => {
+                    var dateSub = new Date()
+                    debug(Buffer.concat(buf).length+' bytes data have been recived!!!!!')
+                    var cost = (dateSub.valueOf() -  date.valueOf())/1000.0
+                    debug(hash+' cost '+cost+' s.')
+                    if(--total == 0){
+                        debug('Test end.')
+                        process.exit(0)
+                    }else{
+                        debug('Left '+total+' file')
+                    }
+                })
+            )
+            debug(total)
+        })
+    }, 3000);
+    
 }
 
 create()
