@@ -107,12 +107,13 @@ class Resender{
         setInterval(() => {
             var keys = Object.keys(bIndexOnProcessing)
             keys.forEach(key => {
-                if(workIndexes[keys] != null){
+                if(workIndexes[key] != null){
                     getNeighbor(key,dbB,(arry) => {
                         //debug(arry)
                         checkNeighbor(key,arry,bIndexOnProcessing[key],pa.resendByBlockName)
                     })
                 }else{
+                    debug('Work for '+key+' was closed. Nerver resend block')
                     delete bIndexOnProcessing[key]
                 }
             })

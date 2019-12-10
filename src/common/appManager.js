@@ -1,4 +1,3 @@
-const AppCommon = require('./appCommon.js')
 const DappCli = require('../cli/dappCli.js')
 const DividorCli = require('../cli/dividorCli.js')
 const AssimilatorCli = require('../cli/assimilatorCli.js')

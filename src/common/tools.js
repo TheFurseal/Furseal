@@ -110,7 +110,7 @@ module.exports = {
         }
 
         if(Process.platform == 'darwin'){
-            // value = value.replace(/ /g,'\\ ')
+            value = value.replace(/ /g,'\\ ')
             Process.env[key] =Process.env[key]+":"+ value
             var profilePath = Process.env['HOME']+'/.bash_profile'
             var buf = fs.readFileSync(profilePath)
@@ -120,6 +120,9 @@ module.exports = {
                 fs.writeFileSync(profilePath,buf)
                 console.log('set '+key+' to '+value)
             }else{
+                if(buf.indexOf(value)){
+                    return
+                }
                 var sps = buf.split('\n')
                 var tmp = ''
                 for(var i=0;i<sps.length;i++){
